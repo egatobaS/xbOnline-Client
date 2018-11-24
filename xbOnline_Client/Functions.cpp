@@ -128,7 +128,7 @@ KEY_VAULT KeyVault = { 0 };
 bool
 xb_custom_xui = true, xb_custom_notify = true, xb_custom_time = true, xb_redeemhook = true, xb_cheats_cod4 = true, xb_cheats_waw = true, xb_cheats_mw2 = true,
 xb_cheats_bo1 = true, xb_cheats_mw3 = true, xb_cheats_mw2_onhost = true, xb_cheats_bo2 = true, xb_cheats_ghosts = true, xb_cheats_aw = true, xb_cheats_bf4 = true, xb_bypass_cod4 = true, xb_bypass_waw = true,
-xb_bypass_mw2 = true, xb_bypass_bo1 = true, xb_bypass_mw3 = true, xb_bypass_bo2 = true, xb_bypass_ghosts = true, xb_bypass_aw = true, xb_cheats_mw3_onhost = true;
+xb_bypass_mw2 = true, xb_bypass_bo1 = true, xb_bypass_mw3 = true, xb_bypass_bo2 = true, xb_bypass_ghosts = true, xb_bypass_aw = true, xb_cheats_mw3_onhost = true, xb_cheats_csgo = true;
 
 
 
@@ -1660,7 +1660,6 @@ void LoadINI()
 			ini.SetValue("Cheats", "xb_cheats_bf4", "true");
 
 		xb_cheats_bf4 = ini.GetBoolValue("Cheats", "xb_cheats_bf4");
-		ini.SaveFile("xbOnline:\\xbOnline.ini");
 
 		xb_cheats_mw2_onhost = ini.GetBoolValue("Cheats", "xb_cheats_mw2_onhost");
 
@@ -1675,6 +1674,13 @@ void LoadINI()
 			ini.SetValue("Cheats", "xb_cheats_mw3_onhost", "true");
 
 		xb_cheats_mw3_onhost = ini.GetBoolValue("Cheats", "xb_cheats_mw3_onhost");
+
+		xb_cheats_csgo = ini.GetBoolValue("Cheats", "xb_cheats_csgo");
+
+		if (!xb_cheats_csgo && ini.GetSectionSize("Cheats") < 12)
+			ini.SetValue("Cheats", "xb_cheats_csgo", "true");
+
+		xb_cheats_csgo = ini.GetBoolValue("Cheats", "xb_cheats_csgo");
 
 		ini.SaveFile("xbOnline:\\xbOnline.ini");
 
@@ -1697,6 +1703,7 @@ void LoadINI()
 		ini.SetValue("Cheats", "xb_cheats_bf4", "true");
 		ini.SetValue("Cheats", "xb_cheats_mw2_onhost", "true");
 		ini.SetValue("Cheats", "xb_cheats_mw3_onhost", "true");
+		ini.SetValue("Cheats", "xb_cheats_csgo", "true");
 
 		ini.SetValue("Bypasses", "xb_bypass_cod4", "true");
 		ini.SetValue("Bypasses", "xb_bypass_waw", "true");

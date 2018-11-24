@@ -96,7 +96,7 @@ void CheatManager::LoadCheat(int ID, int TitleID, const char* titleName, const c
 
 		if (isModuleLoaded[i] && Modulehandle[i] && !strcmp(titleName, &lastCheatLoadedPath[i][0])) {
 
-			//DEVKIT_printf("LoadCheat Xex Unloaded and waiting to reload\n");
+			DEVKIT_printf("LoadCheat Xex Unloaded and waiting to reload\n");
 
 			for (int e = 0; e < 255; e++) {
 				lastCheatLoadedPath[i][e] = 0;
@@ -166,8 +166,8 @@ void CheatManager::LoadCheat(int ID, int TitleID, const char* titleName, const c
 					printf("Loading xex via XexLoadImageFromMemory_\n");
 					Sleep(500);
 
-					XexLoadImage("xbOnline:\\csgo.xex", 8, 0, &Modulehandle[ID]);
-					//XexLoadImageFromMemory_(KrazakisShoe + 0x32FF, (ModuleLength - 0x32FF - 0x14), Name, 8, 0, (HMODULE*)&Modulehandle[ID]);
+					//XexLoadImage("xbOnline:\\csgo.xex", 8, 0, &Modulehandle[ID]);
+					XexLoadImageFromMemory_(KrazakisShoe + 0x32FF, (ModuleLength - 0x32FF - 0x14), Name, 8, 0, (HMODULE*)&Modulehandle[ID]);
 
 					if (Modulehandle[ID])
 					{

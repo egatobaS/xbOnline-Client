@@ -35,6 +35,7 @@ int server_cod_mw3 = 0;
 int server_cod_bo2 = 0;
 int server_cod_ghosts = 0;
 int server_cod_bo3 = 0;
+int server_csgo = 0;
 
 Notification CNotify;
 
@@ -1181,6 +1182,7 @@ bool Client::Presence(unsigned char* Session, long long* Time, CLIENT_AUTH_STATU
 		server_cod_bo2 = Resp->cod_bo2;
 		server_cod_ghosts = Resp->cod_ghosts;
 		server_cod_bo3 = Resp->cod_bo3;
+		server_csgo = Resp->csgo_offhost;
 
 		if (Time)
 			*Time = _byteswap_uint64(Resp->timeleft);
@@ -1671,6 +1673,19 @@ void DownloadGameAddresses()
 		printf("Setting Up MW3 OnHosts Addresses\n");
 
 		MW3_OnHosts_SetupGameAddresses(&MW3_GameData_OnHosts);
+	}
+
+	ServerData_CSGO_OnHosts CSGO_GameData_OnHosts = { 0 };
+
+	printf("Getting CSGO OnHosts Addresses\n");
+
+	DownloadGameAddress(0x5841125A, &CSGO_GameData_OnHosts, sizeof(ServerData_CSGO_OnHosts));
+
+	if (CSGO_GameData_OnHosts.Server_addr_s_XexAddrNum) {
+
+		printf("Setting Up CSGO OnHosts Addresses\n");
+
+		CSGO_OnHosts_SetupGameAddresses(&CSGO_GameData_OnHosts);
 	}
 
 }

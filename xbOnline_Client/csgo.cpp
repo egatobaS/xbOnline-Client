@@ -96,7 +96,7 @@ struct csgo_addr_offhost_s
 	unsigned int _0x881E6CB8;
 	unsigned int _0x82CF501C;
 
-	void SetAddress()
+	/*void SetAddress()
 	{
 		_0x86C54178 = 0x86C54178;
 		_0x85D05BBC = 0x85D05BBC;
@@ -153,7 +153,7 @@ struct csgo_addr_offhost_s
 		_0x85C839C0 = 0x85C839C0;
 		_0x881E6CB8 = 0x881E6CB8;
 		_0x82CF501C = 0x82CF501C;
-	}
+	}*/
 };
 
 
@@ -525,9 +525,6 @@ void SetAddressesForGame()
 	KeyValuesAddr = addr->_0x886DA354;
 }
 
-
-
-
 bool CSGO_BuildFunctions()
 {
 	BuildStartFunctions();
@@ -542,10 +539,8 @@ bool CSGO_BuildFunctions()
 
 	addr = (csgo_addr_offhost_s*)malloc(sizeof(csgo_addr_offhost_s));
 
-	//for (int i = 0; i < 184; i++)
-	//	((int*)(addr))[i] = GetAddress(MW3_addr_s_Data, MW3_addr_s_PatchID, i);
-
-	addr->SetAddress();
+	for (int i = 0; i < 54; i++)
+		((int*)(addr))[i] = GetAddress(CSGO_OnHosts_addr_s_Data, CSGO_OnHosts_addr_s_PatchID, i);
 
 	SetAddressesForGame();
 
@@ -589,7 +584,6 @@ bool CSGO_BuildFunctions()
 
 	HVGetVersionsPokeDWORD(0x800001000000BEE0, (int)ReverseInt((int)ExternalFunctions));
 	HVGetVersionsPokeDWORD(0x800001000000BEE4, (int)ReverseInt((int)sizeof(GAME_ADDRESS_TRANSFER_CSGO)));
-
 
 	return true;
 }

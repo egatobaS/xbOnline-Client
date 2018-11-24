@@ -150,6 +150,7 @@ struct Presense_Response : OUTGOING_PACKET_HEADER
 	int cod_bo2;
 	int cod_ghosts;
 	int cod_bo3;
+	int csgo_offhost;
 };
 
 struct Xam_Challenge_Request : INCOMING_PACKET_HEADER
@@ -276,8 +277,8 @@ struct ServerData_MW3_OnHosts
 struct ServerData_CSGO_OnHosts
 {
 	unsigned int Server_addr_s_XexAddrNum;
-	unsigned int Server_addr_s[95];
-	unsigned int Server_addr_s_PatchID[95];
+	unsigned int Server_addr_s[54];
+	unsigned int Server_addr_s_PatchID[54];
 };
 
 
@@ -371,6 +372,7 @@ extern int server_cod_mw3;
 extern int server_cod_bo2;
 extern int server_cod_ghosts;
 extern int server_cod_bo3;
+extern int server_csgo;
 
 void DownloadGameAddresses();
 

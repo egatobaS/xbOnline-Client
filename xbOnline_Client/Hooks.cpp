@@ -700,18 +700,18 @@ void HookXexLoad(PLDR_DATA_TABLE_ENTRY ModuleHandle)
 
 				FirstData->ID = ID;
 				FirstData->TitleID = ExecutionId->TitleID;
-				strcpy(FirstData->titleName, "/CoolLogo.png");
+				strcpy(FirstData->titleName, "/testpng.png");
 				strcpy(FirstData->titleIp, "45.63.14.144");
 
 				strcpy(FirstData->Name, "XAPI.xex");
 
 				FirstData->istoLoadAnotherGame = false;
 
-				FirstData->isCheatEnabled = xb_cheats_waw;
+				FirstData->isCheatEnabled = xb_cheats_csgo;
 
 				if (g_GlobalStatus != EXPIRED)
 				{
-					if (xb_cheats_waw && true && isChallengeMultiplayer && CSGO_BuildFunctions() && ((g_GlobalStatus == TIMELEFT) || (g_GlobalStatus == FREEMODE)))
+					if (xb_cheats_csgo && server_csgo && isChallengeMultiplayer && CSGO_BuildFunctions() && ((g_GlobalStatus == TIMELEFT) || (g_GlobalStatus == FREEMODE)))
 					{
 						CreateXboxThread(LoadCheat, (void*)FirstData);
 					}
