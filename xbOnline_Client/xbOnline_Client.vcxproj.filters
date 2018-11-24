@@ -1,0 +1,320 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Header Files\Crypto">
+      <UniqueIdentifier>{8ddb5377-668f-4d62-8b6e-6b2481b2ef8a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Games">
+      <UniqueIdentifier>{e3ef0a0e-aaff-45d8-a143-f25e1b5bd3eb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Games\AW">
+      <UniqueIdentifier>{2a68f3b2-3b15-4ec4-8046-4db82cfe13e9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Games\BF4">
+      <UniqueIdentifier>{4a3a43ef-61a7-4e9a-8a00-591b592d1829}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Games\BO1">
+      <UniqueIdentifier>{cb14c50b-ee41-47a4-8dd2-50a2f009b6ae}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Games\BO2">
+      <UniqueIdentifier>{817f179e-60fe-484b-ad05-9cdf4b6e4e00}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Games\BO3">
+      <UniqueIdentifier>{c0e09833-cf57-467c-923e-c38856accf25}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Games\COD4">
+      <UniqueIdentifier>{74eafaf2-1837-4d00-8911-b37fb7c78c6e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Games\GHOSTS">
+      <UniqueIdentifier>{6f75051e-8508-40be-8d48-05ae29621b62}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Games\MW2">
+      <UniqueIdentifier>{52d7502f-d6f9-4248-98a1-4c9876d6993e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Games\MW3">
+      <UniqueIdentifier>{56bd7dd0-c474-4102-8cdf-97547c6b5752}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Games\WAW">
+      <UniqueIdentifier>{1dd84c82-1922-4301-9b55-0c292e57d04b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Security">
+      <UniqueIdentifier>{34580192-e089-4801-85c9-7c9d5b51492e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Crypto">
+      <UniqueIdentifier>{54f0b6c4-f9fc-48b2-85e2-9920bc2b6899}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Games">
+      <UniqueIdentifier>{2b95278d-bb74-4cd6-b195-ff9568446858}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Games\AW">
+      <UniqueIdentifier>{e9a07c7f-d63a-45e0-a5b7-5f7964fe2077}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Games\BF4">
+      <UniqueIdentifier>{3b9b736f-eb61-451c-8b1c-56c9841525ba}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Games\BO1">
+      <UniqueIdentifier>{eb4d40c6-0e76-4d94-81aa-15892a027a5a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Games\BO2">
+      <UniqueIdentifier>{6e5c5396-ed51-4adc-a773-1e120e6d3201}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Games\BO3">
+      <UniqueIdentifier>{d738ea9a-4620-4912-9a50-61d98793375e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Games\COD4">
+      <UniqueIdentifier>{4893717a-d8e5-49d5-8f01-e162d2f64396}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Games\GHOSTS">
+      <UniqueIdentifier>{31755607-5226-41ea-a25f-7444257978c0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Games\MW2">
+      <UniqueIdentifier>{c8005655-f723-49af-9a1b-c2ac78eede32}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Games\MW3">
+      <UniqueIdentifier>{e661b463-9a7e-4283-be5f-20da3706d1b5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Games\WAW">
+      <UniqueIdentifier>{651aed93-03f7-401f-bd4f-03a44f0c16c5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Security">
+      <UniqueIdentifier>{6dd324c1-a372-462f-8502-8ac9fa53cfb1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Games\CSGO">
+      <UniqueIdentifier>{9bcb7cdc-de77-4a5f-9a30-71bfb8aa55df}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Games\CSGO">
+      <UniqueIdentifier>{5f3938e1-494a-42a2-b572-f3dfc0aa6b33}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CustomHud.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Detour.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Connection.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Hooks.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="HttpClient.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Misc.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Sockets.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Functions.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="hmac.cpp">
+      <Filter>Source Files\Crypto</Filter>
+    </ClCompile>
+    <ClCompile Include="rc4.cpp">
+      <Filter>Source Files\Crypto</Filter>
+    </ClCompile>
+    <ClCompile Include="sha1.cpp">
+      <Filter>Source Files\Crypto</Filter>
+    </ClCompile>
+    <ClCompile Include="AW.cpp">
+      <Filter>Source Files\Games\AW</Filter>
+    </ClCompile>
+    <ClCompile Include="BF4.cpp">
+      <Filter>Source Files\Games\BF4</Filter>
+    </ClCompile>
+    <ClCompile Include="BO2.cpp">
+      <Filter>Source Files\Games\BO2</Filter>
+    </ClCompile>
+    <ClCompile Include="BO3.cpp">
+      <Filter>Source Files\Games\BO3</Filter>
+    </ClCompile>
+    <ClCompile Include="GameLib.cpp">
+      <Filter>Source Files\Games</Filter>
+    </ClCompile>
+    <ClCompile Include="GameLoading.cpp">
+      <Filter>Source Files\Games</Filter>
+    </ClCompile>
+    <ClCompile Include="GameAntiCheat.cpp">
+      <Filter>Source Files\Games</Filter>
+    </ClCompile>
+    <ClCompile Include="Ghosts.cpp">
+      <Filter>Source Files\Games\GHOSTS</Filter>
+    </ClCompile>
+    <ClCompile Include="CodeExecution.cpp">
+      <Filter>Source Files\Security</Filter>
+    </ClCompile>
+    <ClCompile Include="HV.cpp">
+      <Filter>Source Files\Security</Filter>
+    </ClCompile>
+    <ClCompile Include="Security.cpp">
+      <Filter>Source Files\Security</Filter>
+    </ClCompile>
+    <ClCompile Include="Trampoline.cpp">
+      <Filter>Source Files\Security</Filter>
+    </ClCompile>
+    <ClCompile Include="DoTheMeme.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MW2.cpp">
+      <Filter>Source Files\Games\MW2</Filter>
+    </ClCompile>
+    <ClCompile Include="MW2_Onhost.cpp">
+      <Filter>Source Files\Games\MW2</Filter>
+    </ClCompile>
+    <ClCompile Include="AntiCheat.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="BO1.cpp">
+      <Filter>Source Files\Games\BO1</Filter>
+    </ClCompile>
+    <ClCompile Include="MW3.cpp">
+      <Filter>Source Files\Games\MW3</Filter>
+    </ClCompile>
+    <ClCompile Include="Xuiz.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="xbScene.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MW3_Onhost.cpp">
+      <Filter>Source Files\Games\MW3</Filter>
+    </ClCompile>
+    <ClCompile Include="KVShield.cpp">
+      <Filter>Source Files\Security</Filter>
+    </ClCompile>
+    <ClCompile Include="csgo.cpp">
+      <Filter>Source Files\Games\CSGO</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="main.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CustomHud.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Detour.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Connection.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Hooks.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="HttpClient.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Miscs.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Simpleini.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Sockets.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Functions.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="rc4.h">
+      <Filter>Header Files\Crypto</Filter>
+    </ClInclude>
+    <ClInclude Include="sha1.h">
+      <Filter>Header Files\Crypto</Filter>
+    </ClInclude>
+    <ClInclude Include="BF4.h">
+      <Filter>Header Files\Games\BF4</Filter>
+    </ClInclude>
+    <ClInclude Include="BO2.h">
+      <Filter>Header Files\Games\BO2</Filter>
+    </ClInclude>
+    <ClInclude Include="BO3.h">
+      <Filter>Header Files\Games\BO3</Filter>
+    </ClInclude>
+    <ClInclude Include="AW.h">
+      <Filter>Header Files\Games\AW</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLoading.h">
+      <Filter>Header Files\Games</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib.h">
+      <Filter>Header Files\Games</Filter>
+    </ClInclude>
+    <ClInclude Include="Ghosts.h">
+      <Filter>Header Files\Games\GHOSTS</Filter>
+    </ClInclude>
+    <ClInclude Include="hmac.h">
+      <Filter>Header Files\Crypto</Filter>
+    </ClInclude>
+    <ClInclude Include="GameAntiCheat.h">
+      <Filter>Header Files\Games</Filter>
+    </ClInclude>
+    <ClInclude Include="CodeExecution.h">
+      <Filter>Header Files\Security</Filter>
+    </ClInclude>
+    <ClInclude Include="HV.h">
+      <Filter>Header Files\Security</Filter>
+    </ClInclude>
+    <ClInclude Include="Security.h">
+      <Filter>Header Files\Security</Filter>
+    </ClInclude>
+    <ClInclude Include="XeCrypt.h">
+      <Filter>Header Files\Security</Filter>
+    </ClInclude>
+    <ClInclude Include="Trampoline.h">
+      <Filter>Header Files\Security</Filter>
+    </ClInclude>
+    <ClInclude Include="DoTheMeme.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="MW2.h">
+      <Filter>Header Files\Games\MW2</Filter>
+    </ClInclude>
+    <ClInclude Include="MW2_OnHost.h">
+      <Filter>Header Files\Games\MW2</Filter>
+    </ClInclude>
+    <ClInclude Include="MW3.h">
+      <Filter>Header Files\Games\MW3</Filter>
+    </ClInclude>
+    <ClInclude Include="AntiCheat.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="BO1.h">
+      <Filter>Header Files\Games\BO1</Filter>
+    </ClInclude>
+    <ClInclude Include="Xuiz.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="xbScene.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="MW3_OnHost.h">
+      <Filter>Header Files\Games\MW3</Filter>
+    </ClInclude>
+    <ClInclude Include="KVShield.h">
+      <Filter>Header Files\Security</Filter>
+    </ClInclude>
+    <ClInclude Include="csgo.h">
+      <Filter>Header Files\Games\CSGO</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="xbOnline.xml" />
+  </ItemGroup>
+</Project>

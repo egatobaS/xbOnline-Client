@@ -1,0 +1,41 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.26730.15
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "xbOnline_Client", "xbOnline_Client\xbOnline_Client.vcxproj", "{9856303F-8BB2-437E-A85A-76B596E70E66}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		CodeAnalysis|Xbox 360 = CodeAnalysis|Xbox 360
+		Debug|Xbox 360 = Debug|Xbox 360
+		DEVKIT|Xbox 360 = DEVKIT|Xbox 360
+		Profile_FastCap|Xbox 360 = Profile_FastCap|Xbox 360
+		Profile|Xbox 360 = Profile|Xbox 360
+		Release_LTCG|Xbox 360 = Release_LTCG|Xbox 360
+		Release|Xbox 360 = Release|Xbox 360
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{9856303F-8BB2-437E-A85A-76B596E70E66}.CodeAnalysis|Xbox 360.ActiveCfg = CodeAnalysis|Xbox 360
+		{9856303F-8BB2-437E-A85A-76B596E70E66}.CodeAnalysis|Xbox 360.Build.0 = CodeAnalysis|Xbox 360
+		{9856303F-8BB2-437E-A85A-76B596E70E66}.Debug|Xbox 360.ActiveCfg = Debug|Xbox 360
+		{9856303F-8BB2-437E-A85A-76B596E70E66}.Debug|Xbox 360.Build.0 = Debug|Xbox 360
+		{9856303F-8BB2-437E-A85A-76B596E70E66}.DEVKIT|Xbox 360.ActiveCfg = DEVKIT|Xbox 360
+		{9856303F-8BB2-437E-A85A-76B596E70E66}.DEVKIT|Xbox 360.Build.0 = DEVKIT|Xbox 360
+		{9856303F-8BB2-437E-A85A-76B596E70E66}.DEVKIT|Xbox 360.Deploy.0 = DEVKIT|Xbox 360
+		{9856303F-8BB2-437E-A85A-76B596E70E66}.Profile_FastCap|Xbox 360.ActiveCfg = Profile_FastCap|Xbox 360
+		{9856303F-8BB2-437E-A85A-76B596E70E66}.Profile_FastCap|Xbox 360.Build.0 = Profile_FastCap|Xbox 360
+		{9856303F-8BB2-437E-A85A-76B596E70E66}.Profile|Xbox 360.ActiveCfg = Profile|Xbox 360
+		{9856303F-8BB2-437E-A85A-76B596E70E66}.Profile|Xbox 360.Build.0 = Profile|Xbox 360
+		{9856303F-8BB2-437E-A85A-76B596E70E66}.Release_LTCG|Xbox 360.ActiveCfg = Release_LTCG|Xbox 360
+		{9856303F-8BB2-437E-A85A-76B596E70E66}.Release_LTCG|Xbox 360.Build.0 = Release_LTCG|Xbox 360
+		{9856303F-8BB2-437E-A85A-76B596E70E66}.Release|Xbox 360.ActiveCfg = Release|Xbox 360
+		{9856303F-8BB2-437E-A85A-76B596E70E66}.Release|Xbox 360.Build.0 = Release|Xbox 360
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {88A3A6F0-9515-47A1-9295-48D60360B400}
+	EndGlobalSection
+EndGlobal
