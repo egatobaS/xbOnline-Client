@@ -331,6 +331,8 @@ void UnloadMonitorThread(void* ptr)
 	}
 }
 
+bool isLastTitleCSGO = false;
+
 void HookXexLoad(PLDR_DATA_TABLE_ENTRY ModuleHandle)
 {
 	PatchModuleImport_F(ModuleHandle, MODULE_KERNEL, 407, (DWORD)XexGetProcedureAddressHook);
@@ -451,7 +453,7 @@ void HookXexLoad(PLDR_DATA_TABLE_ENTRY ModuleHandle)
 			isChallengeMultiplayer = (ModuleHandle->TimeDateStamp == 0x544F01BE);
 
 			InitGhosts();
-	}
+		}
 
 		break;
 	}
@@ -681,16 +683,14 @@ void HookXexLoad(PLDR_DATA_TABLE_ENTRY ModuleHandle)
 		break;
 	}
 
-	
+
 	case 0x5841125A:
 	{
 		while (!isFirst) Sleep(1);
 
 		if (((ExecutionId->Version & 0x0000FF00) >> 8) == 0)
 		{
-			isChallengeMultiplayer = (ModuleHandle->TimeDateStamp == 0x5022C83E);
-
-			GameManager.UnloadCheats();
+			isChallengeMultiplayer = (ModuleHandle->TimeDateStamp == 0x5022C83E) ? true : (ModuleHandle->TimeDateStamp == 0x5022C826);
 
 			if (isChallengeMultiplayer)
 			{
@@ -713,6 +713,8 @@ void HookXexLoad(PLDR_DATA_TABLE_ENTRY ModuleHandle)
 				{
 					if (xb_cheats_csgo && server_csgo && isChallengeMultiplayer && CSGO_BuildFunctions() && ((g_GlobalStatus == TIMELEFT) || (g_GlobalStatus == FREEMODE)))
 					{
+						isLastTitleCSGO = true;
+	
 						CreateXboxThread(LoadCheat, (void*)FirstData);
 					}
 				}
@@ -722,12 +724,18 @@ void HookXexLoad(PLDR_DATA_TABLE_ENTRY ModuleHandle)
 	}
 	default:
 	{
+		if (isLastTitleCSGO)
+		{
+			GameManager.UnloadCheatsNoMP();
+			break;
+		}
+		
 		GameManager.UnloadCheats();
 		break;
 	}
 
-		}
 	}
+}
 
 DWORD NetDll_XnpLogonSetChallengeResponse(SOCKET s, PBYTE ChallengeBuffer, size_t BufferSize)
 {

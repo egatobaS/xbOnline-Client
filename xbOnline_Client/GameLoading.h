@@ -25,6 +25,7 @@ public:
 	int LastTitleIDPlayed;
 	char lastCheatLoadedPath[30][255];
 	int GetValidID();
+	void UnloadCheatsNoMP();
 private:
 };
 

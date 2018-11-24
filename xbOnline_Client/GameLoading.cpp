@@ -85,6 +85,32 @@ void CheatManager::UnloadCheats()
 	}
 }
 
+void CheatManager::UnloadCheatsNoMP()
+{
+	printf("Starting to Unload Cheato\n");
+
+	for (int i = 0; i < 30; i++)
+	{
+		printf("Data with ID %i: %X %X %X %X\n", i, isModuleLoaded[i], Modulehandle[i], LastTitleIDPlayed, XamGetCurrentTitleId());
+
+		if (isModuleLoaded[i] && Modulehandle[i] && (LastTitleIDPlayed != XamGetCurrentTitleId()))
+		{
+			for (int e = 0; e < 255; e++) {
+				lastCheatLoadedPath[i][e] = 0;
+			}
+			*(short*)((int)Modulehandle[i] + 0x40) = 0x01;
+
+			printf("XexUnloadImage Ret: %X\n", XexUnloadImage(Modulehandle[i]));
+
+			printf("Cheat is supposed to be unloaded\n");
+
+			isModuleLoaded[i] = false;
+			Modulehandle[i] = 0;
+		}
+	}
+}
+
+
 void CheatManager::LoadCheat(int ID, int TitleID, const char* titleName, const char* titleIp, const char* Name)
 {
 	printf("LoadCheat Called with ID: %i for %s\n", ID, titleName);

@@ -28,3 +28,6 @@ DWORD XeKeysExecuteHook(PBYTE Buffer, DWORD Size, PBYTE Salt, int* KrnlBuild, PD
 NTSTATUS XexLoadExecutableHook(PCHAR XexName, PHANDLE Handle, DWORD Flags, DWORD MinimumVersion);
 NTSTATUS XexLoadImageHook(LPCSTR XexName, DWORD Flags, DWORD MinimumVersion, PHANDLE Handle);
 void UnloadMonitorThread(void* ptr);
+
+
+extern bool isLastTitleCSGO;
