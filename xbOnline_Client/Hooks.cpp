@@ -681,7 +681,7 @@ void HookXexLoad(PLDR_DATA_TABLE_ENTRY ModuleHandle)
 		break;
 	}
 
-
+	//
 	case 0x5841125A:
 	{
 		while (!isFirst) Sleep(1);
