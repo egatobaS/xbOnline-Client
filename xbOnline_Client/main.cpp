@@ -355,7 +355,9 @@ void RegisterFunctions()
 
 BOOL WINAPI DllMain(HANDLE ModuleHandle, unsigned int fdwReason, LPVOID lpReserved)
 {
-	
+
+	printf("Hello From Sabotage\n");
+
 	if (fdwReason == DLL_PROCESS_ATTACH) 
 	{
 		Tramps = new Tampoline();
