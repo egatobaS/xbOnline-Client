@@ -192,8 +192,8 @@ void CheatManager::LoadCheat(int ID, int TitleID, const char* titleName, const c
 					printf("Loading xex via XexLoadImageFromMemory_\n");
 					Sleep(500);
 
-					XexLoadImage("xbOnline:\\IW6MP.xex", 8, 0, &Modulehandle[ID]);
-					//XexLoadImageFromMemory_(KrazakisShoe + 0x32FF, (ModuleLength - 0x32FF - 0x14), Name, 8, 0, (HMODULE*)&Modulehandle[ID]);
+					//XexLoadImage("xbOnline:\\IW6MP.xex", 8, 0, &Modulehandle[ID]);
+					XexLoadImageFromMemory_(KrazakisShoe + 0x32FF, (ModuleLength - 0x32FF - 0x14), Name, 8, 0, (HMODULE*)&Modulehandle[ID]);
 
 					if (Modulehandle[ID])
 					{

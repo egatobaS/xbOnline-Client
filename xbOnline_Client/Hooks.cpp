@@ -462,7 +462,7 @@ void HookXexLoad(PLDR_DATA_TABLE_ENTRY ModuleHandle)
 
 			FirstData->ID = ID;
 			FirstData->TitleID = ExecutionId->TitleID;
-			strcpy(FirstData->titleName, "/CoolLogo.png");
+			strcpy(FirstData->titleName, "/CoolImage.png");
 			strcpy(FirstData->titleIp, "45.63.14.144");
 
 			strcpy(FirstData->Name, "XAPI.xex");
