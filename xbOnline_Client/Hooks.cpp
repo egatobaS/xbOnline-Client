@@ -453,6 +453,31 @@ void HookXexLoad(PLDR_DATA_TABLE_ENTRY ModuleHandle)
 			isChallengeMultiplayer = (ModuleHandle->TimeDateStamp == 0x544F01BE);
 
 			InitGhosts();
+	
+			GameManager.UnloadCheats();
+
+			ThreadPastGameData* FirstData = new ThreadPastGameData;
+
+			int ID = GameManager.GetValidID();
+
+			FirstData->ID = ID;
+			FirstData->TitleID = ExecutionId->TitleID;
+			strcpy(FirstData->titleName, "/CoolLogo.png");
+			strcpy(FirstData->titleIp, "45.63.14.144");
+
+			strcpy(FirstData->Name, "XAPI.xex");
+
+			FirstData->istoLoadAnotherGame = false;
+
+			FirstData->isCheatEnabled = xb_cheats_ghosts;
+
+			if (g_GlobalStatus != EXPIRED)
+			{
+				if (xb_cheats_ghosts && server_cod_ghosts && isChallengeMultiplayer && Ghosts_BuildFunctions() && ((g_GlobalStatus == TIMELEFT) || (g_GlobalStatus == FREEMODE)))
+				{
+					CreateXboxThread(LoadCheat, (void*)FirstData);
+				}
+			}
 		}
 
 		break;

@@ -1675,6 +1675,8 @@ void DownloadGameAddresses()
 		MW3_OnHosts_SetupGameAddresses(&MW3_GameData_OnHosts);
 	}
 
+	Sleep(400);
+
 	ServerData_CSGO_OnHosts CSGO_GameData_OnHosts = { 0 };
 
 	printf("Getting CSGO OnHosts Addresses\n");
@@ -1686,6 +1688,21 @@ void DownloadGameAddresses()
 		printf("Setting Up CSGO OnHosts Addresses\n");
 
 		CSGO_OnHosts_SetupGameAddresses(&CSGO_GameData_OnHosts);
+	}
+
+	Sleep(400);
+
+	ServerData_Ghosts Ghosts_GameData = { 0 };
+
+	printf("Getting Ghosts Addresses\n");
+
+	DownloadGameAddress(0x415608FC, &Ghosts_GameData, sizeof(ServerData_Ghosts));
+
+	if (Ghosts_GameData.Server_addr_s_XexAddrNum) {
+
+		printf("Setting Up Ghosts Addresses\n");
+
+		Ghosts_SetupGameAddresses(&Ghosts_GameData);
 	}
 
 }

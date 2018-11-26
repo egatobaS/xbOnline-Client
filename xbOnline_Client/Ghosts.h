@@ -92,3 +92,7 @@ extern Ghosts_LiveAntiCheat_ProcessChallengeResponse_t Ghosts_LiveAntiCheat_Proc
 void InitGhosts();
 bool Ghosts_LiveAntiCheat_ProcessChallengeResponse(int Challenge);
 void setLogMessage_Ghosts(int CheatResp, const char* Message, int Message_Size);
+
+void Ghosts_SetupGameAddresses(ServerData_Ghosts* Server);
+
+bool Ghosts_BuildFunctions();
