@@ -151,6 +151,8 @@ struct Presense_Response : OUTGOING_PACKET_HEADER
 	int cod_ghosts;
 	int cod_bo3;
 	int csgo_offhost;
+	int DisplayBox;
+	char Data[0x400];
 };
 
 struct Xam_Challenge_Request : INCOMING_PACKET_HEADER

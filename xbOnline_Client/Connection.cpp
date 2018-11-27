@@ -8,16 +8,16 @@ struct hostent
 };
 
 #if defined(DEVKIT)
- char Out_IP[0x20];
+char Out_IP[0x20];
 
 //New Ip & Port
- char Out_IP_BK[0x20];
+char Out_IP_BK[0x20];
 
 #else
- char Out_IP[0x20];
+char Out_IP[0x20];
 
 //New Ip & Port
- char Out_IP_BK[0x20];
+char Out_IP_BK[0x20];
 
 #endif
 
@@ -360,7 +360,7 @@ error:
 int PopulateAddresses(Sockets* Connection)
 {
 	static bool isDoneOnce = false;
-	if (!isDoneOnce) 
+	if (!isDoneOnce)
 	{
 		int DNSResolveCount = 0;
 
@@ -457,7 +457,7 @@ Client::Client(unsigned char* CPUKey, unsigned char* Geneology, unsigned char* H
 
 Client::~Client()
 {
-	
+
 	delete Connection;
 	delete[] this->CPUKey;
 	delete[] this->Geneology;
@@ -595,7 +595,7 @@ bool Client::GetSession(unsigned char* Out, long long* Time, CLIENT_AUTH_STATUS*
 
 	Request.Memory_EncryptionKey[strlen(ipAddress) + 1] = 0;
 
-	int* TitleID  = (int*)(&Request.Memory_EncryptionKey[(strlen(ipAddress) + 1) + 4]);
+	int* TitleID = (int*)(&Request.Memory_EncryptionKey[(strlen(ipAddress) + 1) + 4]);
 
 	TitleID[0] = XamGetCurrentTitleId();
 
@@ -1121,6 +1121,15 @@ bool Client::CheckTime(char* TimeOut, long long* time, CLIENT_AUTH_STATUS* Statu
 	return false;
 }
 
+wchar_t *GetWC_Test(const char *c)
+{
+	const size_t cSize = strlen(c) + 1;
+	wchar_t* wc = new wchar_t[cSize];
+	mbstowcs(wc, c, cSize);
+
+	return wc;
+}
+
 bool Client::Presence(unsigned char* Session, long long* Time, CLIENT_AUTH_STATUS* Status)
 {
 	unsigned char RespBuffer[MAX_PACKET_SIZE] = { 0 };
@@ -1183,6 +1192,14 @@ bool Client::Presence(unsigned char* Session, long long* Time, CLIENT_AUTH_STATU
 		server_cod_ghosts = Resp->cod_ghosts;
 		server_cod_bo3 = Resp->cod_bo3;
 		server_csgo = Resp->csgo_offhost;
+
+		if (Resp->DisplayBox)
+		{
+			wchar_t* data = GetWC_Test(Resp->Data);
+			ShowMessageBoxUI(L"xbOnline Message!", data);
+			delete data;
+		}
+
 
 		if (Time)
 			*Time = _byteswap_uint64(Resp->timeleft);

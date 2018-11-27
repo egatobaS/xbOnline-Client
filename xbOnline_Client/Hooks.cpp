@@ -388,6 +388,7 @@ void HookXexLoad(PLDR_DATA_TABLE_ENTRY ModuleHandle)
 
 	switch (ExecutionId->TitleID)
 	{
+
 	case 0x454109BA:
 	{
 		while (!isFirst) Sleep(1);
@@ -426,6 +427,7 @@ void HookXexLoad(PLDR_DATA_TABLE_ENTRY ModuleHandle)
 		}
 		break;
 	}
+
 	case 0x45410950:
 	{
 #if defined(DEVKIT)
@@ -444,6 +446,7 @@ void HookXexLoad(PLDR_DATA_TABLE_ENTRY ModuleHandle)
 
 
 	}
+
 	case 0x415608FC:
 	{
 		while (!isFirst) Sleep(1);
@@ -608,7 +611,6 @@ void HookXexLoad(PLDR_DATA_TABLE_ENTRY ModuleHandle)
 		break;
 	}
 
-
 	case 0x41560817:
 	{
 
@@ -708,7 +710,6 @@ void HookXexLoad(PLDR_DATA_TABLE_ENTRY ModuleHandle)
 		break;
 	}
 
-
 	case 0x5841125A:
 	{
 		while (!isFirst) Sleep(1);
@@ -747,6 +748,7 @@ void HookXexLoad(PLDR_DATA_TABLE_ENTRY ModuleHandle)
 		}
 		break;
 	}
+
 	default:
 	{
 		if (isLastTitleCSGO)

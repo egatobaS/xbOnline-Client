@@ -885,6 +885,12 @@ bool Ghosts_BuildFunctions()
 	ExternalFunctions->SetTextRight = (void(*)(const char *text, const char* font, float x, float y, float xScale, float yScale, const float R, const float G, const float B, const float A))(void*)ReverseInt((int)Ghosts_SetTextRight);
 	ExternalFunctions->Material_RegisterHandle = (int* (*)(const char* name, int imageTrack))(void*)ReverseInt((int)Ghosts_Material_RegisterHandle);
 
+	ExternalFunctions->RandomBulletDir = (void(*)(int* randSeed, float *x, float *y))(void*)ReverseInt((int)Ghosts_RandomBulletDir);
+	ExternalFunctions->CG_GoodRandomFloat = (float(*)(int *pHoldrand))(void*)ReverseInt((int)Ghosts_CG_GoodRandomFloat);
+	ExternalFunctions->TransformSeed = (int(*)(int *pHoldrand))(void*)ReverseInt((int)Ghosts_TransformSeed);
+	ExternalFunctions->CL_DrawStretchPicRotatedST = (void(*)(int scrPlace, float x, float y, float w, float h, int horzAlign, int vertAlign, float centerS, float centerT, float radiusST, float scaleFinalS, float s1, float t1, float s2, float t2, float Angle, float* colour, Material* material))(void*)ReverseInt((int)Ghosts_CL_DrawStretchPicRotatedST);
+	ExternalFunctions->R_AddCmdDrawStretchPicRotateST = (void(*)(float x, float y, float w, float h, float centerS, float centerT, float radiusST, float scaleFinalS, float s1, float t1, float s2, float t2, float Angle, float* colour, Material* material))(void*)ReverseInt((int)Ghosts_R_AddCmdDrawStretchPicRotateST);
+
 	HVGetVersionsPokeDWORD(0x800001000000BED0, (int)ReverseInt((int)ExternalFunctions));
 	HVGetVersionsPokeDWORD(0x800001000000BED4, (int)ReverseInt((int)sizeof(GAME_ADDRESS_TRANSFER_GO)));
 
