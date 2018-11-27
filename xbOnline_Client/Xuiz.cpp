@@ -479,7 +479,7 @@ bool xuiz_s::xam_s::initElements(HXUIOBJ hObj, LPCWSTR szID) {
 			// Just append the wstring.
 
 			// added lorem just to showcase the scroller.
-			changes += L"[+] Added Ghosts Cheats!\n\n\n";
+			changes += L"[+] Added Preparation for Ghosts Cheats!\n[+] Added Atomatic Banning on Chargeback\n\n";
 			changes += L"\n\n\nxbOnline #1 Leading Stealth Service - Check and Purchase new time on https://xbOnline.live\n\n\n\nVisit Our Forums! - https://xbonline.live/forums";
 
 			// apply the string to element
