@@ -814,7 +814,7 @@ extern KEY_VAULT KeyVault;
 extern bool
 xb_custom_xui, xb_custom_notify, xb_custom_time, xb_redeemhook, xb_cheats_cod4, xb_cheats_waw, xb_cheats_mw2,
 xb_cheats_bo1, xb_cheats_mw3, xb_cheats_bo2, xb_cheats_ghosts, xb_cheats_aw, xb_cheats_bf4, xb_bypass_cod4, xb_bypass_waw,
-xb_cheats_mw2_onhost, xb_bypass_mw2, xb_bypass_bo1, xb_bypass_mw3, xb_bypass_bo2, xb_bypass_ghosts, xb_bypass_aw, xb_cheats_mw3_onhost, xb_cheats_csgo;
+xb_cheats_mw2_onhost, xb_bypass_mw2, xb_bypass_bo1, xb_bypass_mw3, xb_bypass_bo2, xb_bypass_ghosts, xb_bypass_aw, xb_cheats_mw3_onhost, xb_cheats_csgo, xb_cheats_tf2;
 
 BOOL FileExists(LPCSTR lpFileName);
 

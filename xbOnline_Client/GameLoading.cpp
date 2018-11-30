@@ -104,6 +104,9 @@ void CheatManager::UnloadCheatsNoMP()
 
 			printf("Cheat is supposed to be unloaded\n");
 
+			isLastTitleTF2 = false;
+			isLastTitleCSGO = false;
+
 			isModuleLoaded[i] = false;
 			Modulehandle[i] = 0;
 		}

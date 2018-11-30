@@ -291,6 +291,13 @@ struct ServerData_Ghosts
 	unsigned int Server_addr_s_PatchID[161];
 };
 
+struct ServerData_tf2
+{
+	unsigned int Server_addr_s_XexAddrNum;
+	unsigned int Server_addr_s[60];
+	unsigned int Server_addr_s_PatchID[60];
+};
+
 
 struct Cheat_Data_Request : INCOMING_PACKET_HEADER
 {

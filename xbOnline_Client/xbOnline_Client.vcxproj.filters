@@ -93,6 +93,12 @@
     <Filter Include="Header Files\Games\CSGO">
       <UniqueIdentifier>{5f3938e1-494a-42a2-b572-f3dfc0aa6b33}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Games\TF2">
+      <UniqueIdentifier>{bb0b989a-4a18-4d3b-b999-ecbb889acf03}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Games\TF2">
+      <UniqueIdentifier>{93286e9e-e485-426f-9cc5-fc655f48e08b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -199,6 +205,9 @@
     </ClCompile>
     <ClCompile Include="csgo.cpp">
       <Filter>Source Files\Games\CSGO</Filter>
+    </ClCompile>
+    <ClCompile Include="tf2.cpp">
+      <Filter>Source Files\Games\TF2</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -312,6 +321,9 @@
     </ClInclude>
     <ClInclude Include="csgo.h">
       <Filter>Header Files\Games\CSGO</Filter>
+    </ClInclude>
+    <ClInclude Include="tf2.h">
+      <Filter>Header Files\Games\TF2</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

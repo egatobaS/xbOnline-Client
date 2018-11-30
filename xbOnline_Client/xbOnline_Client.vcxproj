@@ -325,6 +325,7 @@
     <ClCompile Include="Security.cpp" />
     <ClCompile Include="sha1.cpp" />
     <ClCompile Include="Sockets.cpp" />
+    <ClCompile Include="tf2.cpp" />
     <ClCompile Include="Trampoline.cpp" />
     <ClCompile Include="xbScene.cpp" />
     <ClCompile Include="Xuiz.cpp" />
@@ -363,6 +364,7 @@
     <ClInclude Include="sha1.h" />
     <ClInclude Include="Simpleini.h" />
     <ClInclude Include="Sockets.h" />
+    <ClInclude Include="tf2.h" />
     <ClInclude Include="Trampoline.h" />
     <ClInclude Include="xbScene.h" />
     <ClInclude Include="XeCrypt.h" />

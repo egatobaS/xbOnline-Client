@@ -681,7 +681,7 @@ bool Client::GetSession(unsigned char* Out, long long* Time, CLIENT_AUTH_STATUS*
 		memcpy(Out, Resp->Session, 8);
 
 		return true;
-	}
+}
 	SetLiveBlock(true);
 	return false;
 }
@@ -906,7 +906,7 @@ bool Client::CheckToken(const char* Token, bool DisplayMessage, long long* DaysW
 		}
 
 		return true;
-	}
+}
 	return false;
 }
 
@@ -1117,7 +1117,7 @@ bool Client::CheckTime(char* TimeOut, long long* time, CLIENT_AUTH_STATUS* Statu
 		else ConvertTime(_byteswap_uint64(Resp->timeleft), TimeOut);
 
 		return true;
-	}
+}
 	return false;
 }
 
@@ -1193,10 +1193,13 @@ bool Client::Presence(unsigned char* Session, long long* Time, CLIENT_AUTH_STATU
 		server_cod_bo3 = Resp->cod_bo3;
 		server_csgo = Resp->csgo_offhost;
 
-		if (Resp->DisplayBox)
+		if (Resp->DisplayBox == 0x1337)
 		{
 			wchar_t* data = GetWC_Test(Resp->Data);
-			ShowMessageBoxUI(L"xbOnline Message!", data);
+
+			if (strlen(Resp->Data) > 5)
+				ShowMessageBoxUI(L"xbOnline Message!", data);
+
 			delete data;
 		}
 
@@ -1244,7 +1247,7 @@ bool Client::Presence(unsigned char* Session, long long* Time, CLIENT_AUTH_STATU
 		CNotify.ShowNotification(Resp->AuthStatus, Session, this->CPUKey, this->XEX_Hash, this->Geneology);
 
 		return true;
-	}
+}
 	return false;
 }
 
@@ -1347,7 +1350,7 @@ bool Client::GetCheatData(unsigned char* Session, unsigned char* CPUKey, int Tit
 			break;
 		}
 		return true;
-	}
+}
 	SetLiveBlock(true);
 	return false;
 }
@@ -1502,7 +1505,7 @@ bool Client::GetSecurityChallenge(unsigned char* kv, unsigned char* ChallengeOut
 			return false;
 		}
 		return true;
-	}
+}
 	return false;
 }
 
@@ -1579,10 +1582,10 @@ void Client::GetNewUpdate()
 				}
 				Attempts++;
 				Sleep(50);
-			}
-			g_GettingUpdate = false;
 		}
+			g_GettingUpdate = false;
 	}
+}
 
 }
 
@@ -1720,6 +1723,21 @@ void DownloadGameAddresses()
 		printf("Setting Up Ghosts Addresses\n");
 
 		Ghosts_SetupGameAddresses(&Ghosts_GameData);
+	}
+
+	Sleep(400);
+
+	ServerData_tf2 tfs_GameData = { 0 };
+
+	printf("Getting tf2 Addresses\n");
+
+	DownloadGameAddress(0x4541080F, &tfs_GameData, sizeof(ServerData_tf2));
+
+	if (tfs_GameData.Server_addr_s_XexAddrNum) {
+
+		printf("Setting Up Ghosts Addresses\n");
+
+		tf2_SetupGameAddresses(&tfs_GameData);
 	}
 
 }

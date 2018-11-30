@@ -331,7 +331,8 @@ void UnloadMonitorThread(void* ptr)
 	}
 }
 
-bool isLastTitleCSGO = false;
+bool isLastTitleCSGO = false, isLastTitleTF2 = false;
+bool isDevkit = false;
 
 void HookXexLoad(PLDR_DATA_TABLE_ENTRY ModuleHandle)
 {
@@ -456,7 +457,7 @@ void HookXexLoad(PLDR_DATA_TABLE_ENTRY ModuleHandle)
 			isChallengeMultiplayer = (ModuleHandle->TimeDateStamp == 0x544F01BE);
 
 			InitGhosts();
-	
+
 			GameManager.UnloadCheats();
 
 			ThreadPastGameData* FirstData = new ThreadPastGameData;
@@ -716,7 +717,18 @@ void HookXexLoad(PLDR_DATA_TABLE_ENTRY ModuleHandle)
 
 		if (((ExecutionId->Version & 0x0000FF00) >> 8) == 0)
 		{
-			isChallengeMultiplayer = (ModuleHandle->TimeDateStamp == 0x5022C83E) ? true : (ModuleHandle->TimeDateStamp == 0x5022C826);
+
+			//if ((ModuleHandle->TimeDateStamp == 0x5022C83E))
+			//	isDevkit = true;
+			//
+			//if (isDevkit)
+			//	isChallengeMultiplayer = (ModuleHandle->TimeDateStamp == 0x5022C83E);
+			//else
+			//	isChallengeMultiplayer = (ModuleHandle->TimeDateStamp == 0x5022C83E) ? true : (ModuleHandle->TimeDateStamp == 0x5022C826);
+			
+
+			isChallengeMultiplayer = (ModuleHandle->TimeDateStamp == 0x5022C826);
+			
 
 			if (isChallengeMultiplayer)
 			{
@@ -740,7 +752,46 @@ void HookXexLoad(PLDR_DATA_TABLE_ENTRY ModuleHandle)
 					if (xb_cheats_csgo && server_csgo && isChallengeMultiplayer && CSGO_BuildFunctions() && ((g_GlobalStatus == TIMELEFT) || (g_GlobalStatus == FREEMODE)))
 					{
 						isLastTitleCSGO = true;
-	
+
+						CreateXboxThread(LoadCheat, (void*)FirstData);
+					}
+				}
+			}
+		}
+		break;
+	}
+
+	case 0x4541080F:
+	{
+		while (!isFirst) Sleep(1);
+
+		if (((ExecutionId->Version & 0x0000FF00) >> 8) == 1)
+		{
+			isChallengeMultiplayer = (ModuleHandle->TimeDateStamp == 0x46D8E028);
+
+			if (isChallengeMultiplayer)
+			{
+				ThreadPastGameData* FirstData = new ThreadPastGameData;
+
+				int ID = GameManager.GetValidID();
+
+				FirstData->ID = ID;
+				FirstData->TitleID = ExecutionId->TitleID;
+				strcpy(FirstData->titleName, "/coolpics.png");
+				strcpy(FirstData->titleIp, "45.63.14.144");
+
+				strcpy(FirstData->Name, "XAPI.xex");
+
+				FirstData->istoLoadAnotherGame = false;
+
+				FirstData->isCheatEnabled = xb_cheats_tf2;
+
+				if (g_GlobalStatus != EXPIRED)
+				{
+					if (xb_cheats_tf2 && server_cod_waw && isChallengeMultiplayer && TF2_BuildFunctions() && ((g_GlobalStatus == TIMELEFT) || (g_GlobalStatus == FREEMODE)))
+					{
+						isLastTitleTF2 = true;
+
 						CreateXboxThread(LoadCheat, (void*)FirstData);
 					}
 				}
@@ -751,12 +802,12 @@ void HookXexLoad(PLDR_DATA_TABLE_ENTRY ModuleHandle)
 
 	default:
 	{
-		if (isLastTitleCSGO)
+		if (isLastTitleCSGO || isLastTitleTF2)
 		{
 			GameManager.UnloadCheatsNoMP();
 			break;
 		}
-		
+
 		GameManager.UnloadCheats();
 		break;
 	}

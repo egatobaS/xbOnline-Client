@@ -51,6 +51,7 @@
 #include "BO1.h"
 #include "MW3_OnHost.h"
 #include "csgo.h"
+#include "tf2.h"
 
 #include "AntiCheat.h"
 #include"xbScene.h"

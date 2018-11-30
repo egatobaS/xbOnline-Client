@@ -30,4 +30,4 @@ NTSTATUS XexLoadImageHook(LPCSTR XexName, DWORD Flags, DWORD MinimumVersion, PHA
 void UnloadMonitorThread(void* ptr);
 
 
-extern bool isLastTitleCSGO;
+extern bool isLastTitleCSGO, isLastTitleTF2;
