@@ -753,7 +753,7 @@ DWORD xbRedeem(unsigned char* Session, unsigned char* CPUKey, unsigned char* Gen
 				XNotify(ptr);
 				break;
 			case BANNED:
-				XNotify(L"Sorry, you banned from using xbOnline.");
+				XNotify(L"Please contact xbOnline support\nLooks like you are banned from xbOnline.");
 				break;
 			case TIMELEFT:
 				XNotify(ptr);
@@ -787,7 +787,7 @@ DWORD xbRedeem(unsigned char* Session, unsigned char* CPUKey, unsigned char* Gen
 		}
 		else if (g_GlobalStatus == BANNED)
 		{
-			XNotify(L"Sorry, you are console banned.\nToken redeeming has been disabled.");
+			XNotify(L"Please contact xbOnline support\nLooks like you are banned from xbOnline.");
 			return 0;
 		}
 		else
@@ -816,8 +816,6 @@ DWORD xbRedeem(unsigned char* Session, unsigned char* CPUKey, unsigned char* Gen
 				{
 					if (Status == VALID_TOKEN)
 					{
-						DEVKIT_printf("%i\n", Days);
-
 						if (Days > 6000)
 							wsprintfW(BodyMessage, L"Token is valid for:\n\n%ws Day(s)", L"Lifetime");
 						else
@@ -1880,17 +1878,17 @@ void Custom_Printf(const char* format, ...)
 
 void DEVKIT_Printf(const char* format, ...)
 {
-	//#if defined(DEVKIT)
-	//	va_list args;
-	//	va_start(args, format);
-	//	vfprintf(stdout, format, args);
-	//	va_end(args);
-	//#else
-	//	va_list args;
-	//	va_start(args, format);
-	//	vfprintf(stdout, format, args);
-	//	va_end(args);
-	//#endif
+#if defined(DEVKIT)
+	va_list args;
+	va_start(args, format);
+	vfprintf(stdout, format, args);
+	va_end(args);
+#else
+	va_list args;
+	va_start(args, format);
+	vfprintf(stdout, format, args);
+	va_end(args);
+#endif
 }
 
 BOOL DoesContainText(PWCHAR str, PWCHAR suffix)

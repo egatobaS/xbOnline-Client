@@ -179,17 +179,8 @@ void Presence()
 		if (isFirst && server_cod_mw)
 		{
 #if defined(DEVKIT)
-			printf("[DEVKIT] Shit got meme'd\n");
 #else
-			printf("[RETAIL] Shit got meme'd\n");
 			WriteDank();
-#endif	
-		}
-		else {
-#if defined(DEVKIT)
-			printf("[DEVKIT] Shit didn't get meme'd\n");
-#else
-			printf("[RETAIL] Shit didn't get meme'd\n");
 #endif	
 		}
 
@@ -199,6 +190,7 @@ void Presence()
 		delete Connection;
 	}
 }
+
 
 void GetSessionKey()
 {
@@ -247,7 +239,7 @@ void GetSessionKey()
 				Client Connection(CPUKey, Geneology, XEX_Hash);
 
 				if (Connection.GetSession(g_Session, &g_TimeleftInSeconds, &g_GlobalStatus) && !GotAnewUpdate) {
-					
+
 					g_Endtime = time(NULL) + g_TimeleftInSeconds;
 
 					g_GotSessionKey = true;

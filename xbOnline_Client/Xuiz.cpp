@@ -626,8 +626,6 @@ void xuiz_s::xam_s::HudDisplay()
 			long long minutes = (timeleft / 60) % 60;
 			long long seconds = timeleft % 60;
 
-			DEVKIT_printf("%i\n", days);
-
 			if (days > 6000) {
 				swprintf(TimeWChar, L"Lifetime!");
 				break;

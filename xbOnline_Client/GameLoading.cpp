@@ -125,7 +125,7 @@ void CheatManager::LoadCheat(int ID, int TitleID, const char* titleName, const c
 
 		if (isModuleLoaded[i] && Modulehandle[i] && !strcmp(titleName, &lastCheatLoadedPath[i][0])) {
 
-			DEVKIT_printf("LoadCheat Xex Unloaded and waiting to reload\n");
+			printf("LoadCheat Xex Unloaded and waiting to reload\n");
 
 			for (int e = 0; e < 255; e++) {
 				lastCheatLoadedPath[i][e] = 0;

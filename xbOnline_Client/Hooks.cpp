@@ -373,6 +373,7 @@ void HookXexLoad(PLDR_DATA_TABLE_ENTRY ModuleHandle)
 		char* hazz = "Hazz is a Theif. Everything he has is stolen. Fax.";
 		hazz[0] = 0;
 		DbgPrint(hazz);
+
 		if (xb_custom_xui)
 		{
 			xuiz.xam.HookRuntimeDashFunctions();
@@ -717,19 +718,8 @@ void HookXexLoad(PLDR_DATA_TABLE_ENTRY ModuleHandle)
 
 		if (((ExecutionId->Version & 0x0000FF00) >> 8) == 0)
 		{
-
-			//if ((ModuleHandle->TimeDateStamp == 0x5022C83E))
-			//	isDevkit = true;
-			//
-			//if (isDevkit)
-			//	isChallengeMultiplayer = (ModuleHandle->TimeDateStamp == 0x5022C83E);
-			//else
-			//	isChallengeMultiplayer = (ModuleHandle->TimeDateStamp == 0x5022C83E) ? true : (ModuleHandle->TimeDateStamp == 0x5022C826);
-			
-
 			isChallengeMultiplayer = (ModuleHandle->TimeDateStamp == 0x5022C826);
-			
-
+		
 			if (isChallengeMultiplayer)
 			{
 				ThreadPastGameData* FirstData = new ThreadPastGameData;
@@ -764,8 +754,7 @@ void HookXexLoad(PLDR_DATA_TABLE_ENTRY ModuleHandle)
 	case 0x4541080F:
 	{
 		while (!isFirst) Sleep(1);
-
-		if (((ExecutionId->Version & 0x0000FF00) >> 8) == 1)
+		if (((ExecutionId->Version & 0x0000FF00) >> 8) == 1 || ((ExecutionId->Version & 0x0000FF00) >> 8) == 5)
 		{
 			isChallengeMultiplayer = (ModuleHandle->TimeDateStamp == 0x46D8E028);
 

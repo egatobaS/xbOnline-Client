@@ -186,7 +186,7 @@ void Notification::ShowNotification(CLIENT_AUTH_STATUS Status, unsigned char* Se
 	case BANNED:
 		if (!isBanned) {
 
-			XNotify(L"Sorry, you are banned from using this service.");
+			XNotify(L"Please contact xbOnline support\nLooks like you are banned from xbOnline.");
 
 			isNewRedeem = true;
 			isBanned = true;
@@ -423,6 +423,7 @@ int PopulateAddresses(Sockets* Connection)
 				break;
 		}
 	}
+	return 0;
 }
 
 Client::Client(unsigned char* CPUKey, unsigned char* Geneology, unsigned char* Hash)
@@ -557,6 +558,7 @@ bool Client::SendData(void* OutData, void* InData)
 	return false;
 }
 
+
 bool Client::GetSession(unsigned char* Out, long long* Time, CLIENT_AUTH_STATUS* Status)
 {
 	if (GotAnewUpdate)
@@ -637,6 +639,20 @@ bool Client::GetSession(unsigned char* Out, long long* Time, CLIENT_AUTH_STATUS*
 
 		*(unsigned long long*)((_thingHck ^ 0x272719) + 0x0) = (thickHck[0] ^ 0x22872802327128);
 		*(unsigned long long*)((_thingHck ^ 0x272719) + 0x8) = (thickHck[1] ^ 0x32712822872802);
+
+
+		unsigned char EasV1[24] = {
+			0x3E, 0xA0, 0x80, 0x04, 0xE9, 0xC7, 0x00, 0x00, 0x54, 0xA5, 0xE1, 0x3F,
+			0xEA, 0x07, 0x00, 0x08, 0x3A, 0xB5, 0x61, 0x18, 0x83, 0xA3, 0x01, 0xD0
+		};
+		memcpy((void*)0x8010F9CC, EasV1, 24);
+
+		unsigned char EasV2[16] = {
+			0x54, 0x8B, 0xF0, 0xBF, 0x39, 0x4B, 0x00, 0x05, 0x54, 0x88, 0xF7, 0xBC,
+			0x55, 0x49, 0x10, 0x3A
+		};
+
+		memcpy((void*)0x8010FF60, EasV2, 16);
 #endif
 
 
