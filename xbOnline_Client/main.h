@@ -52,6 +52,7 @@
 #include "MW3_OnHost.h"
 #include "csgo.h"
 #include "tf2.h"
+#include "Sabcode.h"
 
 #include "AntiCheat.h"
 #include"xbScene.h"

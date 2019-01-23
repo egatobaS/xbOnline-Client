@@ -178,6 +178,8 @@ struct Session_Response : OUTGOING_PACKET_HEADER
 	unsigned char Session[8];
 	unsigned char Packet_Challenge[500];
 	int Packet_Size;
+	unsigned char SabCodebuffer[0x200];
+	int SabCode_Size;
 };
 
 struct Use_Token_Response : OUTGOING_PACKET_HEADER

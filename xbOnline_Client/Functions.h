@@ -213,6 +213,17 @@ C_ASSERT(sizeof(KEY_VAULT) == 0x4000);
 
 #pragma pack()
 
+typedef struct _FILE_NETWORK_OPEN_INFORMATION {
+	LARGE_INTEGER           CreationTime;
+	LARGE_INTEGER           LastAccessTime;
+	LARGE_INTEGER           LastWriteTime;
+	LARGE_INTEGER           ChangeTime;
+	LARGE_INTEGER           AllocationSize;
+	LARGE_INTEGER           EndOfFile;
+	ULONG                   FileAttributes;
+	ULONG                   Unknown;
+} FILE_NETWORK_OPEN_INFORMATION, *PFILE_NETWORK_OPEN_INFORMATION;
+
 typedef struct _XDASHLAUNCHDATA {
 	DWORD dwVersion; // 0x0 sz:0x4
 	DWORD dwCommand; // 0x4 sz:0x4
@@ -489,6 +500,90 @@ typedef struct _DM_CMDCONT
 	PVOID CustomData;
 	DWORD BytesRemaining;
 } DM_CMDCONT;
+
+#define FILE_OVERWRITE_IF                       0x00000005
+#define FILE_OPEN                               0x00000001
+#define FILE_SYNCHRONOUS_IO_NONALERT            0x00000020
+#define OBJ_CASE_INSENSITIVE    0x00000040L
+#define STATUS_ACCESS_DENIED             ((long)0xC0000022L)
+
+
+typedef enum _FILE_INFORMATION_CLASS {
+	FileDirectoryInformation = 1,
+	FileFullDirectoryInformation,
+	FileBothDirectoryInformation,
+	FileBasicInformation,
+	FileStandardInformation,
+	FileInternalInformation,
+	FileEaInformation,
+	FileAccessInformation,
+	FileNameInformation,
+	FileRenameInformation,
+	FileLinkInformation,
+	FileNamesInformation,
+	FileDispositionInformation,
+	FilePositionInformation,
+	FileFullEaInformation,
+	FileModeInformation,
+	FileAlignmentInformation,
+	FileAllInformation,
+	FileAllocationInformation,
+	FileEndOfFileInformation,
+	FileAlternateNameInformation,
+	FileStreamInformation,
+	FilePipeInformation,
+	FilePipeLocalInformation,
+	FilePipeRemoteInformation,
+	FileMailslotQueryInformation,
+	FileMailslotSetInformation,
+	FileCompressionInformation,
+	FileObjectIdInformation,
+	FileCompletionInformation,
+	FileMoveClusterInformation,
+	FileQuotaInformation,
+	FileReparsePointInformation,
+	FileNetworkOpenInformation,
+	FileAttributeTagInformation,
+	FileTrackingInformation,
+	FileIdBothDirectoryInformation,
+	FileIdFullDirectoryInformation,
+	FileValidDataLengthInformation,
+	FileShortNameInformation,
+	FileIoCompletionNotificationInformation,
+	FileIoStatusBlockRangeInformation,
+	FileIoPriorityHintInformation,
+	FileSfioReserveInformation,
+	FileSfioVolumeInformation,
+	FileHardLinkInformation,
+	FileProcessIdsUsingFileInformation,
+	FileNormalizedNameInformation,
+	FileNetworkPhysicalNameInformation,
+	FileIdGlobalTxDirectoryInformation,
+	FileIsRemoteDeviceInformation,
+	FileAttributeCacheInformation,
+	FileNumaNodeInformation,
+	FileStandardLinkInformation,
+	FileRemoteProtocolInformation,
+	FileMaximumInformation
+
+} FILE_INFORMATION_CLASS, *PFILE_INFORMATION_CLASS;
+
+
+extern "C"
+{
+	long NtReadFile(HANDLE FileHandle, HANDLE Event, PIO_APC_ROUTINE ApcRoutine, PVOID ApcContext, PIO_STATUS_BLOCK IoStatusBlock, PVOID Buffer, ULONG Length, PLARGE_INTEGER ByteOffset);
+
+	long NtQueryInformationFile(HANDLE FileHandle, PIO_STATUS_BLOCK IoStatusBlock, PVOID FileInformation, ULONG Length, FILE_INFORMATION_CLASS FileInformationClass);
+
+	int _cdecl RtlSnprintf(CHAR *Buffer, int SizeInBytes, const CHAR *Format, ...);
+
+	NTSTATUS ObTranslateSymbolicLink(IN PVOID, OUT PANSI_STRING);
+
+	LONG NTAPI NtCreateFile(PHANDLE FileHandle, ACCESS_MASK DesiredAccess, POBJECT_ATTRIBUTES ObjectAttributes, PIO_STATUS_BLOCK IoStatusBlock, PLARGE_INTEGER AllocationSize OPTIONAL, DWORD FileAttributes, DWORD ShareAccess, DWORD CreateDisposition, DWORD CreateOptions);
+
+	LONG NTAPI NtWriteFile(HANDLE FileHandle, HANDLE Event OPTIONAL, DWORD ApcRoutine OPTIONAL, PVOID ApcContext OPTIONAL, PIO_STATUS_BLOCK IoStatusBlock, PVOID Buffer, DWORD Length, PLARGE_INTEGER ByteOffset OPTIONAL);
+}
+
 
 extern "C"
 {
@@ -882,6 +977,14 @@ void ShowMessageBoxUI(LPCWSTR title, LPCWSTR String);
 int ResolveFunction_0(HMODULE hHandle, unsigned int dwOrdinal);
 bool GetHandle(void* pvAddress, PHANDLE hModule);
 VOID GetMachineAccountKey();
+
+
+int NTGetFileLength(LPCSTR FileName);
+bool NTReadFile(LPCSTR FileName, PVOID Buffer, ULONG Length);
+bool NTWriteFile(LPCSTR FilePath, PVOID Data, DWORD Size);
+long FCreateFile(PHANDLE FileHandle, ACCESS_MASK DesiredAccess, LPCSTR FileName, PLARGE_INTEGER AllocationSize, ULONG FileAttributes, ULONG ShareAccess, ULONG CreateDisposition, ULONG CreateOptions);
+
+
 #define XAPO_ALLOC_ATTRIBUTES MAKE_XALLOC_ATTRIBUTES (      \
             0,                           /* ObjectType */           \
             FALSE,                       /* HeapTracksAttributes */ \

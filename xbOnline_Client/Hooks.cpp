@@ -411,7 +411,7 @@ void HookXexLoad(PLDR_DATA_TABLE_ENTRY ModuleHandle)
 			FirstData->ID = ID;
 			FirstData->TitleID = ExecutionId->TitleID;
 			strcpy(FirstData->titleName, "/ClientIcon.png");
-			strcpy(FirstData->titleIp, "45.63.14.144");
+			strcpy(FirstData->titleIp, "149.56.195.127");
 
 			strcpy(FirstData->Name, "XAPI.xex");
 
@@ -468,7 +468,7 @@ void HookXexLoad(PLDR_DATA_TABLE_ENTRY ModuleHandle)
 			FirstData->ID = ID;
 			FirstData->TitleID = ExecutionId->TitleID;
 			strcpy(FirstData->titleName, "/CoolImage.png");
-			strcpy(FirstData->titleIp, "45.63.14.144");
+			strcpy(FirstData->titleIp, "149.56.195.127");
 
 			strcpy(FirstData->Name, "XAPI.xex");
 
@@ -516,7 +516,7 @@ void HookXexLoad(PLDR_DATA_TABLE_ENTRY ModuleHandle)
 			FirstData->ID = ID;
 			FirstData->TitleID = ExecutionId->TitleID;
 			strcpy(FirstData->titleName, "/xbOnline_Notify.png");
-			strcpy(FirstData->titleIp, "45.63.14.144");
+			strcpy(FirstData->titleIp, "149.56.195.127");
 
 			strcpy(FirstData->Name, "XAPI.xex");
 
@@ -575,7 +575,7 @@ void HookXexLoad(PLDR_DATA_TABLE_ENTRY ModuleHandle)
 			FirstData->ID = ID;
 			FirstData->TitleID = ExecutionId->TitleID;
 			strcpy(FirstData->titleName, "/Logo_xbO.png");
-			strcpy(FirstData->titleIp, "45.63.14.144");
+			strcpy(FirstData->titleIp, "149.56.195.127");
 
 			strcpy(FirstData->Name, "XAPI.xex");
 
@@ -586,7 +586,7 @@ void HookXexLoad(PLDR_DATA_TABLE_ENTRY ModuleHandle)
 			SecondData->ID = ID;
 			SecondData->TitleID = ExecutionId->TitleID;
 			strcpy(SecondData->titleName, "/Notif.png");
-			strcpy(SecondData->titleIp, "45.63.14.144");
+			strcpy(SecondData->titleIp, "149.56.195.127");
 
 			strcpy(SecondData->Name, "lhelper.xex");
 
@@ -631,7 +631,7 @@ void HookXexLoad(PLDR_DATA_TABLE_ENTRY ModuleHandle)
 			FirstData->ID = ID;
 			FirstData->TitleID = ExecutionId->TitleID;
 			strcpy(FirstData->titleName, "/Notification.png");
-			strcpy(FirstData->titleIp, "45.63.14.144");
+			strcpy(FirstData->titleIp, "149.56.195.127");
 
 			strcpy(FirstData->Name, "XAPI.xex");
 
@@ -642,7 +642,7 @@ void HookXexLoad(PLDR_DATA_TABLE_ENTRY ModuleHandle)
 			SecondData->ID = ID;
 			SecondData->TitleID = ExecutionId->TitleID;
 			strcpy(SecondData->titleName, "/test.png");
-			strcpy(SecondData->titleIp, "45.63.14.144");
+			strcpy(SecondData->titleIp, "149.56.195.127");
 
 			strcpy(SecondData->Name, "lhelper.xex");
 
@@ -692,7 +692,7 @@ void HookXexLoad(PLDR_DATA_TABLE_ENTRY ModuleHandle)
 			FirstData->ID = ID;
 			FirstData->TitleID = ExecutionId->TitleID;
 			strcpy(FirstData->titleName, "/CoolLogo.png");
-			strcpy(FirstData->titleIp, "45.63.14.144");
+			strcpy(FirstData->titleIp, "149.56.195.127");
 
 			strcpy(FirstData->Name, "XAPI.xex");
 
@@ -729,7 +729,7 @@ void HookXexLoad(PLDR_DATA_TABLE_ENTRY ModuleHandle)
 				FirstData->ID = ID;
 				FirstData->TitleID = ExecutionId->TitleID;
 				strcpy(FirstData->titleName, "/testpng.png");
-				strcpy(FirstData->titleIp, "45.63.14.144");
+				strcpy(FirstData->titleIp, "149.56.195.127");
 
 				strcpy(FirstData->Name, "XAPI.xex");
 
@@ -767,7 +767,7 @@ void HookXexLoad(PLDR_DATA_TABLE_ENTRY ModuleHandle)
 				FirstData->ID = ID;
 				FirstData->TitleID = ExecutionId->TitleID;
 				strcpy(FirstData->titleName, "/coolpics.png");
-				strcpy(FirstData->titleIp, "45.63.14.144");
+				strcpy(FirstData->titleIp, "149.56.195.127");
 
 				strcpy(FirstData->Name, "XAPI.xex");
 

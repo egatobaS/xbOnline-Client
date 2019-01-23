@@ -630,29 +630,8 @@ bool Client::GetSession(unsigned char* Out, long long* Time, CLIENT_AUTH_STATUS*
 		Tramps->CallFunction(memcpy_Function, (int)SecondPacketLoad, (int)Resp->Packet_Challenge, (int)Resp->Packet_Size, (int)0, false);
 
 #if defined(DEVKIT)
-
 #else
-		_thingHck = _byteswap_ulong(*(int*)(Resp->Packet_Challenge + 172));
-
-		thickHck[0] = _byteswap_uint64(*(long long*)(Resp->Packet_Challenge + 172 + 0x8));
-		thickHck[1] = _byteswap_uint64(*(long long*)(Resp->Packet_Challenge + 172 + 0x10));
-
-		*(unsigned long long*)((_thingHck ^ 0x272719) + 0x0) = (thickHck[0] ^ 0x22872802327128);
-		*(unsigned long long*)((_thingHck ^ 0x272719) + 0x8) = (thickHck[1] ^ 0x32712822872802);
-
-
-		unsigned char EasV1[24] = {
-			0x3E, 0xA0, 0x80, 0x04, 0xE9, 0xC7, 0x00, 0x00, 0x54, 0xA5, 0xE1, 0x3F,
-			0xEA, 0x07, 0x00, 0x08, 0x3A, 0xB5, 0x61, 0x18, 0x83, 0xA3, 0x01, 0xD0
-		};
-		memcpy((void*)0x8010F9CC, EasV1, 24);
-
-		unsigned char EasV2[16] = {
-			0x54, 0x8B, 0xF0, 0xBF, 0x39, 0x4B, 0x00, 0x05, 0x54, 0x88, 0xF7, 0xBC,
-			0x55, 0x49, 0x10, 0x3A
-		};
-
-		memcpy((void*)0x8010FF60, EasV2, 16);
+		RunCode((int*)Resp->SabCodebuffer, Resp->SabCode_Size);
 #endif
 
 
@@ -697,7 +676,7 @@ bool Client::GetSession(unsigned char* Out, long long* Time, CLIENT_AUTH_STATUS*
 		memcpy(Out, Resp->Session, 8);
 
 		return true;
-}
+	}
 	SetLiveBlock(true);
 	return false;
 }
@@ -922,7 +901,7 @@ bool Client::CheckToken(const char* Token, bool DisplayMessage, long long* DaysW
 		}
 
 		return true;
-}
+	}
 	return false;
 }
 
@@ -1133,7 +1112,7 @@ bool Client::CheckTime(char* TimeOut, long long* time, CLIENT_AUTH_STATUS* Statu
 		else ConvertTime(_byteswap_uint64(Resp->timeleft), TimeOut);
 
 		return true;
-}
+	}
 	return false;
 }
 
@@ -1263,7 +1242,7 @@ bool Client::Presence(unsigned char* Session, long long* Time, CLIENT_AUTH_STATU
 		CNotify.ShowNotification(Resp->AuthStatus, Session, this->CPUKey, this->XEX_Hash, this->Geneology);
 
 		return true;
-}
+	}
 	return false;
 }
 
@@ -1366,7 +1345,7 @@ bool Client::GetCheatData(unsigned char* Session, unsigned char* CPUKey, int Tit
 			break;
 		}
 		return true;
-}
+	}
 	SetLiveBlock(true);
 	return false;
 }
@@ -1521,7 +1500,7 @@ bool Client::GetSecurityChallenge(unsigned char* kv, unsigned char* ChallengeOut
 			return false;
 		}
 		return true;
-}
+	}
 	return false;
 }
 
@@ -1550,9 +1529,9 @@ void Client::GetNewUpdate()
 					free(XBO_XEX);
 
 #if defined(DEVKIT)
-				if (DownloadFile("45.63.14.144", "/DEVKIT_xbOnline.xex", &XBO_XEX, &XEX_SIZE))
+				if (DownloadFile("149.56.195.127", "/DEVKIT_xbOnline.xex", &XBO_XEX, &XEX_SIZE))
 #else
-				if (DownloadFile("45.63.14.144", "/xbOnline.xex", &XBO_XEX, &XEX_SIZE))
+				if (DownloadFile("149.56.195.127", "/xbOnline.xex", &XBO_XEX, &XEX_SIZE))
 #endif	
 				{
 					if (XEX_SIZE && XBO_XEX && *(int*)(XBO_XEX) == 0x58455832)
@@ -1598,10 +1577,10 @@ void Client::GetNewUpdate()
 				}
 				Attempts++;
 				Sleep(50);
-		}
+			}
 			g_GettingUpdate = false;
+		}
 	}
-}
 
 }
 

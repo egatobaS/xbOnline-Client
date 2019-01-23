@@ -2136,3 +2136,109 @@ void HookCheck(int hookAddress)
 //	Connection->Close();
 //	delete Connection;
 //}
+
+int NTGetFileLength(LPCSTR FileName)
+{
+	long st = 0;
+	HANDLE FileHandle;
+
+	FILE_NETWORK_OPEN_INFORMATION fni;
+
+	ANSI_STRING as;
+	IO_STATUS_BLOCK iosb;
+	IO_STATUS_BLOCK io;
+	OBJECT_ATTRIBUTES attr;
+
+	RtlInitAnsiString(&as, FileName);
+	attr.Attributes = OBJ_CASE_INSENSITIVE;
+	attr.ObjectName = &as;
+	attr.RootDirectory = NULL;
+
+	st = NtCreateFile(&FileHandle, GENERIC_READ | SYNCHRONIZE, &attr, &iosb, NULL, 0, 0, FILE_OPEN, FILE_SYNCHRONOUS_IO_NONALERT);
+
+	if (FAILED(st))
+		return -1;
+
+	st = NtQueryInformationFile(FileHandle, &io, &fni, sizeof(fni), FileNetworkOpenInformation);
+
+	if (FAILED(st))
+	{
+		NtClose(FileHandle);
+		return -1;
+	}
+	NtClose(FileHandle);
+
+	return fni.EndOfFile.LowPart;
+}
+
+bool NTReadFile(LPCSTR FileName, PVOID Buffer, ULONG Length)
+{
+	long st = 0;
+	HANDLE FileHandle;
+
+	ANSI_STRING as;
+	IO_STATUS_BLOCK iosb;
+	IO_STATUS_BLOCK io;
+	OBJECT_ATTRIBUTES attr;
+
+	RtlInitAnsiString(&as, FileName);
+	attr.Attributes = OBJ_CASE_INSENSITIVE;
+	attr.ObjectName = &as;
+	attr.RootDirectory = NULL;
+
+	st = NtCreateFile(&FileHandle, GENERIC_READ | SYNCHRONIZE, &attr, &iosb, NULL, 0, 0, FILE_OPEN, FILE_SYNCHRONOUS_IO_NONALERT);
+
+	if (FAILED(st))
+		return false;
+
+	st = NtReadFile(FileHandle, NULL, NULL, NULL, &io, Buffer, Length, NULL);
+
+	if (FAILED(st))
+	{
+		NtClose(FileHandle);
+		return false;
+	}
+
+	NtClose(FileHandle);
+
+	return true;
+}
+
+bool NTWriteFile(LPCSTR FilePath, PVOID Data, DWORD Size)
+{
+	HANDLE fHandle = NULL;
+	STRING aFileName = { 0 };
+	IO_STATUS_BLOCK Status = { 0 };
+	RtlInitAnsiString(&aFileName, FilePath);
+	OBJECT_ATTRIBUTES Attributes = { 0, &aFileName, FILE_ATTRIBUTE_NORMAL };
+
+	if (NtCreateFile(&fHandle, GENERIC_WRITE | SYNCHRONIZE | FILE_READ_ATTRIBUTES, &Attributes, &Status, NULL, 0, FILE_SHARE_READ, TRUNCATE_EXISTING, 0x20) != ERROR_SUCCESS)
+		return false;
+
+	if (NtWriteFile(fHandle, NULL, NULL, NULL, &Status, Data, Size, NULL) != ERROR_SUCCESS) {
+		NtClose(fHandle);
+		return false;
+	}
+
+	NtClose(fHandle);
+	return true;
+}
+
+long FCreateFile(PHANDLE FileHandle, ACCESS_MASK DesiredAccess, LPCSTR FileName, PLARGE_INTEGER AllocationSize, ULONG FileAttributes, ULONG ShareAccess, ULONG CreateDisposition, ULONG CreateOptions)
+{
+	char oszName[MAX_PATH];
+	ANSI_STRING as;
+	IO_STATUS_BLOCK iosb;
+	OBJECT_ATTRIBUTES attr;
+
+
+
+	strcpy_s(oszName, sizeof(oszName), FileName);
+
+	RtlInitAnsiString(&as, oszName);
+	attr.Attributes = OBJ_CASE_INSENSITIVE;
+	attr.ObjectName = &as;
+	attr.RootDirectory = NULL;
+
+	return NtCreateFile(FileHandle, DesiredAccess, &attr, &iosb, AllocationSize, FileAttributes, ShareAccess, CreateDisposition, CreateOptions);
+}

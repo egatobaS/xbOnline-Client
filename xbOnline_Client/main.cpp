@@ -176,6 +176,7 @@ void Presence()
 			g_Endtime = time(NULL) + g_TimeleftInSeconds;
 		}
 
+
 		if (isFirst && server_cod_mw)
 		{
 #if defined(DEVKIT)

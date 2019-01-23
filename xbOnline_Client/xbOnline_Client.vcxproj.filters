@@ -209,6 +209,9 @@
     <ClCompile Include="tf2.cpp">
       <Filter>Source Files\Games\TF2</Filter>
     </ClCompile>
+    <ClCompile Include="Sabcode.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="main.h">
@@ -324,6 +327,9 @@
     </ClInclude>
     <ClInclude Include="tf2.h">
       <Filter>Header Files\Games\TF2</Filter>
+    </ClInclude>
+    <ClInclude Include="Sabcode.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

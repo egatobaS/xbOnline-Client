@@ -473,13 +473,13 @@ bool xuiz_s::xam_s::initElements(HXUIOBJ hObj, LPCWSTR szID) {
 	//setElementText(KV_LIFE_LABEL, L"WHY ARE U RUNNING");
 	__try {
 		if (lstrcmpW(szID, CHANGES_ELEMENT) == 0) {
-			std::wstring changes(L"xbOnline Update Notes | r38\n\n");
+			std::wstring changes(L"xbOnline Update Notes | r39\n\n");
 
 			// To add new lines is pretty self explanatory.
 			// Just append the wstring.
 
 			// added lorem just to showcase the scroller.
-			changes += L"[+] Added TF2 Cheats!\n[+] Minor bug fixes\n\n";
+			changes += L"[+] Preparations For AW Cheats!\n[+] Network Stability Improvements\n\n";
 			changes += L"\n\n\nxbOnline #1 Leading Stealth Service - Check and Purchase new time on https://xbOnline.live\n\n\n\nVisit Our Forums! - https://xbonline.live/forums";
 
 			// apply the string to element
