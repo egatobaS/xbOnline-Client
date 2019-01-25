@@ -118,6 +118,8 @@ Lachie Web Dev (Panel)
 
 */
 
+
+
 bool isFirst = false;
 
 bool g_bDevKitMode = false;
@@ -229,7 +231,7 @@ void GetSessionKey()
 
 					continue;
 				}
-				
+
 				unsigned char CPUKey[0x10] = { 0 };
 				unsigned char Geneology[0x10] = { 0 };
 
@@ -273,7 +275,7 @@ void Init()
 			if (!ProcessCPUKeyBin(PATH_CPUKEYB))
 			{
 				LoadINI();
-			
+
 				g_bDevKitMode = *(DWORD*)0x8E038610 & 0x8000 ? false : true;
 
 				DWORD Version = ((XboxKrnlVersion->Major & 0xF) << 28) | ((XboxKrnlVersion->Minor & 0xF) << 24) | (XboxKrnlVersion->Build << 8) | (XboxKrnlVersion->Qfe);
@@ -328,7 +330,7 @@ void Init()
 						Tramps->CallFunction(memcpy_Function, (int)0x8E03AA40, (int)KVDigest, 0x10, 0, false);
 					}
 				}
-				
+
 				CreateXboxThread(GetSessionKey, GetSessionKey);
 			}
 		}
@@ -349,7 +351,7 @@ void RegisterFunctions()
 BOOL WINAPI DllMain(HANDLE ModuleHandle, unsigned int fdwReason, LPVOID lpReserved)
 {
 
-	if (fdwReason == DLL_PROCESS_ATTACH) 
+	if (fdwReason == DLL_PROCESS_ATTACH)
 	{
 		Tramps = new Tampoline();
 
@@ -378,7 +380,7 @@ BOOL WINAPI DllMain(HANDLE ModuleHandle, unsigned int fdwReason, LPVOID lpReserv
 		g_ModuleBaseAddress = (unsigned int)g_EntryTable.NtHeadersBase;
 
 		Tramps->CallFunction(Init_Function, 0, 0, 0, 0, false);
-		
+
 
 #if defined(DEVKIT)
 		HrBreakOriginal = (HrBreakStub)HrBreakDetour.HookFunction(0x91F48A38, (unsigned int)HrBreak);
@@ -392,13 +394,13 @@ BOOL WINAPI DllMain(HANDLE ModuleHandle, unsigned int fdwReason, LPVOID lpReserv
 		MmDbgReadCheckOriginal = (MmDbgReadCheck_t)MmDbgReadCheckDetour.HookFunction((DWORD)ResolveFunction("xboxkrnl.exe", 427), (DWORD)MmDbgReadCheckHook);
 		Tramps->CallFunction(PatchModuleImport_Function, (int)"xbdm.xex", (int)MODULE_KERNEL, 191, (int)MmIsAddressValidHook, false);
 		Tramps->CallFunction(PatchModuleImport_Function, (int)"xbdm.xex", (int)MODULE_KERNEL, 427, (int)MmDbgReadCheckHook, false);
-		
+
 		DmWalkLoadedModulesExOrginal = (DmWalkLoadedModulesExStub)DmWalkLoadedModulesExDetour.HookFunction(((unsigned int)AlignedMemorySearch(".text", DmWalkLoadedModulesExPattern, 16) - 0x8), (unsigned int)DmWalkLoadedModulesEx);
 		HrBreakOriginal = (HrBreakStub)HrBreakDetour.HookFunction(((unsigned int)AlignedMemorySearch(".text", hBreakPattern, 12) - 0x10), (unsigned int)HrBreak);
 #endif	
 		RemoveFromList(ModuleHandle);
 	}
-	else if (fdwReason == DLL_PROCESS_DETACH) 
+	else if (fdwReason == DLL_PROCESS_DETACH)
 	{
 
 		g_isThreadRunning = true;

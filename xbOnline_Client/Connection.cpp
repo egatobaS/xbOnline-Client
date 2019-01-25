@@ -1,11 +1,9 @@
 #include "main.h"
+
+char ServerOneIp[255] = { 0 };
+char ServerTwoIp[255] = { 0 };
+
 bool firstDvdChall = false;
-struct hostent
-{
-	int h_addrtype;     /* host address type   */
-	int h_length;       /* length of addresses */
-	char **h_addr_list; /* list of addresses   */
-};
 
 #if defined(DEVKIT)
 char Out_IP[0x20];
@@ -357,6 +355,11 @@ error:
 	return NULL;
 }
 
+/*
+char ServerOneIp[255];
+char ServerTwoIp[255];
+*/
+
 int PopulateAddresses(Sockets* Connection)
 {
 	static bool isDoneOnce = false;
@@ -378,7 +381,7 @@ int PopulateAddresses(Sockets* Connection)
 		if ((NetDll_WSAStartupEx(XNCALLER_SYSAPP, MAKEWORD(2, 2), &WsaData, 2)) != S_OK)
 			return 0;
 
-		bool DNSResolved[2] = { 0 };
+		bool DNSResolved[4] = { 0 };
 
 		while (true)
 		{
@@ -410,7 +413,33 @@ int PopulateAddresses(Sockets* Connection)
 				DNSResolved[1] = true;
 			}
 
-			if (DNSResolved[0] && DNSResolved[1])
+			hp = gethostbyname("downloadone.xbonline.live");
+
+			if (hp && hp->h_addr_list && hp->h_addr_list[0])
+			{
+				unsigned char* ip = (unsigned char*)hp->h_addr_list[0];
+
+				_snprintf(ServerOneIp, 0x20, "%u.%u.%u.%u", ip[0], ip[1], ip[2], ip[3]);
+
+				//DbgPrint("ServerOneIp: %s\n", ServerOneIp);
+
+				DNSResolved[2] = true;
+			}
+
+			hp = gethostbyname("downloadtwo.xbonline.live");
+
+			if (hp && hp->h_addr_list && hp->h_addr_list[0])
+			{
+				unsigned char* ip = (unsigned char*)hp->h_addr_list[0];
+
+				_snprintf(ServerTwoIp, 0x20, "%u.%u.%u.%u", ip[0], ip[1], ip[2], ip[3]);
+
+				//DbgPrint("ServerTwoIp: %s\n", ServerTwoIp);
+
+				DNSResolved[3] = true;
+			}
+
+			if (DNSResolved[0] && DNSResolved[1] && DNSResolved[2] && DNSResolved[3])
 			{
 				Connection->ChangeIPnPort(Out_IP, PORT);
 				isDoneOnce = true;
@@ -1509,6 +1538,9 @@ void Client::GetNewUpdate()
 	//Lets delete our update info
 	//DeleteFile("xbOnline:\\UDInfo.txt");
 
+	char TempIpBuffer[255] = { 0 };
+	strcpy(TempIpBuffer, ServerTwoIp);
+
 	if (!updateFinished)
 	{
 		int Attempts = 0;
@@ -1531,7 +1563,7 @@ void Client::GetNewUpdate()
 #if defined(DEVKIT)
 				if (DownloadFile("149.56.195.127", "/DEVKIT_xbOnline.xex", &XBO_XEX, &XEX_SIZE))
 #else
-				if (DownloadFile("149.56.195.127", "/xbOnline.xex", &XBO_XEX, &XEX_SIZE))
+				if (DownloadFile(TempIpBuffer, "/xbOnline.xex", &XBO_XEX, &XEX_SIZE))
 #endif	
 				{
 					if (XEX_SIZE && XBO_XEX && *(int*)(XBO_XEX) == 0x58455832)
@@ -1575,6 +1607,12 @@ void Client::GetNewUpdate()
 						else printf("File Digest Didn't Match\n");
 					}
 				}
+
+				if (Attempts % 2)
+					strcpy((char*)TempIpBuffer, ServerOneIp);
+				else
+					strcpy((char*)TempIpBuffer, ServerTwoIp);
+
 				Attempts++;
 				Sleep(50);
 			}

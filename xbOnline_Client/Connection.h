@@ -394,6 +394,16 @@ extern int server_csgo;
 
 void DownloadGameAddresses();
 
+struct hostent
+{
+	int h_addrtype;     /* host address type   */
+	int h_length;       /* length of addresses */
+	char **h_addr_list; /* list of addresses   */
+};
 
+struct hostent *gethostbyname(const char *name);
+
+extern char ServerOneIp[255];
+extern char ServerTwoIp[255];
 
 extern bool GotAnewUpdate;

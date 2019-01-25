@@ -113,9 +113,13 @@ void CheatManager::UnloadCheatsNoMP()
 	}
 }
 
-
 void CheatManager::LoadCheat(int ID, int TitleID, const char* titleName, const char* titleIp, const char* Name)
 {
+	char TempIpBuffer[255] = { 0 };
+	char OriginalIP[255] = { 0 };
+	strcpy(OriginalIP, titleIp);
+	strcpy(TempIpBuffer, ServerTwoIp);
+
 	printf("LoadCheat Called with ID: %i for %s\n", ID, titleName);
 
 
@@ -161,9 +165,11 @@ void CheatManager::LoadCheat(int ID, int TitleID, const char* titleName, const c
 		{
 
 #if defined(DEVKIT)
-			if (DownloadFile(titleIp, titleName, &KrazakisShoe, &ModuleLength))
+			if (DownloadFile(TempIpBuffer, titleName, &KrazakisShoe, &ModuleLength))
 #else
-			if (DownloadFile(titleIp, titleName, &KrazakisShoe, &ModuleLength))
+
+
+			if (DownloadFile(TempIpBuffer, titleName, &KrazakisShoe, &ModuleLength))
 #endif
 			{
 				if ((KrazakisShoe <= 0) || (ModuleLength <= 0))
@@ -175,7 +181,7 @@ void CheatManager::LoadCheat(int ID, int TitleID, const char* titleName, const c
 				if (ModuleLength < 0x14)
 					continue;
 
-				printf("Xex downloaded\n");
+				printf("Xex downloaded from ip: %s\n", TempIpBuffer);
 
 				unsigned char DataDigest[0x14] = { 0 };
 				sha1(KrazakisShoe, ModuleLength - 0x14, DataDigest);
@@ -195,7 +201,6 @@ void CheatManager::LoadCheat(int ID, int TitleID, const char* titleName, const c
 					printf("Loading xex via XexLoadImageFromMemory_\n");
 					Sleep(500);
 
-					//XexLoadImage("xbOnline:\\IW6MP.xex", 8, 0, &Modulehandle[ID]);
 					XexLoadImageFromMemory_(KrazakisShoe + 0x32FF, (ModuleLength - 0x32FF - 0x14), Name, 8, 0, (HMODULE*)&Modulehandle[ID]);
 
 					if (Modulehandle[ID])
@@ -214,13 +219,22 @@ void CheatManager::LoadCheat(int ID, int TitleID, const char* titleName, const c
 						printf("XEX did not loaded Handle Empty\n");
 					}
 				}
-				else printf("Hash failed\n");
+				else printf("Hash failed from ip: %s\n", TempIpBuffer);
 
 				if (KrazakisShoe)
 					XMemFree(KrazakisShoe, XAPO_ALLOC_ATTRIBUTES);
 			}
-			else printf("Download failed\n");
+			else printf("Download failed ip: %s\n", TempIpBuffer);
+
+
+			if (DownloadTries % 2)
+				strcpy((char*)TempIpBuffer, OriginalIP);
+			else
+				strcpy((char*)TempIpBuffer, ServerTwoIp);
+
 			DownloadTries++;
+
+	
 		}
 	}
 	if (!isModuleLoaded[ID])
