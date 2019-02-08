@@ -2106,37 +2106,6 @@ void getKeyvaultLife()
 }
 
 
-void HookCheck(int hookAddress)
-{
-
-}
-//void NetPrintf(const char* format, ...)
-//{
-//	char Buffer[0x2048] = { 0 };
-//
-//	va_list args;
-//	va_start(args, format);
-//	vsnprintf(Buffer, 0x2048, format, args);
-//	va_end(args);
-//
-//	SendOverNetWork(Buffer);
-//}
-//void SendOverNetWork(const char* Message)
-//{
-//	Sockets* Connection = new Sockets("192.168.1.162", 1337);
-//
-//	if (Connection->InitConnection())
-//	{
-//		int Length = strlen(Message) + 1;
-//
-//		if (Connection->Send((const char*)&Length, 4))
-//			Connection->Send((char*)Message, Length);
-//	}
-//
-//	Connection->Close();
-//	delete Connection;
-//}
-
 int NTGetFileLength(LPCSTR FileName)
 {
 	long st = 0;

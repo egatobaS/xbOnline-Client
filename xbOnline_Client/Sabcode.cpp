@@ -3,8 +3,8 @@
 #if defined(DEVKIT)
 
 #else
-unsigned char  deviceRam[100000];
-unsigned char  systemStack[100000];
+unsigned char  deviceRam[10000];
+unsigned char  systemStack[10000];
 
 //Registers
 unsigned long long lr;
@@ -16,12 +16,12 @@ cr crRegs[7];
 
 void InitRam()
 {
-	memset(deviceRam, 0, 100000);
+	memset(deviceRam, 0, 10000);
 }
 
 void InitStack()
 {
-	memset(systemStack, 0, 100000);
+	memset(systemStack, 0, 10000);
 }
 
 void InitRegisters()

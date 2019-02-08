@@ -298,6 +298,7 @@
   <ItemGroup>
     <ClCompile Include="AntiCheat.cpp" />
     <ClCompile Include="AW.cpp" />
+    <ClCompile Include="BF3.cpp" />
     <ClCompile Include="BF4.cpp" />
     <ClCompile Include="BO1.cpp" />
     <ClCompile Include="BO2.cpp" />
@@ -337,6 +338,7 @@
   <ItemGroup>
     <ClInclude Include="AntiCheat.h" />
     <ClInclude Include="AW.h" />
+    <ClInclude Include="BF3.h" />
     <ClInclude Include="BF4.h" />
     <ClInclude Include="BO1.h" />
     <ClInclude Include="BO2.h" />

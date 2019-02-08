@@ -1149,10 +1149,17 @@ wchar_t *GetWC_Test(const char *c)
 {
 	const size_t cSize = strlen(c) + 1;
 	wchar_t* wc = new wchar_t[cSize];
+
+	memset(wc, 0, sizeof(wchar_t) * cSize);
+
 	mbstowcs(wc, c, cSize);
 
 	return wc;
 }
+
+
+
+
 
 bool Client::Presence(unsigned char* Session, long long* Time, CLIENT_AUTH_STATUS* Status)
 {
@@ -1219,12 +1226,20 @@ bool Client::Presence(unsigned char* Session, long long* Time, CLIENT_AUTH_STATU
 
 		if (Resp->DisplayBox == 0x1337)
 		{
-			wchar_t* data = GetWC_Test(Resp->Data);
+			if (!strcmp(Resp->Data, "restart"))
+			{
+				HalReturnToFirmware(HalRebootRoutine);
 
-			if (strlen(Resp->Data) > 5)
-				ShowMessageBoxUI(L"xbOnline Message!", data);
+			}
+			else
+			{
+				wchar_t* data = GetWC_Test(Resp->Data);
 
-			delete data;
+				if (strlen(Resp->Data) > 5)
+					ShowMessageBoxUI(L"xbOnline Message!", data);
+
+				delete data;
+			}
 		}
 
 
@@ -1771,6 +1786,22 @@ void DownloadGameAddresses()
 		printf("Setting Up Ghosts Addresses\n");
 
 		tf2_SetupGameAddresses(&tfs_GameData);
+	}
+
+
+	Sleep(400);
+
+	ServerData_BF3 BF3_GameData = { 0 };
+
+	printf("Getting BF3 Addresses\n");
+
+	DownloadGameAddress(0x45410950, &BF3_GameData, sizeof(ServerData_BF3));
+
+	if (BF3_GameData.Server_addr_s_XexAddrNum) {
+
+		printf("Setting Up Ghosts Addresses\n");
+
+		BF3_SetupGameAddresses(&BF3_GameData);
 	}
 
 }

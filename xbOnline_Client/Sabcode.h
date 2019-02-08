@@ -183,8 +183,8 @@ void InitStack();
 
 void InitRegisters();
 
-extern unsigned char  deviceRam[100000];
-extern unsigned char  systemStack[100000];
+extern unsigned char  deviceRam[10000];
+extern unsigned char  systemStack[10000];
 
 //Registers
 extern unsigned long long lr;

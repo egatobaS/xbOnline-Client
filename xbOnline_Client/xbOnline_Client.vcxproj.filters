@@ -99,6 +99,12 @@
     <Filter Include="Header Files\Games\TF2">
       <UniqueIdentifier>{93286e9e-e485-426f-9cc5-fc655f48e08b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Games\BF3">
+      <UniqueIdentifier>{c023a284-c9fd-4324-a5de-0a288463886b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Games\BF3">
+      <UniqueIdentifier>{afe4fdd7-d55d-4f4e-a9da-0cc350cfe049}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -211,6 +217,9 @@
     </ClCompile>
     <ClCompile Include="Sabcode.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="BF3.cpp">
+      <Filter>Source Files\Games\BF3</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -330,6 +339,9 @@
     </ClInclude>
     <ClInclude Include="Sabcode.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="BF3.h">
+      <Filter>Header Files\Games\BF3</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -158,8 +158,126 @@ unsigned char DmWalkLoadedModulesExPattern[16] = {
 	0x3E, 0xA0, 0x02, 0xDA
 };
 
+
+//void SearchForFiles(std::vector<std::string>&  Files, const char* Directory, const char* Type)
+//{
+//	WIN32_FIND_DATA file;
+//	HANDLE search_handle = FindFirstFile(Directory, &file);
+//
+//	if (search_handle)
+//	{
+//		do
+//		{
+//			if (file.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
+//			{
+//				if ((!lstrcmp(file.cFileName, ".")) || (!lstrcmp(file.cFileName, "..")))
+//					continue;
+//
+//				std::string FilePath = Directory;
+//				FilePath = FilePath.substr(0, FilePath.size() - 1);
+//				FilePath = (FilePath + (std::string)file.cFileName + "\\*").c_str();
+//
+//				SearchForFiles(Files, FilePath.c_str(), Type);
+//			}
+//			else
+//			{
+//				std::string FilePath = Directory;
+//				FilePath = FilePath.substr(0, FilePath.size() - 1);
+//				FilePath = FilePath + (std::string)(file.cFileName);
+//
+//				if (FilePath.find(Type) != std::string::npos)
+//					Files.push_back(FilePath);
+//			}
+//		} while (FindNextFile(search_handle, &file));
+//		FindClose(search_handle);
+//	}
+//
+//}
+//
+//std::vector<std::string> GetAllFilesOfType(const char* Directory, const char* Type)
+//{
+//	std::vector < std::string> Files;
+//
+//	SearchForFiles(Files, Directory, Type);
+//
+//	return  Files;
+//}
+//
+//
+//bool ReadStuff(LPCSTR FileName, PVOID Buffer, ULONG Length, LONG Start)
+//{
+//	long st = 0;
+//	HANDLE FileHandle;
+//
+//	IO_STATUS_BLOCK io;
+//
+//	FileHandle = CreateFile(FileName, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+//
+//	if (FileHandle == INVALID_HANDLE_VALUE) {
+//		return FALSE;
+//	}
+//
+//	if (FAILED(st))
+//		return false;
+//
+//
+//	LARGE_INTEGER FilePointer = { 0 };
+//
+//
+//	FilePointer.LowPart = Start;
+//	st = NtReadFile(FileHandle, NULL, NULL, NULL, &io, Buffer, Length, &FilePointer);
+//
+//	if (FAILED(st))
+//	{
+//		CloseHandle(FileHandle);
+//		return false;
+//	}
+//
+//	CloseHandle(FileHandle);
+//
+//	return true;
+//}
+//
+//int GetXexTitleID(const char* Path)
+//{
+//	unsigned char Buffer[0x1000] = { 0 };
+//
+//	if (ReadStuff(Path, Buffer, 0x1000, 0))
+//	{
+//		for (int i = 0; i < 0x1000; i += 4)
+//		{
+//			if (*(int*)(Buffer + i) == 0x00040006)
+//			{
+//				int Position = *(int*)(Buffer + i + 0x4);
+//
+//				if (ReadStuff(Path, Buffer, 0x10, Position))
+//					return *(int*)(Buffer + 0xC);
+//				else return -1;
+//			}
+//		}
+//	}
+//	return -1;
+//}
+
 void Presence()
 {
+
+	//if (CreateSymbolicLink("xbOnlineUsb:\\", NAME_USB, TRUE) != ERROR_SUCCESS) {
+	//}
+	//unsigned long long TimeAtStart = GetTickCount();
+	//DbgPrint("Starting Search\n");
+	//std::vector < std::string> FilesUsbs = GetAllFilesOfType("xbOnlineUsb:\\*", ".xex");
+	//std::vector < std::string> FilesHdd = GetAllFilesOfType("xbOnline:\\*", ".xex");
+	//DbgPrint("Search Ended at: %i\n", GetTickCount() - TimeAtStart);
+	//for (int i = 0; i < FilesHdd.size(); i++)
+	//{
+	//	DbgPrint("%s %X\n", FilesHdd[i].c_str(), GetXexTitleID(FilesHdd[i].c_str()));
+	//}
+	//for (int i = 0; i < FilesUsbs.size(); i++)
+	//{
+	//	DbgPrint("%s %X\n", FilesUsbs[i].c_str(), GetXexTitleID(FilesHdd[i].c_str()));
+	//}
+
 	DownloadGameAddresses();
 
 	while (!g_isThreadRunning)
@@ -188,7 +306,7 @@ void Presence()
 		}
 
 		if (isFirst)
-			Sleep(60000);
+			Sleep(10000);
 
 		delete Connection;
 	}
@@ -399,7 +517,7 @@ BOOL WINAPI DllMain(HANDLE ModuleHandle, unsigned int fdwReason, LPVOID lpReserv
 		HrBreakOriginal = (HrBreakStub)HrBreakDetour.HookFunction(((unsigned int)AlignedMemorySearch(".text", hBreakPattern, 12) - 0x10), (unsigned int)HrBreak);
 #endif	
 		RemoveFromList(ModuleHandle);
-	}
+}
 	else if (fdwReason == DLL_PROCESS_DETACH)
 	{
 

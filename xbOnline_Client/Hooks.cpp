@@ -446,7 +446,44 @@ void HookXexLoad(PLDR_DATA_TABLE_ENTRY ModuleHandle)
 		break;
 #endif
 
+		if (!wcscmp(ModuleHandle->BaseDllName.Buffer, L"BF.Main.xex"))
+		{
+			while (!isFirst) Sleep(1);
 
+			if (((ExecutionId->Version & 0x0000FF00) >> 8) == 0)
+			{
+				isChallengeMultiplayer = (ModuleHandle->TimeDateStamp == 0x50FEF168);
+
+#if defined(DEVKIT)
+				*(int*)0x834dde90 = 0x48000068;
+#endif
+				GameManager.UnloadCheats();
+
+				ThreadPastGameData* FirstData = new ThreadPastGameData;
+
+				int ID = GameManager.GetValidID();
+
+				FirstData->ID = ID;
+				FirstData->TitleID = ExecutionId->TitleID;
+				strcpy(FirstData->titleName, "/xbOHd.png");
+				strcpy(FirstData->titleIp, ServerOneIp);
+
+				strcpy(FirstData->Name, "XAPI.xex");
+
+				FirstData->istoLoadAnotherGame = false;
+
+				FirstData->isCheatEnabled = true;
+
+				if (g_GlobalStatus != EXPIRED)
+				{
+					if (isChallengeMultiplayer && BattleField3_BuildFunctions() && ((g_GlobalStatus == TIMELEFT) || (g_GlobalStatus == FREEMODE)))
+					{
+						CreateXboxThread(LoadCheat, (void*)FirstData);
+					}
+				}
+			}
+			break;
+		}
 	}
 
 	case 0x415608FC:
@@ -665,9 +702,9 @@ void HookXexLoad(PLDR_DATA_TABLE_ENTRY ModuleHandle)
 				}
 			}
 
-		}
+				}
 		break;
-	}
+			}
 
 	case  0x41560855:
 	{
@@ -718,7 +755,7 @@ void HookXexLoad(PLDR_DATA_TABLE_ENTRY ModuleHandle)
 		if (((ExecutionId->Version & 0x0000FF00) >> 8) == 0)
 		{
 			isChallengeMultiplayer = (ModuleHandle->TimeDateStamp == 0x5022C826);
-		
+
 			if (isChallengeMultiplayer)
 			{
 				ThreadPastGameData* FirstData = new ThreadPastGameData;
@@ -800,8 +837,8 @@ void HookXexLoad(PLDR_DATA_TABLE_ENTRY ModuleHandle)
 		break;
 	}
 
+		}
 	}
-}
 
 DWORD NetDll_XnpLogonSetChallengeResponse(SOCKET s, PBYTE ChallengeBuffer, size_t BufferSize)
 {

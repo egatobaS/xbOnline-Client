@@ -258,6 +258,13 @@ struct ServerData_BF4
 	unsigned int Server_addr_s_PatchID[102];
 };
 
+struct ServerData_BF3
+{
+	unsigned int Server_addr_s_XexAddrNum;
+	unsigned int Server_addr_s[64];
+	unsigned int Server_addr_s_PatchID[64];
+};
+
 struct ServerData_MW2_OnHosts
 {
 	unsigned int Server_addr_s_XexAddrNum;
