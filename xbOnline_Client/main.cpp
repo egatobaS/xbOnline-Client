@@ -396,6 +396,7 @@ void Init()
 
 				g_bDevKitMode = *(DWORD*)0x8E038610 & 0x8000 ? false : true;
 
+				//
 				if (!FileExists("xbOnline:\\dummy."))
 				{
 					unsigned char* xboProtect = (unsigned char*)malloc(0x4000);
