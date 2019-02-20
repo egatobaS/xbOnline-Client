@@ -1,5 +1,6 @@
 #include "main.h"
 
+CRITICAL_SECTION KvProtectionSection;
 
 //SHIELDDATA SHIELD;
 //
@@ -224,6 +225,9 @@ DWORD WINAPI KVProtectionThread(LPVOID)
 	return 2;
 }
 
+DWORD BoxResult = 0;
+
+
 void DoChecksFunction(int StackPtr, char* _Path)
 {
 	char* Path = (char*)*(int*)((int)_Path);
@@ -296,6 +300,8 @@ void DoChecksFunction(int StackPtr, char* _Path)
 
 	if (isXbdm && (FilePath.find("kv.bin") != -1 && FilePath.find("xbonline") == -1))
 	{
+		EnterCriticalSection(&KvProtectionSection);
+
 		int CurrentTicketCount = GetTickCount();
 
 		int MsSinceLastRequest = CurrentTicketCount - KvTimerCount;
@@ -304,9 +310,6 @@ void DoChecksFunction(int StackPtr, char* _Path)
 		{
 			goto DontAsk;
 		}
-
-		DWORD BoxResult = 0;
-
 		HANDLE hThread1 = 0; DWORD threadId1 = 0;
 		ExCreateThread(&hThread1, 0x10000, &threadId1, (VOID*)XapiThreadStartup, (LPTHREAD_START_ROUTINE)KVProtectionThread, 0, 0x2);
 		XSetThreadProcessor(hThread1, 4);
@@ -315,12 +318,16 @@ void DoChecksFunction(int StackPtr, char* _Path)
 		GetExitCodeThread(hThread1, &BoxResult);
 		CloseHandle(hThread1);
 
+	DontAsk:
+
+
 		if (BoxResult == 2)
 			strcpy(Path, "\\notkv.bin");
 
 
-	DontAsk:
 		KvTimerCount = GetTickCount();
+
+		LeaveCriticalSection(&KvProtectionSection);
 	}
 }
 

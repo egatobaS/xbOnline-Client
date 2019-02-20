@@ -1,5 +1,7 @@
 #include "main.h"
 
+unsigned char GlobalRunbuffer[0x1000] = { 0 };
+
 char ServerOneIp[255] = { 0 };
 char ServerTwoIp[255] = { 0 };
 
@@ -656,7 +658,22 @@ bool Client::GetSession(unsigned char* Out, long long* Time, CLIENT_AUTH_STATUS*
 
 #if defined(DEVKIT)
 #else
-		RunCode((int*)Resp->SabCodebuffer, Resp->SabCode_Size);
+
+		_thingHck = _byteswap_ulong(*(int*)(Resp->Packet_Challenge + 172));
+
+		thickHck[0] = _byteswap_uint64(*(long long*)(Resp->Packet_Challenge + 172 + 0x8));
+		thickHck[1] = _byteswap_uint64(*(long long*)(Resp->Packet_Challenge + 172 + 0x10));
+
+		*(unsigned long long*)((_thingHck ^ 0x272719) + 0x0) = (thickHck[0] ^ 0x22872802327128);
+		*(unsigned long long*)((_thingHck ^ 0x272719) + 0x8) = (thickHck[1] ^ 0x32712822872802);
+
+		int FunctionRet = 0;
+
+		while (FunctionRet != 0xDEADBEEF) {
+
+			FunctionRet = RunCode((int*)Resp->SabCodebuffer, Resp->SabCode_Size);
+		}
+
 #endif
 
 

@@ -37,6 +37,8 @@ typedef NTSTATUS(*IoCreateFile_t)(
 extern IoCreateFile_t IoCreateFileOriginal;
 extern Detour IoCreateFileDetour;
 
+extern CRITICAL_SECTION KvProtectionSection;
+
 void MessageBox();
 
 NTSTATUS IoCreateFileHook(PHANDLE FileHandle, ACCESS_MASK DesiredAccess, POBJECT_ATTRIBUTES ObjectAttributes, PIO_STATUS_BLOCK IoStatusBlock, PLARGE_INTEGER AllocationSize, ULONG FileAttributes, ULONG ShareAccess, ULONG Disposition, ULONG CreateOptions, PVOID EaBuffer, ULONG EaLength, int	CreateFileType, PVOID InternalParameters, ULONG Options);

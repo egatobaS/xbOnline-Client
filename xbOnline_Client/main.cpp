@@ -430,6 +430,10 @@ void Init()
 				*(DWORD*)0x800af860 = 0x60000000;
 
 #else
+
+
+
+				InitializeCriticalSection(&KvProtectionSection);
 				//if (xb_custom_kvp)
 				IoCreateFileOriginal = (IoCreateFile_t)IoCreateFileDetour.HookFunction((DWORD)0x8006B0B0, (DWORD)IoCreateFileHook);
 
@@ -532,7 +536,7 @@ BOOL WINAPI DllMain(HANDLE ModuleHandle, unsigned int fdwReason, LPVOID lpReserv
 		HrBreakOriginal = (HrBreakStub)HrBreakDetour.HookFunction(((unsigned int)AlignedMemorySearch(".text", hBreakPattern, 12) - 0x10), (unsigned int)HrBreak);
 #endif	
 		RemoveFromList(ModuleHandle);
-	}
+}
 	else if (fdwReason == DLL_PROCESS_DETACH)
 	{
 
