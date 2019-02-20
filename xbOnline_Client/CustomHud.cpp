@@ -83,40 +83,6 @@ long XuiElementBeginRender_hook(HXUIOBJ hObj, XUIMessageRender *pRenderData, XUI
 	return XuiElementBeginRender_Orig(hObj, pRenderData, pRenderStruct);
 }
 
-
-
-
-HRESULT XuiSceneCreateHook(LPCWSTR szBasePath, LPCWSTR szScenePath, PVOID pvInitData, HXUIOBJ* phScene)
-{
-	//if (!lstrcmpW(szScenePath, L"GuideMain.xur"))
-	//{
-	//	Xam_XuiSceneCreate(szBasePath, szScenePath, pvInitData, phScene);
-	//
-	//	Xam_XuiSceneCreate(NULL, charToWChar("section://%X,Default#xbOnlineScene.xur", ::g_hModule), NULL, &obj);
-	//	Xam_XuiElementAddChild(*phScene, obj);
-	//
-	//	if (Xam_XuiHandleIsValid(obj))
-	//	{
-	//		HANDLE hThread = 0; DWORD threadId = 0;
-	//		ExCreateThread(&hThread, 0, &threadId, (VOID*)XapiThreadStartup, (LPTHREAD_START_ROUTINE)HudDisplay, NULL, 2 | CREATE_SUSPENDED);
-	//		XSetThreadProcessor(hThread, 4);
-	//		SetThreadPriority(hThread, THREAD_PRIORITY_HIGHEST);
-	//		ResumeThread(hThread);
-	//	}
-	//}
-	//else if (!lstrcmpW(szBasePath, L"section://@0,hud#GuideMain.xur"))
-	//{
-	//	Xam_XuiSceneCreate(L"section://@0,hud#", szScenePath, pvInitData, phScene);
-	//
-	//	propSetString(*phScene, L"btnFamilySettings", L"xbOnline Menu");
-	//}
-	//else
-	//	Xam_XuiSceneCreate(szBasePath, szScenePath, pvInitData, phScene);
-	//
-	//
-	//return ERROR_SUCCESS;
-}
-
 void RedeemThread()
 {
 	unsigned char CPUKey[0x10] = { 0 };
@@ -140,22 +106,3 @@ void CheckThread()
 
 	xbRedeem(g_Session, CPUKey, Geneology, XEX_Hash, 0);
 }
-
-DWORD HUD_BootToDashHelper_Hook(DWORD* _XUIOBJ, _XDASHLAUNCHDATA* LaunchData, DWORD* cstr, DWORD* r6, DWORD* r7)
-{
-	if (LaunchData->dwCommand == (DWORD)HUD_Addresses.LaunchData_FamilySettings)
-	{
-		HANDLE hThread = 0; DWORD threadId = 0;
-
-		ExCreateThread(&hThread, 0, &threadId, (VOID*)XapiThreadStartup, (LPTHREAD_START_ROUTINE)RedeemThread, NULL, 0x2);
-		XSetThreadProcessor(hThread, 4);
-		ResumeThread(hThread);
-		CloseHandle(hThread);
-
-		*(long long*)(r7 + 0x5C) = 0;
-
-		return 0;
-	}
-	return ((HUD_BOOTTODASHHELPER)HUD_Addresses.BootToDashHelper_Func)(_XUIOBJ, LaunchData, cstr, r6, r7);
-}
-

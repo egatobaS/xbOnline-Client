@@ -370,10 +370,6 @@ void HookXexLoad(PLDR_DATA_TABLE_ENTRY ModuleHandle)
 
 	if (!wcscmp(ModuleHandle->BaseDllName.Buffer, L"dash.xex"))
 	{
-		char* hazz = "Hazz is a Theif. Everything he has is stolen. Fax.";
-		hazz[0] = 0;
-		DbgPrint(hazz);
-
 		if (xb_custom_xui)
 		{
 			xuiz.xam.HookRuntimeDashFunctions();
@@ -425,6 +421,11 @@ void HookXexLoad(PLDR_DATA_TABLE_ENTRY ModuleHandle)
 
 				if (xb_cheats_bf4 && BattleField4_BuildFunctions() && ((g_GlobalStatus == TIMELEFT) || (g_GlobalStatus == FREEMODE)))
 					CreateXboxThread(LoadCheat, (void*)FirstData);
+				else
+				{
+					if (FirstData)
+						delete FirstData;
+				}
 			}
 		}
 		break;
@@ -472,13 +473,18 @@ void HookXexLoad(PLDR_DATA_TABLE_ENTRY ModuleHandle)
 
 				FirstData->istoLoadAnotherGame = false;
 
-				FirstData->isCheatEnabled = true;
+				FirstData->isCheatEnabled = xb_cheats_bf3;
 
 				if (g_GlobalStatus != EXPIRED)
 				{
-					if (isChallengeMultiplayer && BattleField3_BuildFunctions() && ((g_GlobalStatus == TIMELEFT) || (g_GlobalStatus == FREEMODE)))
+					if (xb_cheats_bf3 && isChallengeMultiplayer && BattleField3_BuildFunctions() && ((g_GlobalStatus == TIMELEFT) || (g_GlobalStatus == FREEMODE)))
 					{
 						CreateXboxThread(LoadCheat, (void*)FirstData);
+					}
+					else
+					{
+						if (FirstData)
+							delete FirstData;
 					}
 				}
 			}
@@ -518,6 +524,11 @@ void HookXexLoad(PLDR_DATA_TABLE_ENTRY ModuleHandle)
 				if (xb_cheats_ghosts && server_cod_ghosts && isChallengeMultiplayer && Ghosts_BuildFunctions() && ((g_GlobalStatus == TIMELEFT) || (g_GlobalStatus == FREEMODE)))
 				{
 					CreateXboxThread(LoadCheat, (void*)FirstData);
+				}
+				else
+				{
+					if (FirstData)
+						delete FirstData;
 				}
 			}
 		}
@@ -569,6 +580,11 @@ void HookXexLoad(PLDR_DATA_TABLE_ENTRY ModuleHandle)
 				if (xb_cheats_bo2 && server_cod_bo2 && isChallengeMultiplayer && BlackOps2_BuildFunctions() && ((g_GlobalStatus == TIMELEFT) || (g_GlobalStatus == FREEMODE)))
 				{
 					CreateXboxThread(LoadCheat, (void*)FirstData);
+				}
+				else
+				{
+					if (FirstData)
+						delete FirstData;
 				}
 			}
 		}
@@ -644,6 +660,14 @@ void HookXexLoad(PLDR_DATA_TABLE_ENTRY ModuleHandle)
 				{
 					CreateXboxThread(LoadCheat, (void*)FirstData);
 				}
+				else
+				{
+					if (SecondData)
+						delete SecondData;
+
+					if (FirstData)
+						delete FirstData;
+				}
 			}
 		}
 		break;
@@ -700,6 +724,14 @@ void HookXexLoad(PLDR_DATA_TABLE_ENTRY ModuleHandle)
 				{
 					CreateXboxThread(LoadCheat, (void*)FirstData);
 				}
+				else
+				{
+					if (SecondData)
+						delete SecondData;
+
+					if (FirstData)
+						delete FirstData;
+				}
 			}
 
 				}
@@ -742,6 +774,11 @@ void HookXexLoad(PLDR_DATA_TABLE_ENTRY ModuleHandle)
 				{
 					CreateXboxThread(LoadCheat, (void*)FirstData);
 				}
+				else
+				{
+					if (FirstData)
+						delete FirstData;
+				}
 			}
 		}
 
@@ -781,6 +818,11 @@ void HookXexLoad(PLDR_DATA_TABLE_ENTRY ModuleHandle)
 
 						CreateXboxThread(LoadCheat, (void*)FirstData);
 					}
+					else
+					{
+						if (FirstData)
+							delete FirstData;
+					}
 				}
 			}
 		}
@@ -818,6 +860,11 @@ void HookXexLoad(PLDR_DATA_TABLE_ENTRY ModuleHandle)
 						isLastTitleTF2 = true;
 
 						CreateXboxThread(LoadCheat, (void*)FirstData);
+					}
+					else
+					{
+						if (FirstData)
+							delete FirstData;
 					}
 				}
 			}

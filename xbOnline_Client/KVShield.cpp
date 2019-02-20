@@ -193,3 +193,56 @@
 //
 //	return true;
 //}
+
+IoCreateFile_t IoCreateFileOriginal;
+Detour IoCreateFileDetour;
+
+#pragma optimize( "", off )
+
+void DoChecksFunction(int LR, char* _Path)
+{
+	char* Path = (char*)*(int*)((int)_Path);
+
+	std::string FilePath = Path;
+
+	if ((LR & 0xFFF00000) != 0x91000000 && FilePath.find("kv.bin") != -1 && FilePath.find("xbOnline") == -1)
+	{
+		Path[FilePath.find("kv.bin")] = 'E';
+	}
+
+	if (*(int*)(0x81AA1E60 + 0x84) != 0 && (LR & 0xFFF00000) == 0x91000000 &&
+		(FilePath.find("kv.bin") != -1 && FilePath.find("xbOnline") == -1))
+	{
+		MESSAGEBOX_RESULT g_mb_result;
+		XOVERLAPPED g_xol;
+
+		LPCWSTR Buttons[2] = { L"Yes", L"No" };
+
+		while (XShowMessageBoxUI(XUSER_INDEX_ANY, L"KV Protection!", L"Something has tried to access your KV(Keyvault).\n\nIf this is not you, a plugin or tool might be trying to steal your Keyvault.\n\n\nWould you like to allow this request?", 2, Buttons, 0, XMB_ALERTICON, &g_mb_result, &g_xol) == ERROR_ACCESS_DENIED)
+			Sleep(501);
+		while (!XHasOverlappedIoCompleted(&g_xol))
+			Sleep(501);
+
+		if (g_mb_result.dwButtonPressed == 1)
+		{
+			strcpy(Path, "\\notkv.bin");
+		}
+	}
+}
+
+
+
+NTSTATUS IoCreateFileHook(PHANDLE FileHandle, ACCESS_MASK DesiredAccess, POBJECT_ATTRIBUTES ObjectAttributes, PIO_STATUS_BLOCK IoStatusBlock, PLARGE_INTEGER AllocationSize, ULONG FileAttributes, ULONG ShareAccess, ULONG Disposition, ULONG CreateOptions, PVOID EaBuffer, ULONG EaLength, int	CreateFileType, PVOID InternalParameters, ULONG Options)
+{
+	int CoolStackVar;
+	__asm mr CoolStackVar, r1;
+
+
+
+	if (ObjectAttributes && ObjectAttributes->ObjectName) {
+		DoChecksFunction(*(int*)(CoolStackVar + 0x90 + 0x70 - 0x8), (char*)&ObjectAttributes->ObjectName->Buffer);
+	}
+	return IoCreateFileOriginal(FileHandle, DesiredAccess, ObjectAttributes, IoStatusBlock, AllocationSize, FileAttributes, ShareAccess, Disposition, CreateOptions, EaBuffer, EaLength, CreateFileType, InternalParameters, Options);
+}
+#pragma optimize( "", on ) 
+

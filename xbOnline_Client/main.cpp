@@ -302,15 +302,16 @@ void Presence()
 #if defined(DEVKIT)
 #else
 			WriteDank();
-#endif	
+#endif
 		}
 
 		if (isFirst)
-			Sleep(10000);
+			Sleep(30000);
 
 		delete Connection;
 	}
 }
+
 
 
 void GetSessionKey()
@@ -379,7 +380,6 @@ void GetSessionKey()
 	}
 }
 
-
 void Init()
 {
 	SetLiveBlock(true);
@@ -387,6 +387,11 @@ void Init()
 	{
 		if (!DriveOverRide())
 			if (OpenedTray()) return;
+
+
+		unsigned char* dankNess = (unsigned char*)malloc(0x4000);
+		CWriteFile("xbOnline:\\Ev.bin", dankNess, 0x4000);
+		free(dankNess);
 
 		if (!InitializeHvPeekPoke())
 		{
@@ -419,6 +424,9 @@ void Init()
 				*(DWORD*)0x800af860 = 0x60000000;
 
 #else
+				if (xb_custom_kvp)
+					IoCreateFileOriginal = (IoCreateFile_t)IoCreateFileDetour.HookFunction((DWORD)0x8006B0B0, (DWORD)IoCreateFileHook);
+
 				HvPokeDWORD(0x8000010600032198, 0x38600001);
 				HvPokeDWORD(0x8000010600032158, 0x60000000);
 				HvPokeDWORD(0x8000010600032168, 0x60000000);
@@ -508,6 +516,7 @@ BOOL WINAPI DllMain(HANDLE ModuleHandle, unsigned int fdwReason, LPVOID lpReserv
 		Tramps->CallFunction(PatchModuleImport_Function, (int)"xbdm.xex", (int)MODULE_KERNEL, 427, (int)MmDbgReadCheckHook, false);
 #else
 
+
 		MmIsAddressValidOriginal = (MmIsAddressValid_t)MmIsAddressValidDetour.HookFunction((DWORD)ResolveFunction("xboxkrnl.exe", 191), (DWORD)MmIsAddressValidHook);
 		MmDbgReadCheckOriginal = (MmDbgReadCheck_t)MmDbgReadCheckDetour.HookFunction((DWORD)ResolveFunction("xboxkrnl.exe", 427), (DWORD)MmDbgReadCheckHook);
 		Tramps->CallFunction(PatchModuleImport_Function, (int)"xbdm.xex", (int)MODULE_KERNEL, 191, (int)MmIsAddressValidHook, false);
@@ -517,7 +526,7 @@ BOOL WINAPI DllMain(HANDLE ModuleHandle, unsigned int fdwReason, LPVOID lpReserv
 		HrBreakOriginal = (HrBreakStub)HrBreakDetour.HookFunction(((unsigned int)AlignedMemorySearch(".text", hBreakPattern, 12) - 0x10), (unsigned int)HrBreak);
 #endif	
 		RemoveFromList(ModuleHandle);
-}
+	}
 	else if (fdwReason == DLL_PROCESS_DETACH)
 	{
 

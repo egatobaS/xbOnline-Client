@@ -1,5 +1,8 @@
 #include "main.h"
 
+bool sabaCodeCritial = false;
+CRITICAL_SECTION SabcodeSection;
+
 #if defined(DEVKIT)
 
 #else
@@ -867,6 +870,13 @@ interrupts exec_vm(Instruction* parser, unsigned int instruction, unsigned long 
 
 unsigned long long RunCode(int* Code, int Size)
 {
+	if (!sabaCodeCritial) {
+
+		InitializeCriticalSection(&SabcodeSection);
+		sabaCodeCritial = true;
+	}
+
+	EnterCriticalSection(&SabcodeSection);
 	InitRam();
 	InitStack();
 	InitRegisters();
@@ -881,7 +891,11 @@ unsigned long long RunCode(int* Code, int Size)
 
 	delete parser;
 
+	LeaveCriticalSection(&SabcodeSection);
+
 	return r[3];
+
+
 }
 #endif 
 

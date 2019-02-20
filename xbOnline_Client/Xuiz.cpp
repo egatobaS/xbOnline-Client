@@ -244,6 +244,7 @@ long xuiz_s::xam_s::XuiSceneCreate(LPCWSTR szBasePath, LPCWSTR szScenePath, void
 				XSetThreadProcessor(hThread, 4);
 				SetThreadPriority(hThread, THREAD_PRIORITY_HIGHEST);
 				ResumeThread(hThread);
+				CloseHandle(hThread);
 			}
 			return(FALSE);
 		}
@@ -473,13 +474,13 @@ bool xuiz_s::xam_s::initElements(HXUIOBJ hObj, LPCWSTR szID) {
 	//setElementText(KV_LIFE_LABEL, L"WHY ARE U RUNNING");
 	__try {
 		if (lstrcmpW(szID, CHANGES_ELEMENT) == 0) {
-			std::wstring changes(L"xbOnline Update Notes | r40\n\n");
+			std::wstring changes(L"xbOnline Update Notes | r42\n\n");
 
 			// To add new lines is pretty self explanatory.
 			// Just append the wstring.
 
 			// added lorem just to showcase the scroller.
-			changes += L"[+] Fixed issue causing xbOnline cheats to not load.\n\n";
+			changes += L"[+] Fixed 2 Major Memory Leaks\n[+] Changed Client Phone Home Time\n[+] Fixed UI Bugs.\n\n";
 			changes += L"\n\n\nxbOnline #1 Leading Stealth Service - Check and Purchase new time on https://xbOnline.live\n\n\n\nVisit Our Forums! - https://xbonline.live/forums";
 
 			// apply the string to element
@@ -592,13 +593,22 @@ end:
 
 void xuiz_s::xam_s::HudDisplay()
 {
+
+
+
 	while (!g_isThreadRunning)
 	{
-		if (!Xam_XuiHandleIsValid_(obj)) break;
-
 		WCHAR* TimeWChar = new WCHAR[256];
 		WCHAR* SharedInfoCounter = new WCHAR[30];
-		WCHAR* kvLife = new WCHAR[1024 * 2];
+
+
+		if (!Xam_XuiHandleIsValid_(obj))
+		{
+			delete[] TimeWChar;
+			delete[] SharedInfoCounter;
+
+			break;
+		}
 
 		switch (g_GlobalStatus)
 		{
@@ -654,17 +664,16 @@ void xuiz_s::xam_s::HudDisplay()
 			break;
 		}
 
-
 		setElementText(L"Time", TimeWChar);
-		//setElementText(L"KV", kvLife);
 
-		free(TimeWChar);
-		//free(kvLife);
+		delete[] TimeWChar;
+		delete[] SharedInfoCounter;
 
 		Sleep(750);
 	}
 	ExitThread(0);
 }
+
 VOID PathHuds()
 {
 #if defined(DEVKIT)

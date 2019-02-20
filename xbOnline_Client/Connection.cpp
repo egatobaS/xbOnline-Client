@@ -355,10 +355,6 @@ error:
 	return NULL;
 }
 
-/*
-char ServerOneIp[255];
-char ServerTwoIp[255];
-*/
 
 int PopulateAddresses(Sockets* Connection)
 {
@@ -1145,21 +1141,15 @@ bool Client::CheckTime(char* TimeOut, long long* time, CLIENT_AUTH_STATUS* Statu
 	return false;
 }
 
+
 wchar_t *GetWC_Test(const char *c)
 {
 	const size_t cSize = strlen(c) + 1;
 	wchar_t* wc = new wchar_t[cSize];
-
-	memset(wc, 0, sizeof(wchar_t) * cSize);
-
 	mbstowcs(wc, c, cSize);
 
 	return wc;
 }
-
-
-
-
 
 bool Client::Presence(unsigned char* Session, long long* Time, CLIENT_AUTH_STATUS* Status)
 {
