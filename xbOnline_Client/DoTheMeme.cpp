@@ -207,8 +207,6 @@ void WriteDank()
 	if ((*(unsigned long long*)(0x81B69CC0)) != 0x10)
 		return;
 
-	DbgPrint("Dank Test Passed %X\n", (*(unsigned long long*)(0x81B69CC0)));
-
 	if (!isAlreadyMounted)
 	{
 		OtherHack();

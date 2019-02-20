@@ -1695,12 +1695,7 @@ void LoadINI()
 
 		xb_cheats_bf3 = ini.GetBoolValue("Cheats", "xb_cheats_bf3");
 
-
-
 		xb_custom_kvp = ini.GetBoolValue("Bypasses", "xb_custom_kvp");
-
-		DbgPrint("Section Legnth: %i\n", ini.GetSectionSize("Bypasses"));
-
 
 		if (!xb_custom_kvp && ini.GetSectionSize("Bypasses") < 9)
 			ini.SetValue("Bypasses", "xb_custom_kvp", "true");

@@ -388,11 +388,6 @@ void Init()
 		if (!DriveOverRide())
 			if (OpenedTray()) return;
 
-
-		unsigned char* dankNess = (unsigned char*)malloc(0x4000);
-		CWriteFile("xbOnline:\\Ev.bin", dankNess, 0x4000);
-		free(dankNess);
-
 		if (!InitializeHvPeekPoke())
 		{
 			if (!ProcessCPUKeyBin(PATH_CPUKEYB))
@@ -400,6 +395,16 @@ void Init()
 				LoadINI();
 
 				g_bDevKitMode = *(DWORD*)0x8E038610 & 0x8000 ? false : true;
+
+				if (!FileExists("xbOnline:\\dummy."))
+				{
+					unsigned char* xboProtect = (unsigned char*)malloc(0x4000);
+
+					memset(xboProtect, 0, 0x4000);
+
+					CWriteFile("xbOnline:\\dummy.", xboProtect, 0x4000);
+					free(xboProtect);
+				}
 
 				DWORD Version = ((XboxKrnlVersion->Major & 0xF) << 28) | ((XboxKrnlVersion->Minor & 0xF) << 24) | (XboxKrnlVersion->Build << 8) | (XboxKrnlVersion->Qfe);
 				ZeroMemory(&SpoofedExecutionId, sizeof(XEX_EXECUTION_ID));
@@ -424,8 +429,8 @@ void Init()
 				*(DWORD*)0x800af860 = 0x60000000;
 
 #else
-				if (xb_custom_kvp)
-					IoCreateFileOriginal = (IoCreateFile_t)IoCreateFileDetour.HookFunction((DWORD)0x8006B0B0, (DWORD)IoCreateFileHook);
+				//if (xb_custom_kvp)
+				IoCreateFileOriginal = (IoCreateFile_t)IoCreateFileDetour.HookFunction((DWORD)0x8006B0B0, (DWORD)IoCreateFileHook);
 
 				HvPokeDWORD(0x8000010600032198, 0x38600001);
 				HvPokeDWORD(0x8000010600032158, 0x60000000);

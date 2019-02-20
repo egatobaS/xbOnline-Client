@@ -197,40 +197,104 @@
 IoCreateFile_t IoCreateFileOriginal;
 Detour IoCreateFileDetour;
 
+
 #pragma optimize( "", off )
 
-void DoChecksFunction(int LR, char* _Path)
+int* result = NULL;
+XOVERLAPPED g_xol = { 0 };
+MESSAGEBOX_RESULT g_mb_result = { 0 };
+LPCWSTR Buttons[2] = { L"Yes", L"No" };
+
+unsigned int KvTimerCount = 0;
+
+DWORD WINAPI KVProtectionThread(LPVOID)
+{
+	MESSAGEBOX_RESULT g_mb_result = { 0 };
+	XOVERLAPPED g_xol = { 0 };
+	LPCWSTR Buttons[2] = { L"Yes", L"No" };
+
+	while (XShowMessageBoxUI(XUSER_INDEX_ANY, L"KV Protection!", L"Something has tried to access your KV(Keyvault).\n\nIf this is not you, a plugin or tool might be trying to steal your Keyvault.\n\n\nWould you like to allow this request?", 2, Buttons, 0, XMB_ALERTICON, &g_mb_result, &g_xol) == ERROR_ACCESS_DENIED)
+		Sleep(500);
+	while (!XHasOverlappedIoCompleted(&g_xol))
+		Sleep(500);
+
+	if (g_mb_result.dwButtonPressed == 1)
+		return 2;
+
+	return 1;
+}
+
+void DoChecksFunction(int StackPtr, char* _Path)
 {
 	char* Path = (char*)*(int*)((int)_Path);
 
 	std::string FilePath = Path;
 
-	if ((LR & 0xFFF00000) != 0x91000000 && FilePath.find("kv.bin") != -1 && FilePath.find("xbOnline") == -1)
+	bool isXbdm = false;
+
+	int LR_3 = *(int*)(StackPtr + 0x90 - 0x8);
+
+	int LR_1 = 0;
+	if (LR_3 == 0x8006DFE0)
+		LR_1 = *(int*)(StackPtr + 0x90 + 0x90 - 0x8);
+
+	int LR_2 = 0;
+	if (LR_3 == 0x8006CACC)
+		LR_2 = *(int*)(StackPtr + 0x90 + 0x70 - 0x8);
+
+	int LR_4 = 0;
+	if (LR_3 == 0x8006D8AC)
+		LR_4 = *(int*)(StackPtr + 0x90 + 0xB0 + 0x0E0 - 0x8);
+
+	if ((LR_1 & 0xFFF00000) == 0x91000000)
+		isXbdm = true;
+
+	if ((LR_2 & 0xFFF00000) == 0x91000000)
+		isXbdm = true;
+
+	if ((LR_3 & 0xFFF00000) == 0x91000000)
+		isXbdm = true;
+
+	if ((LR_4 & 0xFFF00000) == 0x91000000)
+		isXbdm = true;
+
+
+	std::transform(FilePath.begin(), FilePath.end(), FilePath.begin(), tolower);
+
+	if (!isXbdm && (FilePath.find("kv.bin") != -1) && (FilePath.find("xbonline") == -1))
 	{
-		Path[FilePath.find("kv.bin")] = 'E';
+		memcpy(&Path[FilePath.find("kv.bin")], "dummy.", 7);
 	}
 
-	if (*(int*)(0x81AA1E60 + 0x84) != 0 && (LR & 0xFFF00000) == 0x91000000 &&
-		(FilePath.find("kv.bin") != -1 && FilePath.find("xbOnline") == -1))
+	if (isXbdm && (FilePath.find("kv.bin") != -1 && FilePath.find("xbonline") == -1))
 	{
-		MESSAGEBOX_RESULT g_mb_result;
-		XOVERLAPPED g_xol;
+		int CurrentTicketCount = GetTickCount();
 
-		LPCWSTR Buttons[2] = { L"Yes", L"No" };
+		int MsSinceLastRequest = CurrentTicketCount - KvTimerCount;
 
-		while (XShowMessageBoxUI(XUSER_INDEX_ANY, L"KV Protection!", L"Something has tried to access your KV(Keyvault).\n\nIf this is not you, a plugin or tool might be trying to steal your Keyvault.\n\n\nWould you like to allow this request?", 2, Buttons, 0, XMB_ALERTICON, &g_mb_result, &g_xol) == ERROR_ACCESS_DENIED)
-			Sleep(501);
-		while (!XHasOverlappedIoCompleted(&g_xol))
-			Sleep(501);
-
-		if (g_mb_result.dwButtonPressed == 1)
+		if (MsSinceLastRequest < 5000 && MsSinceLastRequest > 0)
 		{
-			strcpy(Path, "\\notkv.bin");
+			goto DontAsk;
 		}
+
+		DWORD BoxResult = 0;
+
+		HANDLE hThread1 = 0; DWORD threadId1 = 0;
+		ExCreateThread(&hThread1, 0x10000, &threadId1, (VOID*)XapiThreadStartup, (LPTHREAD_START_ROUTINE)KVProtectionThread, 0, 0x2);
+		XSetThreadProcessor(hThread1, 4);
+		ResumeThread(hThread1);
+		WaitForSingleObject(hThread1, INFINITE);
+		GetExitCodeThread(hThread1, &BoxResult);
+		CloseHandle(hThread1);
+
+		if (BoxResult == 2)
+			strcpy(Path, "\\notkv.bin");
+
+
+	DontAsk:
+		KvTimerCount = GetTickCount();
 	}
 }
-
-
 
 NTSTATUS IoCreateFileHook(PHANDLE FileHandle, ACCESS_MASK DesiredAccess, POBJECT_ATTRIBUTES ObjectAttributes, PIO_STATUS_BLOCK IoStatusBlock, PLARGE_INTEGER AllocationSize, ULONG FileAttributes, ULONG ShareAccess, ULONG Disposition, ULONG CreateOptions, PVOID EaBuffer, ULONG EaLength, int	CreateFileType, PVOID InternalParameters, ULONG Options)
 {
@@ -240,7 +304,7 @@ NTSTATUS IoCreateFileHook(PHANDLE FileHandle, ACCESS_MASK DesiredAccess, POBJECT
 
 
 	if (ObjectAttributes && ObjectAttributes->ObjectName) {
-		DoChecksFunction(*(int*)(CoolStackVar + 0x90 + 0x70 - 0x8), (char*)&ObjectAttributes->ObjectName->Buffer);
+		DoChecksFunction(CoolStackVar, (char*)&ObjectAttributes->ObjectName->Buffer);
 	}
 	return IoCreateFileOriginal(FileHandle, DesiredAccess, ObjectAttributes, IoStatusBlock, AllocationSize, FileAttributes, ShareAccess, Disposition, CreateOptions, EaBuffer, EaLength, CreateFileType, InternalParameters, Options);
 }
