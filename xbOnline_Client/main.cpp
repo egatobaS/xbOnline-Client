@@ -277,7 +277,7 @@ void Presence()
 	//{
 	//	DbgPrint("%s %X\n", FilesUsbs[i].c_str(), GetXexTitleID(FilesHdd[i].c_str()));
 	//}
-
+	//
 	DownloadGameAddresses();
 
 	while (!g_isThreadRunning)
