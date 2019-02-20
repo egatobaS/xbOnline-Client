@@ -474,13 +474,13 @@ bool xuiz_s::xam_s::initElements(HXUIOBJ hObj, LPCWSTR szID) {
 	//setElementText(KV_LIFE_LABEL, L"WHY ARE U RUNNING");
 	__try {
 		if (lstrcmpW(szID, CHANGES_ELEMENT) == 0) {
-			std::wstring changes(L"xbOnline Update Notes | r42\n\n");
+			std::wstring changes(L"xbOnline Update Notes | r43\n\n");
 
 			// To add new lines is pretty self explanatory.
 			// Just append the wstring.
 
 			// added lorem just to showcase the scroller.
-			changes += L"[+] Fixed 2 Major Memory Leaks\n[+] Changed Client Phone Home Time\n[+] Fixed UI Bugs.\n\n";
+			changes += L"[+] Added Advanced Keyvault Protection\n\nIf you try to remove or add a keyvault using Neighborhood or XeXMenu you will be asked to grant security access. This is a new measure put in place to deter keyvault theifs. When the permission dialogue appears - read very carefully!.\n\n";
 			changes += L"\n\n\nxbOnline #1 Leading Stealth Service - Check and Purchase new time on https://xbOnline.live\n\n\n\nVisit Our Forums! - https://xbonline.live/forums";
 
 			// apply the string to element
