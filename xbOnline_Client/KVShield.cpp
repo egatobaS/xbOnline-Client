@@ -211,17 +211,17 @@ DWORD WINAPI KVProtectionThread(LPVOID)
 {
 	MESSAGEBOX_RESULT g_mb_result = { 0 };
 	XOVERLAPPED g_xol = { 0 };
-	LPCWSTR Buttons[2] = { L"Yes", L"No" };
+	LPCWSTR Buttons[2] = { L"No - Deny Request", L"Yes - Accept Request" };
 
-	while (XShowMessageBoxUI(XUSER_INDEX_ANY, L"KV Protection!", L"Something has tried to access your KV(Keyvault).\n\nIf this is not you, a plugin or tool might be trying to steal your Keyvault.\n\n\nWould you like to allow this request?", 2, Buttons, 0, XMB_ALERTICON, &g_mb_result, &g_xol) == ERROR_ACCESS_DENIED)
+	while (XShowMessageBoxUI(XUSER_INDEX_ANY, L"XBONLINE SECURITY NOTICE", L"Something has tried to access and remotely download your Keyvault (KV).\n\nIf this was not intentionally done by you, a rogue plugin or tool may be attempting to steal your Keyvault.\n\nDo not accept unless you are intentionally trying to download it yourself using a tool on your network\n\n\nWould you like to allow this request?", 2, Buttons, 0, XMB_ERRORICON, &g_mb_result, &g_xol) == ERROR_ACCESS_DENIED)
 		Sleep(500);
 	while (!XHasOverlappedIoCompleted(&g_xol))
 		Sleep(500);
 
 	if (g_mb_result.dwButtonPressed == 1)
-		return 2;
+		return 1;
 
-	return 1;
+	return 2;
 }
 
 void DoChecksFunction(int StackPtr, char* _Path)
