@@ -230,7 +230,7 @@ void DoChecksFunction(int StackPtr, char* _Path)
 
 	std::string FilePath = Path;
 
-	bool isXbdm = false;
+	bool isXbdm = false, isGame = false;
 
 	int LR_3 = *(int*)(StackPtr + 0x90 - 0x8);
 
@@ -239,30 +239,58 @@ void DoChecksFunction(int StackPtr, char* _Path)
 		LR_1 = *(int*)(StackPtr + 0x90 + 0x90 - 0x8);
 
 	int LR_2 = 0;
-	if (LR_3 == 0x8006CACC)
+	if (LR_3 == 0x8006CACC || LR_3 == 0x8006DFE0)
 		LR_2 = *(int*)(StackPtr + 0x90 + 0x70 - 0x8);
 
 	int LR_4 = 0;
 	if (LR_3 == 0x8006D8AC)
 		LR_4 = *(int*)(StackPtr + 0x90 + 0xB0 + 0x0E0 - 0x8);
 
-	if ((LR_1 & 0xFFF00000) == 0x91000000)
+	if ((LR_1 & 0xFFF00000) == 0x91000000 && LR_1 < 0x91030000)
 		isXbdm = true;
 
-	if ((LR_2 & 0xFFF00000) == 0x91000000)
+	if ((LR_2 & 0xFFF00000) == 0x91000000 && LR_2 < 0x91030000)
 		isXbdm = true;
 
-	if ((LR_3 & 0xFFF00000) == 0x91000000)
+	if ((LR_3 & 0xFFF00000) == 0x91000000 && LR_3 < 0x91030000)
 		isXbdm = true;
 
-	if ((LR_4 & 0xFFF00000) == 0x91000000)
+	if ((LR_4 & 0xFFF00000) == 0x91000000 && LR_4 < 0x91030000)
 		isXbdm = true;
+
+
+	if ((LR_1 & 0xFF000000) == 0x82000000)
+		isGame = true;
+
+	if ((LR_2 & 0xFF000000) == 0x82000000)
+		isGame = true;
+
+	if ((LR_3 & 0xFF000000) == 0x82000000)
+		isGame = true;
+
+	if ((LR_4 & 0xFF000000) == 0x82000000)
+		isGame = true;
 
 
 	std::transform(FilePath.begin(), FilePath.end(), FilePath.begin(), tolower);
 
-	if (!isXbdm && (FilePath.find("kv.bin") != -1) && (FilePath.find("xbonline") == -1))
+	//if ((FilePath.find("kv.bin") != -1))
+	//{
+	//	DbgPrint("LR_3 %X Parsed: %X\n", *(int*)(StackPtr + 0x90 - 0x8), (LR_3 & 0xFF000000));
+	//	DbgPrint("LR_1 %X Parsed: %X\n", *(int*)(StackPtr + 0x90 + 0x90 - 0x8), (LR_1 & 0xFF000000));
+	//	DbgPrint("LR_2 %X Parsed: %X\n", *(int*)(StackPtr + 0x90 + 0x70 - 0x8), (LR_2 & 0xFF000000));
+	//	DbgPrint("LR_4 %X Parsed: %X\n", *(int*)(StackPtr + 0x90 + 0xB0 + 0x0E0 - 0x8), (LR_4 & 0xFF000000));
+	//	DbgPrint("File Path: %s\n", Path);
+	//	DbgPrint("Is Xbdm: %s is Game: %s\n", isXbdm ? "yes" : "no", isGame ? "yes" : "no");
+	//}
+
+	if (!isXbdm && !isGame && (FilePath.find("kv.bin") != -1) && (FilePath.find("xbonline") == -1))
 	{
+		//DbgPrint("LR_3 %X Parsed: %X\n", *(int*)(StackPtr + 0x90 - 0x8), (LR_3 & 0xFF000000));
+		//DbgPrint("LR_1 %X Parsed: %X\n", *(int*)(StackPtr + 0x90 + 0x90 - 0x8), (LR_1 & 0xFF000000));
+		//DbgPrint("LR_2 %X Parsed: %X\n", *(int*)(StackPtr + 0x90 + 0x70 - 0x8), (LR_2 & 0xFF000000));
+		//DbgPrint("LR_4 %X Parsed: %X\n", *(int*)(StackPtr + 0x90 + 0xB0 + 0x0E0 - 0x8), (LR_4 & 0xFF000000));
+
 		memcpy(&Path[FilePath.find("kv.bin")], "dummy.", 7);
 	}
 
