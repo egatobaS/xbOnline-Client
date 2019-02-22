@@ -307,7 +307,7 @@ void Presence()
 		}
 
 		if (isFirst)
-			Sleep(30000);
+			Sleep(15000);
 
 		delete Connection;
 	}
@@ -381,6 +381,7 @@ void GetSessionKey()
 }
 
 
+
 void Init()
 {
 	SetLiveBlock(true);
@@ -408,7 +409,6 @@ void Init()
 				ExpansionAddr += 0x10;
 			}
 
-
 			if (!ProcessCPUKeyBin(PATH_CPUKEYB))
 			{
 				LoadINI();
@@ -422,8 +422,6 @@ void Init()
 				if ((attr & FILE_ATTRIBUTE_HIDDEN) == 0) {
 					SetFileAttributes("xbOnline:\\dummy.", attr | FILE_ATTRIBUTE_HIDDEN);
 				}
-
-
 
 				DWORD Version = ((XboxKrnlVersion->Major & 0xF) << 28) | ((XboxKrnlVersion->Minor & 0xF) << 24) | (XboxKrnlVersion->Build << 8) | (XboxKrnlVersion->Qfe);
 				ZeroMemory(&SpoofedExecutionId, sizeof(XEX_EXECUTION_ID));
