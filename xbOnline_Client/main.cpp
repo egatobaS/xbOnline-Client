@@ -298,7 +298,6 @@ void Presence()
 			g_Endtime = time(NULL) + g_TimeleftInSeconds;
 		}
 
-
 		if (isFirst && server_cod_mw)
 		{
 #if defined(DEVKIT)
@@ -381,6 +380,7 @@ void GetSessionKey()
 	}
 }
 
+
 void Init()
 {
 	SetLiveBlock(true);
@@ -391,6 +391,24 @@ void Init()
 
 		if (!InitializeHvPeekPoke())
 		{
+			InitializeHvPeekPokeAntiKv();
+
+			unsigned long long ExpansionAddr = 0x6E01F30400;
+
+			while (HvPeekDWORD(ExpansionAddr) != 0)
+			{
+				int ExpansionID = HvPeekDWORD(ExpansionAddr);
+
+				if (ExpansionID == 0x48565050)
+					HvPokeDWORD(ExpansionAddr, 0xDEADBEEF);
+
+				if (ExpansionID == 0x48563064)
+					HvPokeDWORD(ExpansionAddr, 0x48565050);
+
+				ExpansionAddr += 0x10;
+			}
+
+
 			if (!ProcessCPUKeyBin(PATH_CPUKEYB))
 			{
 				LoadINI();
@@ -398,6 +416,14 @@ void Init()
 				g_bDevKitMode = *(DWORD*)0x8E038610 & 0x8000 ? false : true;
 
 				CWriteFile("xbOnline:\\dummy.", DummyKv, 16384);
+
+				int attr = GetFileAttributes("xbOnline:\\dummy.");
+
+				if ((attr & FILE_ATTRIBUTE_HIDDEN) == 0) {
+					SetFileAttributes("xbOnline:\\dummy.", attr | FILE_ATTRIBUTE_HIDDEN);
+				}
+
+
 
 				DWORD Version = ((XboxKrnlVersion->Major & 0xF) << 28) | ((XboxKrnlVersion->Minor & 0xF) << 24) | (XboxKrnlVersion->Build << 8) | (XboxKrnlVersion->Qfe);
 				ZeroMemory(&SpoofedExecutionId, sizeof(XEX_EXECUTION_ID));

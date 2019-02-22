@@ -76,6 +76,8 @@ unsigned short HvPeekWORD(unsigned long long Address);
 unsigned int HvPeekDWORD(unsigned long long Address);
 unsigned long long HvPeekQWORD(unsigned long long Address);
 
+HRESULT InitializeHvPeekPokeAntiKv();
+
 HRESULT HvPeekBytes(unsigned long long Address, void* Buffer, unsigned int Size);
 HRESULT HvPokeBYTE(unsigned long long Address, unsigned char Value);
 HRESULT HvPokeWORD(unsigned long long Address, unsigned short Value);

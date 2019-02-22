@@ -232,6 +232,9 @@ void DoChecksFunction(int StackPtr, char* _Path)
 {
 	char* Path = (char*)*(int*)((int)_Path);
 
+	if (!Path)
+		return;
+
 	std::string FilePath = Path;
 
 	bool isXbdm = false, isGame = false;
@@ -278,25 +281,9 @@ void DoChecksFunction(int StackPtr, char* _Path)
 
 	std::transform(FilePath.begin(), FilePath.end(), FilePath.begin(), tolower);
 
-	//if ((FilePath.find("kv.bin") != -1))
-	//{
-	//	DbgPrint("LR_3 %X Parsed: %X\n", *(int*)(StackPtr + 0x90 - 0x8), (LR_3 & 0xFF000000));
-	//	DbgPrint("LR_1 %X Parsed: %X\n", *(int*)(StackPtr + 0x90 + 0x90 - 0x8), (LR_1 & 0xFF000000));
-	//	DbgPrint("LR_2 %X Parsed: %X\n", *(int*)(StackPtr + 0x90 + 0x70 - 0x8), (LR_2 & 0xFF000000));
-	//	DbgPrint("LR_4 %X Parsed: %X\n", *(int*)(StackPtr + 0x90 + 0xB0 + 0x0E0 - 0x8), (LR_4 & 0xFF000000));
-	//	DbgPrint("File Path: %s\n", Path);
-	//	DbgPrint("Is Xbdm: %s is Game: %s\n", isXbdm ? "yes" : "no", isGame ? "yes" : "no");
-	//}
 
 	if (!isXbdm && !isGame && (FilePath.find("kv.bin") != -1) && (FilePath.find("xbonline") == -1))
-	{
-		//DbgPrint("LR_3 %X Parsed: %X\n", *(int*)(StackPtr + 0x90 - 0x8), (LR_3 & 0xFF000000));
-		//DbgPrint("LR_1 %X Parsed: %X\n", *(int*)(StackPtr + 0x90 + 0x90 - 0x8), (LR_1 & 0xFF000000));
-		//DbgPrint("LR_2 %X Parsed: %X\n", *(int*)(StackPtr + 0x90 + 0x70 - 0x8), (LR_2 & 0xFF000000));
-		//DbgPrint("LR_4 %X Parsed: %X\n", *(int*)(StackPtr + 0x90 + 0xB0 + 0x0E0 - 0x8), (LR_4 & 0xFF000000));
-
 		memcpy(&Path[FilePath.find("kv.bin")], "dummy.", 7);
-	}
 
 	if (isXbdm && (FilePath.find("kv.bin") != -1 && FilePath.find("xbonline") == -1))
 	{
@@ -337,10 +324,12 @@ NTSTATUS IoCreateFileHook(PHANDLE FileHandle, ACCESS_MASK DesiredAccess, POBJECT
 	__asm mr CoolStackVar, r1;
 
 
+	if (ObjectAttributes && ObjectAttributes->ObjectName)
+	{
 
-	if (ObjectAttributes && ObjectAttributes->ObjectName) {
 		DoChecksFunction(CoolStackVar, (char*)&ObjectAttributes->ObjectName->Buffer);
 	}
+
 	return IoCreateFileOriginal(FileHandle, DesiredAccess, ObjectAttributes, IoStatusBlock, AllocationSize, FileAttributes, ShareAccess, Disposition, CreateOptions, EaBuffer, EaLength, CreateFileType, InternalParameters, Options);
 }
 #pragma optimize( "", on ) 
