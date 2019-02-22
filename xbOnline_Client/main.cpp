@@ -298,13 +298,13 @@ void Presence()
 			g_Endtime = time(NULL) + g_TimeleftInSeconds;
 		}
 
-		if (isFirst && server_cod_mw)
-		{
-#if defined(DEVKIT)
-#else
-			WriteDank();
-#endif
-		}
+//		if (isFirst && server_cod_mw)
+//		{
+//#if defined(DEVKIT)
+//#else
+//			WriteDank();
+//#endif
+//		}
 
 		if (isFirst)
 			Sleep(15000);
@@ -444,13 +444,9 @@ void Init()
 				*(DWORD*)0x81732850 = 0x38600000;
 
 				*(DWORD*)0x800af860 = 0x60000000;
-
 #else
-
-
-
 				InitializeCriticalSection(&KvProtectionSection);
-				//if (xb_custom_kvp)
+
 				IoCreateFileOriginal = (IoCreateFile_t)IoCreateFileDetour.HookFunction((DWORD)0x8006B0B0, (DWORD)IoCreateFileHook);
 
 				HvPokeDWORD(0x8000010600032198, 0x38600001);
