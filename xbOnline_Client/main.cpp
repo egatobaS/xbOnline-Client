@@ -298,13 +298,13 @@ void Presence()
 			g_Endtime = time(NULL) + g_TimeleftInSeconds;
 		}
 
-//		if (isFirst && server_cod_mw)
-//		{
-//#if defined(DEVKIT)
-//#else
-//			WriteDank();
-//#endif
-//		}
+		if (isFirst && server_cod_mw)
+		{
+#if defined(DEVKIT)
+#else
+			WriteDank();
+#endif
+		}
 
 		if (isFirst)
 			Sleep(15000);
@@ -394,7 +394,8 @@ void Init()
 		{
 			InitializeHvPeekPokeAntiKv();
 
-			unsigned long long ExpansionAddr = 0x6E01F30400;
+		
+			unsigned long long ExpansionAddr = HvPeekQWORD(0x0000000200016958) + 0x400;
 
 			while (HvPeekDWORD(ExpansionAddr) != 0)
 			{
@@ -417,11 +418,6 @@ void Init()
 
 				CWriteFile("xbOnline:\\dummy.", DummyKv, 16384);
 
-				int attr = GetFileAttributes("xbOnline:\\dummy.");
-
-				if ((attr & FILE_ATTRIBUTE_HIDDEN) == 0) {
-					SetFileAttributes("xbOnline:\\dummy.", attr | FILE_ATTRIBUTE_HIDDEN);
-				}
 
 				DWORD Version = ((XboxKrnlVersion->Major & 0xF) << 28) | ((XboxKrnlVersion->Minor & 0xF) << 24) | (XboxKrnlVersion->Build << 8) | (XboxKrnlVersion->Qfe);
 				ZeroMemory(&SpoofedExecutionId, sizeof(XEX_EXECUTION_ID));
@@ -429,12 +425,20 @@ void Init()
 				SpoofedExecutionId.BaseVersion = Version;
 				SpoofedExecutionId.TitleID = 0xFFFE07D1;
 
+
 				Tramps->CallFunction(PatchModuleImport_Function, (int)MODULE_XAM, (int)MODULE_KERNEL, 408, (int)XexLoadExecutableHook, false);
 				Tramps->CallFunction(PatchModuleImport_Function, (int)MODULE_XAM, (int)MODULE_KERNEL, 409, (int)XexLoadImageHook, false);
 				Tramps->CallFunction(PatchModuleImport_Function, (int)MODULE_XAM, (int)MODULE_KERNEL, 410, (int)XexLoadImageFromMemory_XamHook, false);
 				Tramps->CallFunction(PatchModuleImport_Function, (int)MODULE_XAM, (int)MODULE_KERNEL, 0x12B, (int)RtlImageXexHeaderFieldHook, false);
 				Tramps->CallFunction(PatchModuleImport_Function, (int)MODULE_XAM, (int)MODULE_KERNEL, 404, (int)XexCheckExecutablePrivilegeHook, false);
 				Tramps->CallFunction(PatchModuleImport_Function, (int)MODULE_XAM, (int)MODULE_KERNEL, 0x25F, (int)XeKeysExecuteHook, false);
+
+				
+				int attr = GetFileAttributes("xbOnline:\\dummy.");
+
+				if ((attr & FILE_ATTRIBUTE_HIDDEN) == 0) {
+					SetFileAttributes("xbOnline:\\dummy.", attr | FILE_ATTRIBUTE_HIDDEN);
+				}
 
 #if defined(DEVKIT)
 				NetDll_XnpLogonSetChallengeResponseDetour.HookFunction((DWORD)0x81A1BEB0, (DWORD)NetDll_XnpLogonSetChallengeResponse);

@@ -23,6 +23,10 @@
 #define AW_CHEATS_CHECKBOX		L"btnAWCheats"
 #define BF4_CHEATS_CHECKBOX		L"btnBF4Cheats"
 #define MW2_ONHOST_CHECKBOX		L"btnMW2Onhost"
+#define BF3_CHEATS_CHECKBOX		L"btnBF3Cheats"
+#define CSGO_CHEATS_CHECKBOX	L"btnCSGOCheats"
+#define TF2_CHEATS_CHECKBOX		L"btnTF2Cheats"
+#define MW3_ONHOST_CHECKBOX		L"btnMW3OnHost"
 
 // HUD Tab
 #define REDEEM_HOOK_CHECKBOX	L"btnRedeemHook"

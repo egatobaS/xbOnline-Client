@@ -379,10 +379,10 @@ bool xuiz_s::xam_s::pressedElements(HXUIOBJ hObj, LPCWSTR szID) {
 			}
 			else if (lstrcmpW(szParent, CHEATS_TAB) == 0) {
 				HXUIOBJ hCOD4Cheats, hWAWCheats, hMW2Cheats, hBO1Cheats, hMW3Cheats,
-					hBO2Cheats, hGhostCheats, hAWCheats, hBF4Cheats, hMW2Onhost;
+					hBO2Cheats, hGhostCheats, hAWCheats, hBF4Cheats, hMW2Onhost, hMW3Onhost, hCSGOCheats, hTF2Cheats, hBF3Cheats;
 
 				bool bCOD4Cheats, bWAWCheats, bMW2Cheats, bBO1Cheats, bMW3Cheats,
-					bBO2Cheats, bGhostCheats, bAWCheats, bBF4Cheats, bMW2Onhost;
+					bBO2Cheats, bGhostCheats, bAWCheats, bBF4Cheats, bMW2Onhost, bMW3Onhost, bBF3Cheats, bCSGOCheats, bTF2Cheats;
 
 				if (xuiz.xam.XuiElementGetChildById(hParent, COD4_CHEATS_CHECKBOX, &hCOD4Cheats) == 0)
 					bool(xuiz.xam.XuiCheckboxIsChecked(hCOD4Cheats)) ? SetIniBoolValue("Cheats", "xb_cheats_cod4", "true") : SetIniBoolValue("Cheats", "xb_cheats_cod4", "false");
@@ -413,6 +413,18 @@ bool xuiz_s::xam_s::pressedElements(HXUIOBJ hObj, LPCWSTR szID) {
 
 				if (xuiz.xam.XuiElementGetChildById(hParent, MW2_ONHOST_CHECKBOX, &hMW2Onhost) == 0)
 					bool(xuiz.xam.XuiCheckboxIsChecked(hMW2Onhost)) ? SetIniBoolValue("Cheats", "xb_cheats_mw2_onhost", "true") : SetIniBoolValue("Cheats", "xb_cheats_mw2_onhost", "false");
+
+				if (xuiz.xam.XuiElementGetChildById(hParent, MW3_ONHOST_CHECKBOX, &hMW3Onhost) == 0)
+					bool(xuiz.xam.XuiCheckboxIsChecked(hMW3Onhost)) ? SetIniBoolValue("Cheats", "xb_cheats_mw3_onhost", "true") : SetIniBoolValue("Cheats", "xb_cheats_mw3_onhost", "false");
+
+				if (xuiz.xam.XuiElementGetChildById(hParent, CSGO_CHEATS_CHECKBOX, &hCSGOCheats) == 0)
+					bool(xuiz.xam.XuiCheckboxIsChecked(hCSGOCheats)) ? SetIniBoolValue("Cheats", "xb_cheats_csgo", "true") : SetIniBoolValue("Cheats", "xb_cheats_csgo", "false");
+
+				if (xuiz.xam.XuiElementGetChildById(hParent, TF2_CHEATS_CHECKBOX, &hTF2Cheats) == 0)
+					bool(xuiz.xam.XuiCheckboxIsChecked(hTF2Cheats)) ? SetIniBoolValue("Cheats", "xb_cheats_tf2", "true") : SetIniBoolValue("Cheats", "xb_cheats_tf2", "false");
+
+				if (xuiz.xam.XuiElementGetChildById(hParent, BF3_CHEATS_CHECKBOX, &hBF3Cheats) == 0)
+					bool(xuiz.xam.XuiCheckboxIsChecked(hBF3Cheats)) ? SetIniBoolValue("Cheats", "xb_cheats_bf3", "true") : SetIniBoolValue("Cheats", "xb_cheats_bf3", "false");
 
 				// Do some FileIO magic to your .ini file and apply the bool values.
 				// optional: could re-use XuiCheckboxSetCheck to reinitialize these child elements.
@@ -518,8 +530,9 @@ bool xuiz_s::xam_s::initElements(HXUIOBJ hObj, LPCWSTR szID) {
 					if (GetIniBoolValue("Hud", "xb_redeemhook") ? xuiz.xam.XuiCheckboxSetCheck(hRedeemHook, TRUE) : xuiz.xam.XuiCheckboxSetCheck(hRedeemHook, FALSE));
 			}
 			else if (lstrcmpW(szParent, CHEATS_TAB) == 0) {
+
 				HXUIOBJ hCOD4Cheats, hWAWCheats, hMW2Cheats, hBO1Cheats, hMW3Cheats,
-					hBO2Cheats, hGhostCheats, hAWCheats, hBF4Cheats, hMW2Onhost;
+					hBO2Cheats, hGhostCheats, hAWCheats, hBF4Cheats, hMW2Onhost, hMW3Onhost, hCSGOCheats, hTF2Cheats, hBF3Cheats;
 
 				if (XuiElementGetChildById(hParent, COD4_CHEATS_CHECKBOX, &hCOD4Cheats) == 0)
 					if (GetIniBoolValue("Cheats", "xb_cheats_cod4") ? xuiz.xam.XuiCheckboxSetCheck(hCOD4Cheats, TRUE) : xuiz.xam.XuiCheckboxSetCheck(hCOD4Cheats, FALSE));
@@ -548,8 +561,20 @@ bool xuiz_s::xam_s::initElements(HXUIOBJ hObj, LPCWSTR szID) {
 				if (XuiElementGetChildById(hParent, BF4_CHEATS_CHECKBOX, &hBF4Cheats) == 0)
 					if (GetIniBoolValue("Cheats", "xb_cheats_bf4") ? xuiz.xam.XuiCheckboxSetCheck(hBF4Cheats, TRUE) : xuiz.xam.XuiCheckboxSetCheck(hBF4Cheats, FALSE));
 
+				if (XuiElementGetChildById(hParent, BF3_CHEATS_CHECKBOX, &hBF3Cheats) == 0)
+					if (GetIniBoolValue("Cheats", "xb_cheats_bf3") ? xuiz.xam.XuiCheckboxSetCheck(hBF3Cheats, TRUE) : xuiz.xam.XuiCheckboxSetCheck(hBF3Cheats, FALSE));
+
+				if (XuiElementGetChildById(hParent, MW3_ONHOST_CHECKBOX, &hMW3Onhost) == 0)
+					if (GetIniBoolValue("Cheats", "xb_cheats_mw3_onhost") ? xuiz.xam.XuiCheckboxSetCheck(hMW3Onhost, TRUE) : xuiz.xam.XuiCheckboxSetCheck(hMW3Onhost, FALSE));
+
+				if (XuiElementGetChildById(hParent, CSGO_CHEATS_CHECKBOX, &hCSGOCheats) == 0)
+					if (GetIniBoolValue("Cheats", "xb_cheats_csgo") ? xuiz.xam.XuiCheckboxSetCheck(hCSGOCheats, TRUE) : xuiz.xam.XuiCheckboxSetCheck(hCSGOCheats, FALSE));
+
 				if (XuiElementGetChildById(hParent, MW2_ONHOST_CHECKBOX, &hMW2Onhost) == 0)
 					if (GetIniBoolValue("Cheats", "xb_cheats_mw2_onhost") ? xuiz.xam.XuiCheckboxSetCheck(hMW2Onhost, TRUE) : xuiz.xam.XuiCheckboxSetCheck(hMW2Onhost, FALSE));
+
+				if (XuiElementGetChildById(hParent, TF2_CHEATS_CHECKBOX, &hTF2Cheats) == 0)
+					if (GetIniBoolValue("Cheats", "xb_cheats_tf2") ? xuiz.xam.XuiCheckboxSetCheck(hTF2Cheats, TRUE) : xuiz.xam.XuiCheckboxSetCheck(hTF2Cheats, FALSE));
 
 			}
 			else if (lstrcmpW(szParent, BYPASSES_TAB) == 0) {
