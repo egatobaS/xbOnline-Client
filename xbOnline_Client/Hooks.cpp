@@ -928,6 +928,7 @@ int Count = 0;
 
 DWORD XeKeysExecuteHook(PBYTE Buffer, DWORD Size, PBYTE Salt, int* KrnlBuild, PDWORD r7, PDWORD r8)
 {
+
 	//Hash our Payload, make sure this never changes
 	if (!xbVerifyPayload(Buffer, Size))
 	{

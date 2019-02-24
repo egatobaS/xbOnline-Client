@@ -394,7 +394,6 @@ void Init()
 		{
 			InitializeHvPeekPokeAntiKv();
 
-		
 			unsigned long long ExpansionAddr = HvPeekQWORD(0x0000000200016958) + 0x400;
 
 			while (HvPeekDWORD(ExpansionAddr) != 0)

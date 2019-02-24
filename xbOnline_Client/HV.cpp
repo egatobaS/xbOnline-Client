@@ -181,7 +181,7 @@ HRESULT InitializeHvPeekPoke()
 	*(int*)(r31 + 0x164) = 0x10;
 	*(int*)(r31 + 0x168) = r11;
 
-	Tramps->CallFunction(memcpy_Function, (int)(r31 + 0x170), (int)AntiKvGrabbinExpansion, (int)0x214, (int)0, false);
+	Tramps->CallFunction(memcpy_Function, (int)(r31 + 0x170), (int)BasePayload, (int)0x214, (int)0, false);
 
 	XNetRandom((unsigned char*)(r31 + 0x30), 0x100);
 

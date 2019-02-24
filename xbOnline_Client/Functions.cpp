@@ -1251,6 +1251,7 @@ HRESULT Process_KV()
 
 	BYTE* kv = (BYTE*)malloc(0x4000);
 	if (HvPeekBytes(HvPeekQWORD(0x0000000200016240), kv, 0x4000) == ERROR_SUCCESS) {
+
 		if (SetKeyVault(kv) == ERROR_SUCCESS) {
 
 			free(kv);
