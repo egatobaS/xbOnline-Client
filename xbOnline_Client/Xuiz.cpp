@@ -183,7 +183,7 @@ int xuiz_s::xam_s::SendNotifyPressHook(HXUIOBJ r3, WORD r4, WORD r5) {
 		else if (lstrcmpiW(pSrcText->szText, L"Modern Warfare 3 Host Menu - OUT NOW!") == 0) {
 			XNotify(L"Try out our Modern Warfare 3 Menu now! - Simply load the game");
 		}
-		
+
 	}
 	return xuiz.xam.SendNotifyOriginal(r3, r4, r5);
 }
@@ -319,9 +319,9 @@ bool xuiz_s::xam_s::pressedElements(HXUIOBJ hObj, LPCWSTR szID) {
 			// may cause some freezing issues.
 			if (xb_redeemhook)
 			{
-				if(g_GlobalStatus == NO_CONNECTED)
+				if (g_GlobalStatus == NO_CONNECTED)
 					XNotify(L"You must be connected to xbOnline before trying to redeem time!");
-				else if(g_GlobalStatus == BANNED)
+				else if (g_GlobalStatus == BANNED)
 					XNotify(L"You cannot redeem time on xbOnline, this console has been banned from the xbOnline Service!");
 				else
 				{
@@ -486,13 +486,13 @@ bool xuiz_s::xam_s::initElements(HXUIOBJ hObj, LPCWSTR szID) {
 	//setElementText(KV_LIFE_LABEL, L"WHY ARE U RUNNING");
 	__try {
 		if (lstrcmpW(szID, CHANGES_ELEMENT) == 0) {
-			std::wstring changes(L"xbOnline Update Notes | r45\n\n");
+			std::wstring changes(L"xbOnline Update Notes | r46\n\n");
 
 			// To add new lines is pretty self explanatory.
 			// Just append the wstring.
 
 			// added lorem just to showcase the scroller.
-			changes += L"[+] Fixed NAND KV Issue\n[+] Added MW3,TF2,CS GO and BF3 as toggable options\n[+] Fixed Bug with Keyvault Protection\n[+] Added extra layer of Keyvault Protection\n\nIf you try to remove or add a keyvault using Neighborhood or XeXMenu you will be asked to grant security access. This is a new measure put in place to deter keyvault thieves. When the permission dialogue appears - read very carefully!.\n\n";
+			changes += L"[+] Fixed an issue causing some menus to crash while using xbOnline!\n\n";
 			changes += L"\n\n\nxbOnline #1 Leading Stealth Service - Check and Purchase new time on https://xbOnline.live\n\n\n\nVisit Our Forums! - https://xbonline.live/forums";
 
 			// apply the string to element

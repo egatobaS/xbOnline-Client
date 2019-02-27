@@ -2,7 +2,7 @@
 
 __int64 addr = 0;
 
-int HV_PEEK_POKE_EXP_ID = 0x48564050;
+int HV_PEEK_POKE_EXP_ID = 0xDEADBEEF;
 
 unsigned long long HVGetVersionsPeekQWORD(unsigned long long Address);
 

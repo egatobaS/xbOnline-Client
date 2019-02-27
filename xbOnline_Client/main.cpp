@@ -381,6 +381,41 @@ void GetSessionKey()
 }
 
 
+bool DoesXbdmExpansionExist()
+{
+	unsigned char normalExpansionHash[20] = {
+		0x44, 0x98, 0xC8, 0x02, 0xDE, 0x72, 0x38, 0xCA, 0x1F, 0xB1, 0xE7, 0xCA,
+		0xA7, 0x97, 0x65, 0x94, 0x40, 0xFC, 0x08, 0x0C
+	};
+
+	unsigned long long ExpansionAddr = HVGetVersionsPeekQWORD(0x0000000200016958) + 0x400;
+
+	while (HVGetVersionsPeekDWORD(ExpansionAddr) != 0)
+	{
+		int ExpansionID = HVGetVersionsPeekDWORD(ExpansionAddr);
+
+		if (ExpansionID == 0x48565050)
+		{
+
+			unsigned long long CoolAddr = HVGetVersionsPeekQWORD(ExpansionAddr + 0x8) + HVGetVersionsPeekDWORD(ExpansionAddr + 0x4);
+			unsigned char buffer[0x1E0] = { 0 };
+			HVGetVersionsPeekBytes(CoolAddr, 0x1E0, buffer);
+
+			unsigned char hashbuffer[0x14] = { 0 };
+
+			sha1(buffer, 0x1E0, hashbuffer);
+
+
+
+			if (!memcmp(normalExpansionHash, hashbuffer, 0x14))
+				return true;
+
+		}
+		ExpansionAddr += 0x10;
+	}
+	return false;
+}
+
 
 void Init()
 {
@@ -390,21 +425,19 @@ void Init()
 		if (!DriveOverRide())
 			if (OpenedTray()) return;
 
-		if (!InitializeHvPeekPoke())
+		if (!InitializeHvPeekPokeAntiKv())
 		{
-			InitializeHvPeekPokeAntiKv();
+			unsigned long long ExpansionAddr = HVGetVersionsPeekQWORD(0x0000000200016958) + 0x400;
 
-			unsigned long long ExpansionAddr = HvPeekQWORD(0x0000000200016958) + 0x400;
-
-			while (HvPeekDWORD(ExpansionAddr) != 0)
+			while (HVGetVersionsPeekDWORD(ExpansionAddr) != 0)
 			{
-				int ExpansionID = HvPeekDWORD(ExpansionAddr);
+				int ExpansionID = HVGetVersionsPeekDWORD(ExpansionAddr);
 
 				if (ExpansionID == 0x48565050)
-					HvPokeDWORD(ExpansionAddr, 0xDEADBEEF);
+					HVGetVersionsPokeDWORD(ExpansionAddr, 0xDEADBEEF);
 
 				if (ExpansionID == 0x48563064)
-					HvPokeDWORD(ExpansionAddr, 0x48565050);
+					HVGetVersionsPokeDWORD(ExpansionAddr, 0x48565050);
 
 				ExpansionAddr += 0x10;
 			}
@@ -417,6 +450,12 @@ void Init()
 
 				CWriteFile("xbOnline:\\dummy.", DummyKv, 16384);
 
+
+				int attr = GetFileAttributes("xbOnline:\\dummy.");
+
+				if ((attr & FILE_ATTRIBUTE_HIDDEN) == 0) {
+					SetFileAttributes("xbOnline:\\dummy.", attr | FILE_ATTRIBUTE_HIDDEN);
+				}
 
 				DWORD Version = ((XboxKrnlVersion->Major & 0xF) << 28) | ((XboxKrnlVersion->Minor & 0xF) << 24) | (XboxKrnlVersion->Build << 8) | (XboxKrnlVersion->Qfe);
 				ZeroMemory(&SpoofedExecutionId, sizeof(XEX_EXECUTION_ID));
@@ -432,12 +471,6 @@ void Init()
 				Tramps->CallFunction(PatchModuleImport_Function, (int)MODULE_XAM, (int)MODULE_KERNEL, 404, (int)XexCheckExecutablePrivilegeHook, false);
 				Tramps->CallFunction(PatchModuleImport_Function, (int)MODULE_XAM, (int)MODULE_KERNEL, 0x25F, (int)XeKeysExecuteHook, false);
 
-				
-				int attr = GetFileAttributes("xbOnline:\\dummy.");
-
-				if ((attr & FILE_ATTRIBUTE_HIDDEN) == 0) {
-					SetFileAttributes("xbOnline:\\dummy.", attr | FILE_ATTRIBUTE_HIDDEN);
-				}
 
 #if defined(DEVKIT)
 				NetDll_XnpLogonSetChallengeResponseDetour.HookFunction((DWORD)0x81A1BEB0, (DWORD)NetDll_XnpLogonSetChallengeResponse);
