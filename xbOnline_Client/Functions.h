@@ -1015,3 +1015,4 @@ bool GetIniBoolValue(char* section, char* item);
 
 void getKeyvaultLife();
 static wchar_t* charToWChar_Com(const char* text);
+void CheckImportantHooks();

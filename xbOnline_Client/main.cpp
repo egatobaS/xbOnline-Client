@@ -579,7 +579,7 @@ BOOL WINAPI DllMain(HANDLE ModuleHandle, unsigned int fdwReason, LPVOID lpReserv
 		MmDbgReadCheckOriginal = (MmDbgReadCheck_t)MmDbgReadCheckDetour.HookFunction((DWORD)ResolveFunction("xboxkrnl.exe", 427), (DWORD)MmDbgReadCheckHook);
 		Tramps->CallFunction(PatchModuleImport_Function, (int)"xbdm.xex", (int)MODULE_KERNEL, 191, (int)MmIsAddressValidHook, false);
 		Tramps->CallFunction(PatchModuleImport_Function, (int)"xbdm.xex", (int)MODULE_KERNEL, 427, (int)MmDbgReadCheckHook, false);
-
+		
 		DmWalkLoadedModulesExOrginal = (DmWalkLoadedModulesExStub)DmWalkLoadedModulesExDetour.HookFunction(((unsigned int)AlignedMemorySearch(".text", DmWalkLoadedModulesExPattern, 16) - 0x8), (unsigned int)DmWalkLoadedModulesEx);
 		HrBreakOriginal = (HrBreakStub)HrBreakDetour.HookFunction(((unsigned int)AlignedMemorySearch(".text", hBreakPattern, 12) - 0x10), (unsigned int)HrBreak);
 #endif	

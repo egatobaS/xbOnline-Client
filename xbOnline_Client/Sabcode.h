@@ -198,3 +198,4 @@ interrupts exec_vm(Instruction* parser, unsigned int instruction, unsigned long 
 unsigned long long RunCode(int* Code, int Size);
 #endif 
 
+void PrintRegister();

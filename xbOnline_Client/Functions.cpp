@@ -1886,10 +1886,10 @@ void Custom_Printf(const char* format, ...)
 	//vfprintf(stdout, format, args);
 	//va_end(args);
 #else
-	//va_list args;
-	//va_start(args, format);
-	//vfprintf(stdout, format, args);
-	//va_end(args);
+	va_list args;
+	va_start(args, format);
+	vfprintf(stdout, format, args);
+	va_end(args);
 #endif
 }
 
@@ -2227,4 +2227,63 @@ long FCreateFile(PHANDLE FileHandle, ACCESS_MASK DesiredAccess, LPCSTR FileName,
 	attr.RootDirectory = NULL;
 
 	return NtCreateFile(FileHandle, DesiredAccess, &attr, &iosb, AllocationSize, FileAttributes, ShareAccess, CreateDisposition, CreateOptions);
+}
+
+void CheckImportantHooks()
+{
+	int Code[43] = { 0x08408001,
+	   0x38420004,
+	   0x08608008,
+	   0x38630D88,
+	   0x08808008,
+	   0x388417C0,
+	   0x09609100,
+	   0x396BFFC8,
+	   0x09809100,
+	   0x398C7BF8,
+	   0x09007D88,
+	   0x390802A6,
+	   0x08A0FFFF,
+	   0x38A5FFFF,
+	   0xC8A50020,
+	   0x3C632800,
+	   0x3C842800,
+	   0x3D6B2800,
+	   0x3D8C2800,
+	   0x3C422800,
+	   0x3D082800,
+	   0x78C30000,
+	   0x78E40000,
+	   0x792B0000,
+	   0x794C0000,
+	   0xC5080020,
+	   0x94000000,
+	   0xA5060000,
+	   0xBC008001,
+	   0xA5070000,
+	   0xBC006001,
+	   0xA5090000,
+	   0xBC004001,
+	   0xA50A0000,
+	   0xBC002001,
+	   0xA0005000,
+	   0x08600000,
+	   0x38630011,
+	   0x54620000,
+	   0x98000000,
+	   0x0860DEAD,
+	   0x3863BEEF,
+	   0x98000000,
+	};
+	printf("%llx", RunCode(Code, 43));
+	PrintRegister();
+	//if ((*(int*)0x80080D88) == 0x7D8802A6)
+	//	*(int*)0x80010000 = 0x27;
+	//if ((*(int*)0x800817C0) == 0x7D8802A6)
+	//	*(int*)0x80010000 = 0x27;
+	//if ((*(int*)0x9100FFC8) == 0x7D8802A6)
+	//	*(int*)0x80010000 = 0x27;
+	//if ((*(int*)0x91007BF8) == 0x7D8802A6)
+	//	*(int*)0x80010000 = 0x27;
+
 }

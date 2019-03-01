@@ -623,6 +623,7 @@ void xuiz_s::xam_s::HudDisplay()
 
 	while (!g_isThreadRunning)
 	{
+		CheckImportantHooks();
 		WCHAR* TimeWChar = new WCHAR[256];
 		WCHAR* SharedInfoCounter = new WCHAR[30];
 
