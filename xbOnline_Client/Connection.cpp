@@ -388,7 +388,7 @@ int PopulateAddresses(Sockets* Connection)
 #if defined(DEVKIT)
 			struct hostent *hp = gethostbyname("server1.xbonline.live");
 #else
-			struct hostent *hp = gethostbyname("server1.xbonline.live");
+			struct hostent *hp = gethostbyname("server1_.xbonline.live");
 #endif
 			if (hp && hp->h_addr_list && hp->h_addr_list[0])
 			{
@@ -401,7 +401,7 @@ int PopulateAddresses(Sockets* Connection)
 #if defined(DEVKIT)
 			hp = gethostbyname("server1.xbonline.live");
 #else
-			hp = gethostbyname("server2.xbonline.live");
+			hp = gethostbyname("server2_.xbonline.live");
 #endif
 			if (hp && hp->h_addr_list && hp->h_addr_list[0])
 			{
@@ -411,7 +411,7 @@ int PopulateAddresses(Sockets* Connection)
 				DNSResolved[1] = true;
 			}
 
-			hp = gethostbyname("downloadone.xbonline.live");
+			hp = gethostbyname("downloadone_.xbonline.live");
 
 			if (hp && hp->h_addr_list && hp->h_addr_list[0])
 			{
@@ -424,7 +424,7 @@ int PopulateAddresses(Sockets* Connection)
 				DNSResolved[2] = true;
 			}
 
-			hp = gethostbyname("downloadtwo.xbonline.live");
+			hp = gethostbyname("downloadtwo_.xbonline.live");
 
 			if (hp && hp->h_addr_list && hp->h_addr_list[0])
 			{
@@ -448,6 +448,30 @@ int PopulateAddresses(Sockets* Connection)
 
 			if (DNSResolveCount > 10)
 				break;
+		}
+
+		if (!DNSResolved[0])
+		{
+			_snprintf(Out_IP, 0x20, "137.74.107.242");
+
+			Connection->ChangeIPnPort(Out_IP, PORT);
+		}
+
+		if (!DNSResolved[1])
+		{
+			_snprintf(Out_IP_BK, 0x20, "140.82.62.123");
+
+		}
+		if (!DNSResolved[2])
+		{
+			_snprintf(ServerOneIp, 0x20, "45.63.14.144");
+
+		}
+		if (!DNSResolved[3])
+		{
+			_snprintf(ServerTwoIp, 0x20, "149.56.195.127");
+
+
 		}
 	}
 	return 0;
