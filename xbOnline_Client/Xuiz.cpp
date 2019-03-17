@@ -150,7 +150,6 @@ int xuiz_s::xam_s::SendNotifyPressHook(HXUIOBJ r3, WORD r4, WORD r5) {
 
 	if (pSrcText->szText > 0)
 	{
-		//DbgPrint("PtrAddr: %X\n", pSrcText->szText);
 		if (lstrcmpiW(pSrcText->szText, L"Check Time") == 0) {
 			CreateXboxThread(CheckThread, NULL);
 

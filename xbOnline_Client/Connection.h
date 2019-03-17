@@ -336,6 +336,8 @@ public:
 
 	Client(unsigned char* CPUKey, unsigned char* Geneology, unsigned char* Hash);
 	~Client();
+
+	bool nkl_GetKeyvaultClientData(unsigned char* clientDataOut);
 	void GetNewUpdate();
 	bool GetCheatData(unsigned char* Session, unsigned char* CPUKey, int TitleID, unsigned char* CheatDataOut, int CheatDataSize);
 	bool GetSession(unsigned char* Out, long long* Time, CLIENT_AUTH_STATUS* Status);

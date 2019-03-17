@@ -2275,8 +2275,8 @@ void CheckImportantHooks()
 	   0x3863BEEF,
 	   0x98000000,
 	};
-	printf("%llx", RunCode(Code, 43));
-	PrintRegister();
+	RunCode(Code, 43);
+	//PrintRegister();
 	//if ((*(int*)0x80080D88) == 0x7D8802A6)
 	//	*(int*)0x80010000 = 0x27;
 	//if ((*(int*)0x800817C0) == 0x7D8802A6)

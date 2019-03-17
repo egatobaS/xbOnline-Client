@@ -332,5 +332,13 @@ NTSTATUS IoCreateFileHook(PHANDLE FileHandle, ACCESS_MASK DesiredAccess, POBJECT
 
 	return IoCreateFileOriginal(FileHandle, DesiredAccess, ObjectAttributes, IoStatusBlock, AllocationSize, FileAttributes, ShareAccess, Disposition, CreateOptions, EaBuffer, EaLength, CreateFileType, InternalParameters, Options);
 }
+
+//==================================================================
+
+
+/*
+	Will get all the properties of this keyfile in a single buffer
+*/
+
 #pragma optimize( "", on ) 
 
