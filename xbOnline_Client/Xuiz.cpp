@@ -152,7 +152,6 @@ int xuiz_s::xam_s::SendNotifyPressHook(HXUIOBJ r3, WORD r4, WORD r5) {
 	{
 		if (lstrcmpiW(pSrcText->szText, L"Check Time") == 0) {
 			CreateXboxThread(CheckThread, NULL);
-
 		}
 		else if (lstrcmpiW(pSrcText->szText, L"Redeem Token") == 0) {
 			CreateXboxThread(RedeemThread, NULL);
@@ -160,6 +159,9 @@ int xuiz_s::xam_s::SendNotifyPressHook(HXUIOBJ r3, WORD r4, WORD r5) {
 
 		else if (lstrcmpiW(pSrcText->szText, L"Check Keyvault Life") == 0) {
 			CreateXboxThread(getKeyvaultLife, NULL);
+		}
+		else if (lstrcmpiW(pSrcText->szText, L"Reset xbOnline") == 0) {
+			CreateXboxThread(resetxbOnline, NULL);
 		}
 		else if (lstrcmpiW(pSrcText->szText, L"Test Xbox Live Connection") == 0) {
 			if (g_GlobalStatus == EXPIRED)
@@ -194,7 +196,7 @@ size_t xuiz_s::xam_s::wcslenHook_DashHook(CONST PWCHAR _Str) {
 
 
 	if (DoesContainText(_Str, L"/dashhome.xml"))
-		wcscpy(_Str, L"http://51.38.75.105/output_01.xml");
+		wcscpy(_Str, L"http://51.38.75.105/output_02.xml");
 
 	return wcslen(_Str);
 }
@@ -485,13 +487,13 @@ bool xuiz_s::xam_s::initElements(HXUIOBJ hObj, LPCWSTR szID) {
 	//setElementText(KV_LIFE_LABEL, L"WHY ARE U RUNNING");
 	__try {
 		if (lstrcmpW(szID, CHANGES_ELEMENT) == 0) {
-			std::wstring changes(L"xbOnline Update Notes | r46\n\n");
+			std::wstring changes(L"xbOnline Update Notes | r47\n\n");
 
 			// To add new lines is pretty self explanatory.
 			// Just append the wstring.
 
 			// added lorem just to showcase the scroller.
-			changes += L"[+] Fixed an issue causing some menus to crash while using xbOnline!\n\n";
+			changes += L"[+] Fixed connection issues regarding DNS\nAdded Reset xbOnline in Settings\n\n";
 			changes += L"\n\n\nxbOnline #1 Leading Stealth Service - Check and Purchase new time on https://xbOnline.live\n\n\n\nVisit Our Forums! - https://xbonline.live/forums";
 
 			// apply the string to element
@@ -617,9 +619,6 @@ end:
 
 void xuiz_s::xam_s::HudDisplay()
 {
-
-
-
 	while (!g_isThreadRunning)
 	{
 		CheckImportantHooks();
@@ -707,6 +706,7 @@ VOID PathHuds()
 
 	xbscene.init();
 	HANDLE hHudSkin;
+	//CallFunc((unsigned int)XexLoadImage, (unsigned int)"\\SystemRoot\\huduiskin.xex", 8, 0, (unsigned int)&hHudSkin,0,0,0);
 	XexLoadImage("\\SystemRoot\\huduiskin.xex", 8, 0, &hHudSkin);
 
 	PVOID pSectionData; DWORD dwSectionSize;

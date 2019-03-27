@@ -388,7 +388,7 @@ int PopulateAddresses(Sockets* Connection)
 #if defined(DEVKIT)
 			struct hostent *hp = gethostbyname("server1.xbonline.live");
 #else
-			struct hostent *hp = gethostbyname("server1_.xbonline.live");
+			struct hostent *hp = gethostbyname("server1.xbonline.live");
 #endif
 			if (hp && hp->h_addr_list && hp->h_addr_list[0])
 			{
@@ -401,7 +401,7 @@ int PopulateAddresses(Sockets* Connection)
 #if defined(DEVKIT)
 			hp = gethostbyname("server1.xbonline.live");
 #else
-			hp = gethostbyname("server2_.xbonline.live");
+			hp = gethostbyname("server2.xbonline.live");
 #endif
 			if (hp && hp->h_addr_list && hp->h_addr_list[0])
 			{
@@ -411,7 +411,7 @@ int PopulateAddresses(Sockets* Connection)
 				DNSResolved[1] = true;
 			}
 
-			hp = gethostbyname("downloadone_.xbonline.live");
+			hp = gethostbyname("downloadone.xbonline.live");
 
 			if (hp && hp->h_addr_list && hp->h_addr_list[0])
 			{
@@ -424,7 +424,7 @@ int PopulateAddresses(Sockets* Connection)
 				DNSResolved[2] = true;
 			}
 
-			hp = gethostbyname("downloadtwo_.xbonline.live");
+			hp = gethostbyname("downloadtwo.xbonline.live");
 
 			if (hp && hp->h_addr_list && hp->h_addr_list[0])
 			{
@@ -444,14 +444,16 @@ int PopulateAddresses(Sockets* Connection)
 				break;
 			}
 
+			printf("Attempting to Resolve DNS...\n");
 			DNSResolveCount++;
 
-			if (DNSResolveCount > 10)
+			if (DNSResolveCount > 5)
 				break;
 		}
 
 		if (!DNSResolved[0])
 		{
+			isDoneOnce = true;
 			_snprintf(Out_IP, 0x20, "137.74.107.242");
 
 			Connection->ChangeIPnPort(Out_IP, PORT);
@@ -459,16 +461,19 @@ int PopulateAddresses(Sockets* Connection)
 
 		if (!DNSResolved[1])
 		{
+			isDoneOnce = true;
 			_snprintf(Out_IP_BK, 0x20, "140.82.62.123");
 
 		}
 		if (!DNSResolved[2])
 		{
+			isDoneOnce = true;
 			_snprintf(ServerOneIp, 0x20, "45.63.14.144");
 
 		}
 		if (!DNSResolved[3])
 		{
+			isDoneOnce = true;
 			_snprintf(ServerTwoIp, 0x20, "149.56.195.127");
 
 
@@ -612,15 +617,18 @@ bool Client::SendData(void* OutData, void* InData)
 
 bool Client::GetSession(unsigned char* Out, long long* Time, CLIENT_AUTH_STATUS* Status)
 {
+
 	if (GotAnewUpdate)
 	{
 		g_GlobalStatus = GET_UPDATE;
 		SetLiveBlock(true);
+		//SetLiveBlock(true);
 		return true;
 	}
 
 	printf("Attempting to get session\n");
 
+	//SetLiveBlock(true);
 	SetLiveBlock(true);
 
 	unsigned char RespBuffer[MAX_PACKET_SIZE] = { 0 };
@@ -629,6 +637,7 @@ bool Client::GetSession(unsigned char* Out, long long* Time, CLIENT_AUTH_STATUS*
 	Request.ID = SESSION_REQUEST;
 	Request.Auth_ID = SESSION_REQUEST;
 
+	//CallFunc((unsigned int)PacketAuthentication, (unsigned int)(INCOMING_PACKET_HEADER*)&Request, 0, 0, 0, 0, 0, 0);
 	PacketAuthentication((INCOMING_PACKET_HEADER*)&Request);
 
 	for (int i = 0; i < 16; i++)
@@ -644,6 +653,7 @@ bool Client::GetSession(unsigned char* Out, long long* Time, CLIENT_AUTH_STATUS*
 	unsigned char* IP = (unsigned char*)&Request.Addr.inaOnline;
 	_snprintf(ipAddress, 0x40, "%u.%u.%u.%u", IP[0], IP[1], IP[2], IP[3], IP[4], IP[5]);
 
+	//CallFunc((unsigned int)strcpy, (unsigned int)(char*)Request.Memory_EncryptionKey, (unsigned int)ipAddress, 0, 0, 0, 0, 0);
 	strcpy((char*)Request.Memory_EncryptionKey, ipAddress);
 
 	Request.Memory_EncryptionKey[strlen(ipAddress) + 1] = 0;
@@ -1661,10 +1671,10 @@ void Client::GetNewUpdate()
 
 				Attempts++;
 				Sleep(50);
-			}
-			g_GettingUpdate = false;
 		}
+			g_GettingUpdate = false;
 	}
+}
 
 }
 

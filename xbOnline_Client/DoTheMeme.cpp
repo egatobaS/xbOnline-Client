@@ -242,7 +242,7 @@ void WriteDank()
 
 		sha1(Mem.GetData(), Mem.GetDataLength(), hash);
 
-		if (memcmp(hudhash, hash, 0x14))
+		if (memcmp(hudhash, hash, 0x14) && 1==2)
 		{
 			while (DownloadTries < 50)
 			{

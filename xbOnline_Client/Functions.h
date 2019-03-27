@@ -978,7 +978,7 @@ void ShowMessageBoxUI(LPCWSTR title, LPCWSTR String);
 int ResolveFunction_0(HMODULE hHandle, unsigned int dwOrdinal);
 bool GetHandle(void* pvAddress, PHANDLE hModule);
 VOID GetMachineAccountKey();
-
+void resetxbOnline();
 
 int NTGetFileLength(LPCSTR FileName);
 bool NTReadFile(LPCSTR FileName, PVOID Buffer, ULONG Length);

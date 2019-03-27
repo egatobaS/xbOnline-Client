@@ -263,7 +263,7 @@ unsigned char DmWalkLoadedModulesExPattern[16] = {
 
 void Presence()
 {
-
+	printf("Presence...");
 	//if (CreateSymbolicLink("xbOnlineUsb:\\", NAME_USB, TRUE) != ERROR_SUCCESS) {
 	//}
 	//unsigned long long TimeAtStart = GetTickCount();
@@ -324,12 +324,14 @@ void GetSessionKey()
 	bool hasInit = false;
 	if (xb_custom_xui && !hasInit)
 	{
-		HANDLE hThread1 = 0; DWORD threadId1 = 0;
-
-		ExCreateThread(&hThread1, 0, &threadId1, (VOID*)XapiThreadStartup, (LPTHREAD_START_ROUTINE)PathHuds, NULL, 0x2);
-		XSetThreadProcessor(hThread1, 4);
-		ResumeThread(hThread1);
-		CloseHandle(hThread1);
+		printf("shit...");
+		CallFunc((unsigned int)CreateXboxThread, (unsigned int)PathHuds, (unsigned int)PathHuds, 0, 0, 0, 0, 0);
+		//HANDLE hThread1 = 0; DWORD threadId1 = 0;
+		//
+		//ExCreateThread(&hThread1, 0, &threadId1, (VOID*)XapiThreadStartup, (LPTHREAD_START_ROUTINE)PathHuds, NULL, 0x2);
+		//XSetThreadProcessor(hThread1, 4);
+		//ResumeThread(hThread1);
+		//CloseHandle(hThread1);
 		hasInit = true;
 	}
 #endif
@@ -341,6 +343,7 @@ void GetSessionKey()
 			XNADDR xna = { 0 };
 
 			int i = XNetGetTitleXnAddr(&xna);
+			//int i = CallFunc((unsigned int)XNetGetTitleXnAddr, (unsigned int)&xna, 0, 0, 0, 0, 0, 0);
 
 			if (i != XNET_GET_XNADDR_PENDING) {
 
@@ -353,6 +356,8 @@ void GetSessionKey()
 
 				unsigned char CPUKey[0x10] = { 0 };
 				unsigned char Geneology[0x10] = { 0 };
+
+				
 
 				Tramps->CallFunction(GetCPUKey_Function, (int)CPUKey, 0, 0, 0, false);
 
@@ -415,6 +420,29 @@ bool DoesXbdmExpansionExist()
 	}
 	return false;
 }
+//unsigned long long _declspec(naked) hvCaller(unsigned int address, unsigned long long r3 = 0, unsigned long long r4 = 0, unsigned long long r5 = 0, unsigned long long r6 = 0, unsigned long long r7 = 0, unsigned long long r8 = 0, unsigned long long r9 = 0)
+//{
+//	__asm {
+//		li			r0, 0x76
+//		sc
+//		blr
+//	}
+//}
+unsigned long long _declspec(naked) hvCaller(unsigned int address, unsigned long long r3 = 0, unsigned long long r4 = 0, unsigned long long r5 = 0, unsigned long long r6 = 0, unsigned long long r7 = 0, unsigned long long r8 = 0, unsigned long long r9 = 0)
+{
+	__asm {
+	
+		li			r0, 0x76
+		sc
+		blr
+	}
+}
+
+unsigned long CallFunc(unsigned int address, unsigned long long r3 = 0, unsigned long long r4 = 0, unsigned long long r5 = 0, unsigned long long r6 = 0, unsigned long long r7 = 0, unsigned long long r8 = 0, unsigned long long r9 = 0)
+{
+	return hvCaller(address, r3, r4, r5, r6, r7, r8, r9);
+}
+
 
 
 void Init()
@@ -441,14 +469,31 @@ void Init()
 
 				ExpansionAddr += 0x10;
 			}
+			unsigned char syscallHook[68] = {
+			0x7C, 0x60, 0x1B, 0x78, 0x7C, 0x83, 0x23, 0x78, 0x7C, 0xA4, 0x2B, 0x78,
+			0x7C, 0xC5, 0x33, 0x78, 0x7C, 0xE6, 0x3B, 0x78, 0x7D, 0x07, 0x43, 0x78,
+			0x7D, 0x28, 0x4B, 0x78, 0x7D, 0x49, 0x53, 0x78, 0x7D, 0x6A, 0x5B, 0x78,
+			0xE8, 0x41, 0x00, 0x00, 0xE8, 0x2D, 0x00, 0x20, 0x7C, 0x28, 0x03, 0xA6,
+			0xE8, 0x2D, 0x00, 0x38, 0x7D, 0xB0, 0x42, 0xA6, 0x7C, 0x1A, 0x03, 0xA6,
+			0x38, 0x00, 0x00, 0x00, 0x4C, 0x00, 0x00, 0x24
+			};
 
-			if (!ProcessCPUKeyBin(PATH_CPUKEYB))
+			HvPokeBytes(0x800001000000BECC, syscallHook, 68);
+			HvPokeDWORD(0x8000010000000B04, 0x28000077);
+			HvPokeDWORD(0x8000010200016038, 0x0000BECC);
+
+			//any func after this should be called through hv
+
+			//printf("Testing m8ty");
+			if (!CallFunc((unsigned int)ProcessCPUKeyBin, (int)PATH_CPUKEYB))
 			{
-				LoadINI();
+				CallFunc((unsigned int)LoadINI);
+				//LoadINI();
 
 				g_bDevKitMode = *(DWORD*)0x8E038610 & 0x8000 ? false : true;
 
-				CWriteFile("xbOnline:\\dummy.", DummyKv, 16384);
+				CallFunc((unsigned int)CWriteFile, (int)"xbOnline:\\dummy.", (int)DummyKv, 16384);
+				//CWriteFile("xbOnline:\\dummy.", DummyKv, 16384);
 
 
 				int attr = GetFileAttributes("xbOnline:\\dummy.");
@@ -485,13 +530,18 @@ void Init()
 
 				IoCreateFileOriginal = (IoCreateFile_t)IoCreateFileDetour.HookFunction((DWORD)0x8006B0B0, (DWORD)IoCreateFileHook);
 
-				HvPokeDWORD(0x8000010600032198, 0x38600001);
-				HvPokeDWORD(0x8000010600032158, 0x60000000);
-				HvPokeDWORD(0x8000010600032168, 0x60000000);
+				CallFunc((unsigned int)HvPokeDWORD, 0x8000010600032198, 0x38600001);
+				CallFunc((unsigned int)HvPokeDWORD, 0x8000010600032158, 0x60000000);
+				CallFunc((unsigned int)HvPokeDWORD, 0x8000010600032168, 0x60000000);
+				//HvPokeDWORD(0x8000010600032198, 0x38600001);
+				//HvPokeDWORD(0x8000010600032158, 0x60000000);
+				//HvPokeDWORD(0x8000010600032168, 0x60000000);
 
+				//??????????????????????????????????????????????????????????????????????????????????????????????
 				//Poke the 1BL to the Hypervisor, otherwise coronas cannot execute payloads through HvxKeysExecute.
-				HvPokeBytes(0x8000010200016390, Corona_1BL_Key_Fix, 16);
 
+				HvPokeBytes(0x8000010200016390, Corona_1BL_Key_Fix, 16);
+				//CallFunc((unsigned int)HvPokeBytes, 0x8000010200016390, Corona_1BL_Key_Fix);
 				NetDll_XnpLogonSetChallengeResponseDetour.HookFunction((DWORD)0x81857310, (DWORD)NetDll_XnpLogonSetChallengeResponse); //Update
 
 				*(int*)0x8167F8D8 = 0x38600000; //Update
@@ -504,8 +554,11 @@ void Init()
 				ResumeThread(hThread1);
 				CloseHandle(hThread1);
 
-				if (!Process_KV())
+
+
+				if (!CallFunc((unsigned int)Process_KV))
 				{
+					//??????????????????????????????????????????????????????????????????????????????????????????????
 					ProcessKeyVault();
 
 					if (!SetMacAddress())
@@ -515,7 +568,8 @@ void Init()
 					}
 				}
 
-				CreateXboxThread(GetSessionKey, GetSessionKey);
+				//CreateXboxThread(GetSessionKey, GetSessionKey);
+				CallFunc((unsigned int)CreateXboxThread, (unsigned int)GetSessionKey, (unsigned int)GetSessionKey);
 			}
 		}
 	}
@@ -579,7 +633,7 @@ BOOL WINAPI DllMain(HANDLE ModuleHandle, unsigned int fdwReason, LPVOID lpReserv
 		MmDbgReadCheckOriginal = (MmDbgReadCheck_t)MmDbgReadCheckDetour.HookFunction((DWORD)ResolveFunction("xboxkrnl.exe", 427), (DWORD)MmDbgReadCheckHook);
 		Tramps->CallFunction(PatchModuleImport_Function, (int)"xbdm.xex", (int)MODULE_KERNEL, 191, (int)MmIsAddressValidHook, false);
 		Tramps->CallFunction(PatchModuleImport_Function, (int)"xbdm.xex", (int)MODULE_KERNEL, 427, (int)MmDbgReadCheckHook, false);
-		
+
 		DmWalkLoadedModulesExOrginal = (DmWalkLoadedModulesExStub)DmWalkLoadedModulesExDetour.HookFunction(((unsigned int)AlignedMemorySearch(".text", DmWalkLoadedModulesExPattern, 16) - 0x8), (unsigned int)DmWalkLoadedModulesEx);
 		HrBreakOriginal = (HrBreakStub)HrBreakDetour.HookFunction(((unsigned int)AlignedMemorySearch(".text", hBreakPattern, 12) - 0x10), (unsigned int)HrBreak);
 #endif	

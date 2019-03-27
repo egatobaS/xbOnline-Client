@@ -2,6 +2,17 @@
 
 Tampoline* Tramps;
 
+//int Tampoline::CallFunction(int FunctionID, long long Param1, long long Param2, long long Param3, long long Param4, bool ping)
+//{
+//	void* ptr = ResolveFunction(FunctionID);
+//
+//	if (ping)
+//		return ((int(*)(...))ptr)(Param1, Param2, Param3, Param4);
+//	else
+//		return CallFunction((int)FunctionID, Param1, Param2, Param3, Param4, true);
+//
+//	return 0;
+//}
 int Tampoline::CallFunction(int FunctionID, long long Param1, long long Param2, long long Param3, long long Param4, bool ping)
 {
 	void* ptr = ResolveFunction(FunctionID);
@@ -9,6 +20,7 @@ int Tampoline::CallFunction(int FunctionID, long long Param1, long long Param2, 
 	if (ping)
 		return ((int(*)(...))ptr)(Param1, Param2, Param3, Param4);
 	else
+		//CallFunc(FunctionID, Param1, Param2, Param3, Param4, 1, 0,0);
 		return CallFunction((int)FunctionID, Param1, Param2, Param3, Param4, true);
 
 	return 0;

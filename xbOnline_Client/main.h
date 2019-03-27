@@ -85,7 +85,7 @@ extern LDR_DATA_TABLE_ENTRY g_EntryTable;
 
 void Init();
 void Presence();
-
+unsigned long CallFunc(unsigned int address, unsigned long long r3, unsigned long long r4, unsigned long long r5, unsigned long long r6, unsigned long long r7, unsigned long long r8, unsigned long long r9);
 BOOL WINAPI DllMain(HANDLE ModuleHandle, unsigned int fdwReason, LPVOID lpReserved);
 
 

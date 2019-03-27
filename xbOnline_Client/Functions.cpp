@@ -1745,6 +1745,10 @@ void LoadINI()
 void CreateXboxThread(void* ptr, void* p)
 {
 	HANDLE hThread1 = 0; DWORD threadId1 = 0;
+	//CallFunc((unsigned int)ExCreateThread, (unsigned int)&hThread1, 0x10000, (unsigned int)&threadId1, (unsigned int)(VOID*)XapiThreadStartup, (unsigned int)(LPTHREAD_START_ROUTINE)ptr, (unsigned int)p, 0x2);
+	//CallFunc((unsigned int)XSetThreadProcessor, (unsigned int)hThread1, 4, 0, 0,0 ,0 ,0);
+	//CallFunc((unsigned int)ResumeThread, (unsigned int)hThread1, 0, 0, 0, 0, 0, 0);
+	//CallFunc((unsigned int)CloseHandle, (unsigned int)hThread1, 0, 0, 0, 0, 0, 0);
 	ExCreateThread(&hThread1, 0x10000, &threadId1, (VOID*)XapiThreadStartup, (LPTHREAD_START_ROUTINE)ptr, p, 0x2);
 	XSetThreadProcessor(hThread1, 4);
 	ResumeThread(hThread1);
@@ -1901,10 +1905,10 @@ void DEVKIT_Printf(const char* format, ...)
 	vfprintf(stdout, format, args);
 	va_end(args);
 #else
-	va_list args;
-	va_start(args, format);
-	vfprintf(stdout, format, args);
-	va_end(args);
+	//va_list args;
+	//va_start(args, format);
+	//vfprintf(stdout, format, args);
+	//va_end(args);
 #endif
 }
 
@@ -2072,6 +2076,23 @@ bool TimeSanityCheck(long long timenow)
 	if (timenow > 1539133294)
 		return true;
 	return false;
+}
+void resetxbOnline()
+{
+	DeleteFileA("xbOnline:\\xbOnline.ini");
+	DeleteFileA("xbOnline:\\xbOnline\\IW4MP.ini");
+	DeleteFileA("xbOnline:\\xbOnline\\IW5MP.ini");
+	DeleteFileA("xbOnline:\\xbOnline\\IW6MP.ini");
+	DeleteFileA("xbOnline:\\xbOnline\\IW3MP.ini");
+	DeleteFileA("xbOnline:\\xbOnline\\IW7MP.ini");
+	DeleteFileA("xbOnline:\\xbOnline\\T6MP.ini");
+	DeleteFileA("xbOnline:\\xbOnline\\T5MP.ini");
+	DeleteFileA("xbOnline:\\xbOnline\\T4MP.ini");
+	DeleteFileA("xbOnline:\\xbOnline\\BF3.cfg");
+	DeleteFileA("xbOnline:\\xbOnline\\BF4.cfg");
+	XNotify(L"xbOnline has been reset! - rebooting...");
+	Sleep(7000);
+	HalReturnToFirmware(HalRebootRoutine);
 }
 void getKeyvaultLife()
 {

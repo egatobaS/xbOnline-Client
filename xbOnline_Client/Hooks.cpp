@@ -579,6 +579,7 @@ void HookXexLoad(PLDR_DATA_TABLE_ENTRY ModuleHandle)
 
 				if (xb_cheats_bo2 && server_cod_bo2 && isChallengeMultiplayer && BlackOps2_BuildFunctions() && ((g_GlobalStatus == TIMELEFT) || (g_GlobalStatus == FREEMODE)))
 				{
+					//CallFunc((unsigned int)CreateXboxThread, (unsigned int)LoadCheat, (unsigned int)FirstData, 0, 0, 0, 0, 0);
 					CreateXboxThread(LoadCheat, (void*)FirstData);
 				}
 				else
