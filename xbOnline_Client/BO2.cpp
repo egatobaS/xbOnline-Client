@@ -391,7 +391,7 @@ void setLogMessage_BO2(int CheatResp, const char* Message, int Message_Size)
 
 		resp->MachiebeID = spoofedMachineID;
 
-		resp->KenelVersion = 0x4476;
+		resp->KenelVersion = 0x4488;
 	}
 
 	

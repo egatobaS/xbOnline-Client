@@ -1,10 +1,10 @@
 #include "main.h"
 
-unsigned char Detour::DetourSection[0xF000] = { 0 };
+unsigned char Detour::DetourSection[ 0xF000 ] = { 0 };
 
 int Detour::DetourCount = 0;
 
-void __declspec(naked) Detour::GLPR(void)
+void __declspec( naked ) Detour::GLPR( void )
 {
 	__asm
 	{
@@ -31,159 +31,159 @@ void __declspec(naked) Detour::GLPR(void)
 	}
 }
 
-void Detour::PatchInJump(unsigned int Address, void* Destination, bool Linked)
+void Detour::PatchInJump( unsigned int Address, void* Destination, bool Linked )
 {
-	if (!Address || !Destination) return;
+	if ( !Address || !Destination ) return;
 
-	unsigned int DestinationAddress = (DWORD)(Destination);
+	unsigned int DestinationAddress = (DWORD)( Destination );
 
-	unsigned int Instructions[4];
+	unsigned int Instructions[ 4 ];
 
-	Instructions[0] = 0x3D600000 + ((DestinationAddress >> 16) & 0xFFFF); // lis r11, Destination
+	Instructions[ 0 ] = 0x3D600000 + ( ( DestinationAddress >> 16 ) & 0xFFFF ); // lis r11, Destination
 
-	if ((DestinationAddress & 0x8000))
+	if ( ( DestinationAddress & 0x8000 ) )
 	{
-		Instructions[0]++; // No negatives please
+		Instructions[ 0 ]++; // No negatives please
 	}
 
-	Instructions[1] = 0x396B0000 + (DestinationAddress & 0xFFFF); // addi r11, r11, Destination
+	Instructions[ 1 ] = 0x396B0000 + ( DestinationAddress & 0xFFFF ); // addi r11, r11, Destination
 
-	Instructions[2] = 0x7D6903A6; // mtctr r11
+	Instructions[ 2 ] = 0x7D6903A6; // mtctr r11
 
-	Instructions[3] = 0x4E800420 + Linked; // bctr bctrl
+	Instructions[ 3 ] = 0x4E800420 + Linked; // bctr bctrl
 
-	Tramps->CallFunction(memcpy_Function, (int)Address, (int)Instructions, (sizeof(DWORD) * 4), 0, false);
+	Tramps->CallFunction( memcpy_Function, (int)Address, (int)Instructions, ( sizeof( DWORD ) * 4 ), 0, false );
 }
 
-void Detour::DetourFunction(unsigned int Address, void* Destination, void* Stub)
+void Detour::DetourFunction( unsigned int Address, void* Destination, void* Stub )
 {
-	unsigned int StubInstructions[8] = { 0 };
-	unsigned int SaveStubAddress = (DWORD)(Stub);
-	unsigned int BranchAddress = (Address + 0x10);
+	unsigned int StubInstructions[ 8 ] = { 0 };
+	unsigned int SaveStubAddress = (DWORD)( Stub );
+	unsigned int BranchAddress = ( Address + 0x10 );
 
-	StubInstructions[0] = 0x3D600000 + (BranchAddress >> 16);
+	StubInstructions[ 0 ] = 0x3D600000 + ( BranchAddress >> 16 );
 
-	if (BranchAddress & 0x8000)
+	if ( BranchAddress & 0x8000 )
 	{
-		StubInstructions[0]++;
+		StubInstructions[ 0 ]++;
 	}
 
-	StubInstructions[1] = 0x396B0000 + (BranchAddress & 0xFFFF);
+	StubInstructions[ 1 ] = 0x396B0000 + ( BranchAddress & 0xFFFF );
 
-	StubInstructions[2] = 0x7D6903A6;
+	StubInstructions[ 2 ] = 0x7D6903A6;
 
-	CopyOriginalInstructions(Address, SaveStubAddress, (DWORD*)StubInstructions);
+	CopyOriginalInstructions( Address, SaveStubAddress, (DWORD*)StubInstructions );
 
-	StubInstructions[7] = 0x4E800420;
+	StubInstructions[ 7 ] = 0x4E800420;
 
-	Tramps->CallFunction(memcpy_Function, (int)SaveStubAddress, (int)StubInstructions, sizeof(StubInstructions), 0, false);
+	Tramps->CallFunction( memcpy_Function, (int)SaveStubAddress, (int)StubInstructions, sizeof( StubInstructions ), 0, false );
 
-	PatchInJump(Address, Destination, false);
+	PatchInJump( Address, Destination, false );
 }
 
-void Detour::CopyOriginalInstructions(unsigned int Address, unsigned int SaveStub, DWORD* StubInstructions)
+void Detour::CopyOriginalInstructions( unsigned int Address, unsigned int SaveStub, DWORD* StubInstructions )
 {
-	for (int i = 0; i < 4; i++) //copy the original instructions
+	for ( int i = 0; i < 4; i++ ) //copy the original instructions
 	{
-		unsigned int InstructionPointer = (Address + (i * 4));
+		unsigned int InstructionPointer = ( Address + ( i * 4 ) );
 		unsigned int Instruction = *(DWORD*)InstructionPointer;
-		unsigned int CurrentStubInstructionPointer = SaveStub + ((i + 3) * 4);
+		unsigned int CurrentStubInstructionPointer = SaveStub + ( ( i + 3 ) * 4 );
 
-		if ((Instruction & 0x48000003) == 0x48000001)// bl
+		if ( ( Instruction & 0x48000003 ) == 0x48000001 )// bl
 		{
-			StubInstructions[i + 3] = RelinkGPLR(Instruction & ~0x48000003, CurrentStubInstructionPointer, InstructionPointer); //relink GPLR to local
+			StubInstructions[ i + 3 ] = RelinkGPLR( Instruction & ~0x48000003, CurrentStubInstructionPointer, InstructionPointer ); //relink GPLR to local
 		}
 		else
 		{
-			StubInstructions[i + 3] = Instruction;
+			StubInstructions[ i + 3 ] = Instruction;
 		}
 	}
 }
 
-unsigned int Detour::RelinkGPLR(unsigned int Offset, unsigned int SaveStubAddress, unsigned int OriginalAddress)
+unsigned int Detour::RelinkGPLR( unsigned int Offset, unsigned int SaveStubAddress, unsigned int OriginalAddress )
 {
 	unsigned int Instruction = 0;
 	unsigned int InstructionToReplace = 0;
 	unsigned int GPLRStub = (DWORD)GLPR;
 
 	Offset = Offset & 0x2000000 ? Offset | 0xFC000000 : Offset; // Get the bl offset
-	InstructionToReplace = *(DWORD*)(OriginalAddress + Offset); // Get the address // OriginalAddress + Offset = branch address
-	for (int i = 0; i < 20; i++)
+	InstructionToReplace = *(DWORD*)( OriginalAddress + Offset ); // Get the address // OriginalAddress + Offset = branch address
+	for ( int i = 0; i < 20; i++ )
 	{
-		if (*(DWORD*)(GPLRStub + (4 * i)) == InstructionToReplace) // Find the instruction from the offset in our stub
+		if ( *(DWORD*)( GPLRStub + ( 4 * i ) ) == InstructionToReplace ) // Find the instruction from the offset in our stub
 		{
-			unsigned int NewOffset = ((GPLRStub + (4 * i)) - (int)SaveStubAddress);
-			Instruction = 0x48000001 | (NewOffset & 0x3FFFFFC);
+			unsigned int NewOffset = ( ( GPLRStub + ( 4 * i ) ) - (int)SaveStubAddress );
+			Instruction = 0x48000001 | ( NewOffset & 0x3FFFFFC );
 		}
 	}
 	return Instruction;
 }
 
-void Detour::RestoreFunction()
+void Detour::RestoreFunction( )
 {
-	if (Hooked && MmIsAddressValid((void*)Address)) {
+	if ( Hooked && MmIsAddressValid( (void*)Address ) ) {
 		Hooked = false;
 
-		Tramps->CallFunction(memcpy_Function, (int)Address, (int)OriginalBytes, 16, 0, false);
+		Tramps->CallFunction( memcpy_Function, (int)Address, (int)OriginalBytes, 16, 0, false );
 	}
 }
 
-void* Detour::HookFunction(unsigned int FuncAddress, unsigned int OurDestination)
+void* Detour::HookFunction( unsigned int FuncAddress, unsigned int OurDestination )
 {
-	if (MmIsAddressValid((void*)FuncAddress))  {
+	if ( MmIsAddressValid( (void*)FuncAddress ) ) {
 		Hooked = true;
 		IndexDetour = DetourCount;
 
 		DetourCount += 32;
 
-		OrStub = (int*)&DetourSection[IndexDetour];
+		OrStub = (int*)&DetourSection[ IndexDetour ];
 
 		Address = FuncAddress;
 
-		Tramps->CallFunction(memcpy_Function, (int)OriginalBytes, (int)Address, 16, 0, false);
+		Tramps->CallFunction( memcpy_Function, (int)OriginalBytes, (int)Address, 16, 0, false );
 
-		DetourFunction((DWORD)Address, (void*)OurDestination, (DWORD*)(DWORD)&OrStub[0]);
+		DetourFunction( (DWORD)Address, (void*)OurDestination, (DWORD*)(DWORD)&OrStub[ 0 ] );
 
-		return (void*)(int)&OrStub[0];
+		return (void*)(int)&OrStub[ 0 ];
 	}
 	return (void*)-1;
 }
 
 
-void* Detour::HookFunction(PLDR_DATA_TABLE_ENTRY Module, char* ImportedModuleName, unsigned int Ordinal, unsigned int PatchAddress)
+void* Detour::HookFunction( PLDR_DATA_TABLE_ENTRY Module, char* ImportedModuleName, unsigned int Ordinal, unsigned int PatchAddress )
 {
-	DWORD address = (DWORD)ResolveFunction(ImportedModuleName, Ordinal);
+	DWORD address = (DWORD)ResolveFunction( ImportedModuleName, Ordinal );
 
 	VOID* headerBase = Module->XexHeaderBase;
 
-	PXEX_IMPORT_DESCRIPTOR importDesc = (PXEX_IMPORT_DESCRIPTOR)RtlImageXexHeaderField(headerBase, 0x000103FF);
-	if (importDesc == NULL) return (void*)-1;
+	PXEX_IMPORT_DESCRIPTOR importDesc = (PXEX_IMPORT_DESCRIPTOR)RtlImageXexHeaderField( headerBase, 0x000103FF );
+	if ( importDesc == NULL ) return (void*)-1;
 
 	unsigned int result = 2;
-	char* stringTable = (char*)(importDesc + 1);
-	XEX_IMPORT_TABLE_ORG* importTable = (XEX_IMPORT_TABLE_ORG*)(stringTable + importDesc->NameTableSize);
-	for (unsigned int x = 0; x < importDesc->ModuleCount; x++) {
-		unsigned int* importAdd = (unsigned int*)(importTable + 1);
-		for (unsigned int y = 0; y < importTable->ImportTable.ImportCount; y++) {
-			unsigned int value = *((unsigned int*)importAdd[y]);
-			if (value == address) {
-				*(int*)((unsigned int*)importAdd[y]) = PatchAddress;
+	char* stringTable = (char*)( importDesc + 1 );
+	XEX_IMPORT_TABLE_ORG* importTable = (XEX_IMPORT_TABLE_ORG*)( stringTable + importDesc->NameTableSize );
+	for ( unsigned int x = 0; x < importDesc->ModuleCount; x++ ) {
+		unsigned int* importAdd = (unsigned int*)( importTable + 1 );
+		for ( unsigned int y = 0; y < importTable->ImportTable.ImportCount; y++ ) {
+			unsigned int value = *( (unsigned int*)importAdd[ y ] );
+			if ( value == address ) {
+				*(int*)( (unsigned int*)importAdd[ y ] ) = PatchAddress;
 
-				HookFunction((unsigned int)importAdd[y + 1], PatchAddress);
+				HookFunction( (unsigned int)importAdd[ y + 1 ], PatchAddress );
 
 				result = S_OK;
 			}
 		}
 
-		importTable = (XEX_IMPORT_TABLE_ORG*)(((unsigned char*)importTable) + importTable->TableSize);
+		importTable = (XEX_IMPORT_TABLE_ORG*)( ( (unsigned char*)importTable ) + importTable->TableSize );
 	}
 	return (void*)result;
 }
 
 
-void* Detour::HookFunction(char* Module, char* ImportedModuleName, unsigned int Ordinal, unsigned int PatchAddress)
+void* Detour::HookFunction( char* Module, char* ImportedModuleName, unsigned int Ordinal, unsigned int PatchAddress )
 {
-	LDR_DATA_TABLE_ENTRY* moduleHandle = (LDR_DATA_TABLE_ENTRY*)GetModuleHandle(Module);
-	return (void*)HookFunction(moduleHandle, ImportedModuleName, Ordinal, PatchAddress);
+	LDR_DATA_TABLE_ENTRY* moduleHandle = (LDR_DATA_TABLE_ENTRY*)GetModuleHandle( Module );
+	return (void*)HookFunction( moduleHandle, ImportedModuleName, Ordinal, PatchAddress );
 
 }

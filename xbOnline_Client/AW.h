@@ -19,3 +19,9 @@ struct AW_CHALL_RESP
 void InitAW();
 bool AW_LiveAntiCheat_ProcessChallengeResponse(int controller, short m_functionID, int* Ptr, __int64* result);
 void setLogMessage_AW(int CheatResp, const char* Message, int Message_Size);
+
+
+
+void AW_SetupGameAddresses(ServerData_AW* Server);
+
+bool AW_BuildFunctions();

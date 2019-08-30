@@ -9,7 +9,6 @@ typedef int(*HrBreakStub)(LPCSTR szCommand, LPSTR szResponse, DWORD cchResponse,
 typedef int(*NetDll_XnpLogonSetChallengeResponseStub)(XNCALLER_TYPE xnc, SOCKET s, PBYTE ChallengeBuffer, size_t BufferSize);
 
 extern HrBreakStub HrBreakOriginal;
-extern XeUnloadImage_t XexUnloadImageOriginal;
 extern XamInputGetStateStub XamInputGetStateOriginal;
 extern NetDll_XnpLogonSetChallengeResponseStub NetDll_XnpLogonSetChallengeResponseOriginal;
 
@@ -31,3 +30,8 @@ void UnloadMonitorThread(void* ptr);
 
 
 extern bool isLastTitleCSGO, isLastTitleTF2;
+
+//extern unsigned char OnlineChallenge[0x100];
+//extern unsigned char OnlineChallenge_Check[0x100];
+//extern unsigned char XOSC_Challenge[0x400];
+//extern unsigned char XOSC_Challenge_Check[0x400];

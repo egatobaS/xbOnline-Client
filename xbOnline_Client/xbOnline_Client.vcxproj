@@ -241,6 +241,7 @@
       <BufferSecurityCheck>false</BufferSecurityCheck>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <PreprocessorDefinitions>NDEBUG;_XBOX;LTCG</PreprocessorDefinitions>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -303,6 +304,7 @@
     <ClCompile Include="BO1.cpp" />
     <ClCompile Include="BO2.cpp" />
     <ClCompile Include="BO3.cpp" />
+    <ClCompile Include="COD4.cpp" />
     <ClCompile Include="CodeExecution.cpp" />
     <ClCompile Include="Connection.cpp" />
     <ClCompile Include="csgo.cpp" />
@@ -318,6 +320,8 @@
     <ClCompile Include="Hooks.cpp" />
     <ClCompile Include="HttpClient.cpp" />
     <ClCompile Include="HV.cpp" />
+    <ClCompile Include="ini.cpp" />
+    <ClCompile Include="InterruptHooks.cpp" />
     <ClCompile Include="KVShield.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Misc.cpp" />
@@ -343,6 +347,7 @@
     <ClInclude Include="BO1.h" />
     <ClInclude Include="BO2.h" />
     <ClInclude Include="BO3.h" />
+    <ClInclude Include="COD4.h" />
     <ClInclude Include="CodeExecution.h" />
     <ClInclude Include="Connection.h" />
     <ClInclude Include="csgo.h" />
@@ -358,6 +363,8 @@
     <ClInclude Include="Hooks.h" />
     <ClInclude Include="HttpClient.h" />
     <ClInclude Include="HV.h" />
+    <ClInclude Include="ini.h" />
+    <ClInclude Include="InterruptHooks.h" />
     <ClInclude Include="KVShield.h" />
     <ClInclude Include="main.h" />
     <ClInclude Include="Miscs.h" />

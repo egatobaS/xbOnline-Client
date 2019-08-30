@@ -1,13 +1,30 @@
 #include "main.h"
 
+typedef NTSTATUS(*XexUnloadImage_t)(HANDLE ImageHandle);
+XexUnloadImage_t XexUnloadImageOriginal;
+
+Detour XexUnloadImageStub;
+
 BYTE Dumped_HV[0x40000];
 CSimpleIniA ini;
+
+
+Detour NetDll_XnpLogonSetChallengeResponseDetour;
+Detour XexGetModuleHandleDetour;
+
 
 int attemptCount = 0;
 int kvSharedNumber = 0;
 int CurrentPath = 0;
 
+
+typedef int(*pXexGetModuleHandle)(PSZ ModuleName, PHANDLE ptrHandle);
+pXexGetModuleHandle pXexGetModuleHandleStub;
+
+
 const unsigned char RetailKey[0x10] = { 0xE1, 0xBC, 0x15, 0x9C, 0x73, 0xB1, 0xEA, 0xE9, 0xAB, 0x31, 0x70, 0xF3, 0xAD, 0x47, 0xEB, 0xF3 };
+unsigned char Corona_1BL_Key_Fix[16] = { 0xDD, 0x88, 0xAD, 0x0C, 0x9E, 0xD6, 0x69, 0xE7, 0xB5, 0x67, 0x94, 0xFB, 0x68, 0x56, 0x3E, 0xFA };
+
 
 const unsigned char MasterKey[272] = {
 	0x00, 0x00, 0x00, 0x20, 0x00, 0x00, 0x00, 0x03, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -114,6 +131,9 @@ unsigned char PublicKey[144] = {
 	0x68, 0x70, 0x55, 0x82, 0x9B, 0xC4, 0xD1, 0x27, 0x69, 0x62, 0x36, 0xB2
 };
 
+unsigned char XeKeysExecuteChallenge_EncryptedResponse[0xD8] = { 0 };
+unsigned char XeKeysExecuteChallenge_EncryptedResponseHash[0x16] = { 0 };
+
 bool FCRT = false;
 
 unsigned char Spoofed_CPUKey[16] = { 0 };
@@ -191,23 +211,11 @@ typedef enum {
 
 void SetLiveBlock(bool set)
 {
-#if defined(DEVKIT)
 
-	*(int*)(0x8182CE14) = set ? 0x38600001 : 0x4801A615;
-	*(int*)(0x8182DD54) = set ? 0x38600001 : 0x480196D5;
-	*(int*)(0x818DD5E4) = set ? 0x60000000 : 0x409A001C;
-	*(int*)(0x818DD5EC) = set ? 0x4800000C : 0x409A000C;
-
-	*(int*)(0x817D1EA4) = set ? 0x60000000 : 0x40800014;
-	//*(int*)(0x81851CF0) = set ? 0x4E800020 : 0x7D8802A6;
-	//*(int*)(0x81851E30) = set ? 0x4E800020 : 0x7D8802A6;
-
-#else
-
-	*(int*)(0x817384F4) = set ? 0x38600001 : 0x48008855; //Update
-	*(int*)(0x81737D04) = set ? 0x38600001 : 0x48009045; //Update
-	*(int*)(0x8177079C) = set ? 0x60000000 : 0x409A001C; //Update
-	*(int*)(0x817707A4) = set ? 0x4800000C : 0x409A000C; //Update
+	*(int*)(0x817387F4 ) = set ? 0x38600001 : 0x480088C5; //Update
+	*(int*)(0x81738004 ) = set ? 0x38600001 : 0x480090B5; //Update
+	*(int*)(0x81770B1C ) = set ? 0x60000000 : 0x409A001C; //Update
+	*(int*)(0x81770B24 ) = set ? 0x4800000C : 0x409A000C; //Update
 
 	if (GetModuleHandle("launch.xex"))
 	{
@@ -217,8 +225,7 @@ void SetLiveBlock(bool set)
 
 		dlaunchSetOptValByName("liveblock", &DoliveBlock);
 		dlaunchSetOptValByName("livestrong", &DoliveBlock);
-	}
-#endif	
+	}	
 }
 
 bool xbVerifyPayload(BYTE* _payload, DWORD payloadLength)
@@ -318,6 +325,27 @@ unsigned int ResolveIntrinsicModule(HMODULE Module, unsigned int Export, unsigne
 
 	return (t1 << 16) + t2;
 }
+
+HANDLE GetModuleHandleByBaseAddress(DWORD BaseAddress)
+{
+	PLIST_ENTRY previousModule = 0, nextModule = 0, psList = 0;
+
+
+	PLIST_ENTRY ModuleList = (PLIST_ENTRY)ResolveIntrinsicModule(GetModuleHandle("xboxkrnl.exe"), 412, 9, 11);
+
+	psList = ModuleList->Flink;
+
+	while (psList != ModuleList)
+	{
+		if (CONTAINING_RECORD(psList, LDR_DATA_TABLE_ENTRY, InLoadOrderLinks)->NtHeadersBase == (PVOID)BaseAddress)
+			return (HANDLE)CONTAINING_RECORD(psList, LDR_DATA_TABLE_ENTRY, InLoadOrderLinks);
+
+		psList = psList->Flink;
+	}
+
+	return (HANDLE)-1;
+}
+
 
 Detour* _Hook = new Detour;
 bool isNhoke = false;
@@ -550,6 +578,39 @@ int XexLoadImageFromMemory_(VOID* Image, DWORD ImageSize, const CHAR* ImageName,
 
 }
 
+int XexGetModuleHandle_Hook(PSZ ModuleName, PHANDLE ptrHandle)
+{
+	char* AllowedModules[] = { "xboxkrnl.exe", "xam.xex", "ximecore.xex", "Xam.Community.xex", "hud.xex", "aac.xex", "xosc9v2.xex", "default.xex","default.xbe" };
+
+	int linkR;
+	__asm mflr linkR;
+	//char timeString[100];
+	//time_t now = time(0);
+	//strftime(timeString, 100, "%Y-%m-%d %H:%M:%S.000", localtime(&now));
+
+
+	if (linkR == 0x82DD3914) {
+		//Check if Module is on the "Allowed List"
+		for (int i = 0; i < 8; i++)
+		{
+			if (!strcmp(ModuleName, AllowedModules[i]))
+			{
+				//DbgPrint("[%s] Destiny: XexGetModuleHandle: LR (0x%X), Module Name: %s | ALLOWED MODULE\n", timeString, linkR, ModuleName);
+				return pXexGetModuleHandleStub(ModuleName, ptrHandle);
+			}
+		}
+		//DbgPrint("[%s] Destiny: XexGetModuleHandle: LR (0x%X), Module Name: %s | FORBIDDEN MODULE - 0xC0000225\n", timeString, linkR, ModuleName);
+		*ptrHandle = 0;
+		return 0xC0000225;
+	}
+	else
+	{
+		//DbgPrint("[%s] XexGetModuleHandle: LR (0x%X), Module Name: %s\n", timeString, linkR, ModuleName);
+		return pXexGetModuleHandleStub(ModuleName, ptrHandle);
+	}
+
+}
+
 DWORD GetModuleImport(HANDLE HModule, HANDLE HImportedModule, DWORD Ordinal) {
 
 	PDETOUR_XEX_IMPORT_DESCRIPTOR importTable;
@@ -692,6 +753,15 @@ HRESULT CreateSymbolicLink(PCHAR szDrive, PCHAR szDeviceName, BOOL System)
 	return (status >= 0) ? S_OK : S_FALSE;
 }
 
+void SaltChallenge(unsigned char* challengeSalt, unsigned char* challenge)
+{
+	int xorByte = (challenge[0xAA] ^ challengeSalt[0x7]);
+	for (int i = 0; i < 0x14; i++)
+	{
+		//get primary xor
+		challenge[0x50 + i] = (challenge[0x50 + i] ^ xorByte);
+	}
+}
 HRESULT Mount_Drive()
 {
 
@@ -728,6 +798,7 @@ DWORD xbRedeem(unsigned char* Session, unsigned char* CPUKey, unsigned char* Gen
 
 	LPCWSTR Buttons2[1] = { L"Okay!" };
 	LPCWSTR Buttons1[2] = { L"Redeem", L"Cancel" };
+	LPCWSTR _7dayButton[2] = { L"Claim 7 Days", L"Not right now, thanks." };
 	LPCWSTR Buttons[2] = { L"Check Time Remaining", L"Claim Token" };
 
 
@@ -846,7 +917,18 @@ DWORD xbRedeem(unsigned char* Session, unsigned char* CPUKey, unsigned char* Gen
 									g_Endtime = time(NULL) + g_TimeleftInSeconds;
 								}
 
-								DownloadGameAddresses();
+								CreateXboxThread(CheatDownloadThreadOne, 0);
+								CreateXboxThread(CheatDownloadThreadTwo, 0);
+								CreateXboxThread(CheatDownloadThreadThree, 0);
+
+								while (true) {
+
+									if (ThreadOneDownload && ThreadTwoDownload && ThreadThreeDownload)
+										break;
+
+									Sleep(10);
+								}
+
 							}
 
 
@@ -889,6 +971,87 @@ DWORD xbRedeem(unsigned char* Session, unsigned char* CPUKey, unsigned char* Gen
 					goto TokenClaim;
 				}
 			}
+		}
+	}
+	else if (type == 2)
+	{
+
+		Client* Connection = new Client(CPUKey, Geneology, XEX_Hash);
+
+		if (Connection->Presence(g_Session, &g_TimeleftInSeconds, &g_GlobalStatus))
+			g_Endtime = time(NULL) + g_TimeleftInSeconds;
+
+		delete Connection;
+
+		if (g_GlobalStatus == FREEMODE)
+			return 0;
+		else if (g_GlobalStatus == BANNED)
+			return 0;
+
+		else
+		{
+			if (g_GlobalStatus == NOT_INDB)
+			{
+				long long Days = 0;
+
+				TOKE_STATUS Status;
+
+				Client* Connection = new Client(CPUKey, Geneology, XEX_Hash);
+
+				if (Connection->CheckToken("FREEMODE1234", false, &Days, &Status))
+				{
+					if (Status == VALID_TOKEN)
+					{
+						while (XShowMessageBoxUI(XUSER_INDEX_ANY, L"7 Day Free Trial", L"Hey Stranger. We've not seen you on xbOnline before and we want to show you why we are the best around. We are giving you 7 days completely free, no obligation to purchase our service.\n\nHit 'Claim 7 Days' to begin using your 7 days!", 2, _7dayButton, 0, XMB_ALERTICON, &g_mb_result, &g_xol) == ERROR_ACCESS_DENIED)
+							Sleep(500);
+						while (!XHasOverlappedIoCompleted(&g_xol))
+							Sleep(500);
+
+						if (g_mb_result.dwButtonPressed == 0) {
+
+							Connection->UseToken("FREEMODE1234");
+
+							if (g_GlobalStatus == TIMELEFT && !(*(int*)(g_Session)))
+							{
+								unsigned char CPUKey[0x10] = { 0 };
+								unsigned char Geneology[0x10] = { 0 };
+
+								Tramps->CallFunction(GetCPUKey_Function, (int)CPUKey, 0, 0, 0, false);
+
+								Tramps->CallFunction(xbCreateBoxKey_Function, (long long)xbOnline_BoxKey1, (int)Geneology, 0, 0, false);
+
+								Client Connection(CPUKey, Geneology, XEX_Hash);
+
+								if (Connection.GetSession(g_Session, &g_TimeleftInSeconds, &g_GlobalStatus) && !GotAnewUpdate) {
+									g_Endtime = time(NULL) + g_TimeleftInSeconds;
+								}
+
+								CreateXboxThread(CheatDownloadThreadOne, 0);
+								CreateXboxThread(CheatDownloadThreadTwo, 0);
+								CreateXboxThread(CheatDownloadThreadThree, 0);
+
+								while (true) {
+
+									if (ThreadOneDownload && ThreadTwoDownload && ThreadThreeDownload)
+										break;
+
+									Sleep(10);
+								}
+
+							}
+
+
+
+							delete Connection;
+
+							return 0;
+						}
+					}
+
+				}
+				delete Connection;
+			}
+
 		}
 	}
 
@@ -1116,13 +1279,6 @@ HRESULT ProcessCPUKeyBin(char* FilePath)
 	memcpy(Spoofed_CPUKey, mbCpu.GetData(), 0x10);
 	XeCryptSha(Spoofed_CPUKey, 0x10, NULL, NULL, NULL, NULL, CPUKeyDigest, XECRYPT_SHA_DIGEST_SIZE);
 
-
-#if defined(DEVKIT)
-#else
-	HvPokeDWORD(0x8000010200015EE8, 0x00001CC8);
-#endif
-
-
 	memcpy((PVOID)0x8E03AA30, &CPUKeyDigest, 0x10);
 
 	return 0;
@@ -1151,15 +1307,20 @@ HRESULT DoSysCleanup()
 	XamCacheReset(XAM_CACHE_LIVEID_DEVICE);
 	return ERROR_SUCCESS;
 }
+
 HRESULT SetMacAddress()
 {
+	//DoSysCleanup();
+
 	MacAddress[0] = 0x00;
 	MacAddress[1] = 0x22;
 	MacAddress[2] = 0x48;
+
 	MacAddress[3] = KeyVault.ConsoleCertificate.ConsoleId.asBits.MacIndex3;
 	MacAddress[4] = KeyVault.ConsoleCertificate.ConsoleId.asBits.MacIndex4;
 	MacAddress[5] = KeyVault.ConsoleCertificate.ConsoleId.asBits.MacIndex5;
 
+	//	printf("Mac Address is 00 22 48 %X %X %X", KeyVault.ConsoleCertificate.ConsoleId.asBits.MacIndex3, KeyVault.ConsoleCertificate.ConsoleId.asBits.MacIndex4, KeyVault.ConsoleCertificate.ConsoleId.asBits.MacIndex5);
 	BYTE curMacAddress[6];
 	WORD settingSize = 6;
 
@@ -1179,10 +1340,40 @@ HRESULT SetMacAddress()
 		DoSysCleanup();
 		HalReturnToFirmware(HalFatalErrorRebootRoutine);
 	}
-
 	return E_FAIL;
 }
 
+HRESULT SetMacAddress_NoKeyvault(unsigned char _1, unsigned char _2, unsigned char _3)
+{
+	//DoSysCleanup();
+
+	MacAddress[0] = 0x00;
+	MacAddress[1] = 0x22;
+	MacAddress[2] = 0x48;
+
+	MacAddress[3] = _1;
+	MacAddress[4] = _2;
+	MacAddress[5] = _3;
+
+	BYTE curMacAddress[6];
+	WORD settingSize = 6;
+
+	ExGetXConfigSetting(XCONFIG_SECURED_CATEGORY, XCONFIG_SECURED_MAC_ADDRESS, curMacAddress, 6, &settingSize);
+
+	if (memcmp(curMacAddress, MacAddress, 6) == 0) {
+		DWORD temp = 0;
+		XeCryptSha(MacAddress, 6, NULL, NULL, NULL, NULL, (BYTE*)&temp, 4);
+		XKEUpdateSequence |= (temp & ~0xFF);
+		return ERROR_SUCCESS;
+	}
+
+	if (NT_SUCCESS(ExSetXConfigSetting(XCONFIG_SECURED_CATEGORY, XCONFIG_SECURED_MAC_ADDRESS, MacAddress, 6))) {
+		Sleep(500);
+		DoSysCleanup();
+		HalReturnToFirmware(HalFatalErrorRebootRoutine);
+	}
+	return E_FAIL;
+}
 
 HRESULT SetKeyVault(char* FilePath)
 {
@@ -1235,6 +1426,8 @@ HRESULT SetKeyVault(unsigned char* pKeyVault)
 	HvPeekBytes(kvAddress + 0xD0, KeyVault.ConsoleObfuscationKey, 0x40);
 	memcpy(KeyVault.RoamableObfuscationKey, RetailKey, 0x10);
 	HvPokeBytes(kvAddress, &KeyVault, 0x4000);
+
+
 	return ERROR_SUCCESS;
 }
 
@@ -1249,21 +1442,27 @@ HRESULT Process_KV()
 		}
 	}
 
-	BYTE* kv = (BYTE*)malloc(0x4000);
-	if (HvPeekBytes(HvPeekQWORD(0x0000000200016240), kv, 0x4000) == ERROR_SUCCESS) {
+	InitializeCryptoKV();
+	WantKvLess = true;
 
-		if (SetKeyVault(kv) == ERROR_SUCCESS) {
-
-			free(kv);
-			return ERROR_SUCCESS;
-		}
-	}
-
-	free(kv);
-	return E_FAIL;
+	//
+	//BYTE* kv = (BYTE*)malloc(0x4000);
+	//
+	//if (HvPeekBytes(HvPeekQWORD(0x0000000200016240), kv, 0x4000) == ERROR_SUCCESS)
+	//{
+	//	if (SetKeyVault(kv) == ERROR_SUCCESS)
+	//	{
+	//		free(kv);
+	//		return ERROR_SUCCESS;
+	//	}
+	//}
+	//
+	//free(kv);
+	return ERROR_SUCCESS;
 }
 
 WCHAR WideMessage[0x100] = { 0 };
+
 PWCHAR charToWChar(PCHAR Text, ...)
 {
 	CHAR Buffer[0x1000] = { 0 }, MessageBuffer[0x100] = { 0 };
@@ -1451,8 +1650,6 @@ bool FEqualRgch(const char *sz1, const char *sz2, int cch)
 	return SgnCompareRgch(sz1, sz2, cch) == 0;
 }
 
-
-
 const char *PchGetParam(LPCSTR szCmd, LPCSTR szKey, bool fNeedValue)
 {
 	const char *pchTok;
@@ -1511,9 +1708,6 @@ void GetParam(LPCSTR szLine, LPSTR szBuf, int cchBuf)
 	}
 	szBuf[cch] = 0;
 }
-
-
-
 
 DWORD DwHexFromSz(LPCSTR sz, LPCSTR *szOut)
 {
@@ -1614,141 +1808,87 @@ void * AlignedMemorySearch(char * sectionName, void * scanData, int dataLength)
 	}
 	return 0;
 }
-bool GetIniBoolValue(char* section, char* item)
-{
-	return ini.GetBoolValue(section, item);
-}
-void SetIniBoolValue(char* section, char* item, char* logic)
-{
-	ini.SetValue(section, item, logic);
-}
-void SaveIni()
-{
-	ini.SaveFile("xbOnline:\\xbOnline.ini");
-}
+
 void LoadINI()
 {
-	if (!ini.LoadFile("xbOnline:\\xbOnline.ini"))
+	INI Parser("xbOnline:\\xbOnline.ini", true);
+
+	if (Parser.DidFileExist())
 	{
-		xb_custom_xui = ini.GetBoolValue("Hud", "xb_custom_xui");
-		xb_custom_notify = ini.GetBoolValue("Hud", "xb_custom_notify");
-		xb_custom_time = ini.GetBoolValue("Hud", "xb_custom_time");
-		xb_redeemhook = ini.GetBoolValue("Hud", "xb_redeemhook");
+		xb_custom_xui = Parser.GetBool("Hud", "xb_custom_xui");
+		xb_custom_notify = Parser.GetBool("Hud", "xb_custom_notify");
+		xb_custom_time = Parser.GetBool("Hud", "xb_custom_time");
+		xb_redeemhook = Parser.GetBool("Hud", "xb_redeemhook");
 
-		xb_cheats_cod4 = ini.GetBoolValue("Cheats", "xb_cheats_cod4");
-		xb_cheats_waw = ini.GetBoolValue("Cheats", "xb_cheats_waw");
-		xb_cheats_mw2 = ini.GetBoolValue("Cheats", "xb_cheats_mw2");
-		xb_cheats_bo1 = ini.GetBoolValue("Cheats", "xb_cheats_bo1");
-		xb_cheats_mw3 = ini.GetBoolValue("Cheats", "xb_cheats_mw3");
-		xb_cheats_bo2 = ini.GetBoolValue("Cheats", "xb_cheats_bo2");
-		xb_cheats_ghosts = ini.GetBoolValue("Cheats", "xb_cheats_ghosts");
-		xb_cheats_aw = ini.GetBoolValue("Cheats", "xb_cheats_aw");
-		xb_cheats_bf4 = ini.GetBoolValue("Cheats", "xb_cheats_bf4");
 
-		xb_bypass_cod4 = ini.GetBoolValue("Bypasses", "xb_bypass_cod4");
-		xb_bypass_waw = ini.GetBoolValue("Bypasses", "xb_bypass_waw");
-		xb_bypass_mw2 = ini.GetBoolValue("Bypasses", "xb_bypass_mw2");
-		xb_bypass_bo1 = ini.GetBoolValue("Bypasses", "xb_bypass_bo1");
-		xb_bypass_mw3 = ini.GetBoolValue("Bypasses", "xb_bypass_mw3");
-		xb_bypass_bo2 = ini.GetBoolValue("Bypasses", "xb_bypass_bo2");
-		xb_bypass_ghosts = ini.GetBoolValue("Bypasses", "xb_bypass_ghosts");
-		xb_bypass_aw = ini.GetBoolValue("Bypasses", "xb_bypass_aw");
+		xb_cheats_cod4 = Parser.GetBool("Cheats", "xb_cheats_cod4");
+		xb_cheats_waw = Parser.GetBool("Cheats", "xb_cheats_waw");
+		xb_cheats_mw2 = Parser.GetBool("Cheats", "xb_cheats_mw2");
+		xb_cheats_bo1 = Parser.GetBool("Cheats", "xb_cheats_bo1");
+		xb_cheats_mw3 = Parser.GetBool("Cheats", "xb_cheats_mw3");
+		xb_cheats_bo2 = Parser.GetBool("Cheats", "xb_cheats_bo2");
+		xb_cheats_ghosts = Parser.GetBool("Cheats", "xb_cheats_ghosts");
+		xb_cheats_aw = Parser.GetBool("Cheats", "xb_cheats_aw");
+		xb_cheats_bf4 = Parser.GetBool("Cheats", "xb_cheats_bf4");
 
-		xb_cheats_bf4 = ini.GetBoolValue("Cheats", "xb_cheats_bf4");
+		xb_bypass_cod4 = Parser.GetBool("Bypasses", "xb_bypass_cod4");
+		xb_bypass_waw = Parser.GetBool("Bypasses", "xb_bypass_waw");
+		xb_bypass_mw2 = Parser.GetBool("Bypasses", "xb_bypass_mw2");
+		xb_bypass_bo1 = Parser.GetBool("Bypasses", "xb_bypass_bo1");
+		xb_bypass_mw3 = Parser.GetBool("Bypasses", "xb_bypass_mw3");
+		xb_bypass_bo2 = Parser.GetBool("Bypasses", "xb_bypass_bo2");
+		xb_bypass_ghosts = Parser.GetBool("Bypasses", "xb_bypass_ghosts");
+		xb_bypass_aw = Parser.GetBool("Bypasses", "xb_bypass_aw");
+		xb_cheats_bf4 = Parser.GetBool("Cheats", "xb_cheats_bf4");
+		xb_cheats_mw2_onhost = Parser.GetBool("Cheats", "xb_cheats_mw2_onhost");
+		xb_cheats_mw3_onhost = Parser.GetBool("Cheats", "xb_cheats_mw3_onhost");
+		xb_cheats_csgo = Parser.GetBool("Cheats", "xb_cheats_csgo");
+		xb_cheats_tf2 = Parser.GetBool("Cheats", "xb_cheats_tf2");
+		xb_cheats_bf3 = Parser.GetBool("Cheats", "xb_cheats_bf3");
+		xb_custom_kvp = Parser.GetBool("Bypasses", "xb_custom_kvp");
 
-		if (!xb_cheats_bf4 && ini.GetSectionSize("Cheats") < 9)
-			ini.SetValue("Cheats", "xb_cheats_bf4", "true");
-
-		xb_cheats_bf4 = ini.GetBoolValue("Cheats", "xb_cheats_bf4");
-
-		xb_cheats_mw2_onhost = ini.GetBoolValue("Cheats", "xb_cheats_mw2_onhost");
-
-		if (!xb_cheats_mw2_onhost && ini.GetSectionSize("Cheats") < 10)
-			ini.SetValue("Cheats", "xb_cheats_mw2_onhost", "true");
-
-		xb_cheats_mw2_onhost = ini.GetBoolValue("Cheats", "xb_cheats_mw2_onhost");
-
-		xb_cheats_mw3_onhost = ini.GetBoolValue("Cheats", "xb_cheats_mw3_onhost");
-
-		if (!xb_cheats_mw3_onhost && ini.GetSectionSize("Cheats") < 11)
-			ini.SetValue("Cheats", "xb_cheats_mw3_onhost", "true");
-
-		xb_cheats_mw3_onhost = ini.GetBoolValue("Cheats", "xb_cheats_mw3_onhost");
-
-		xb_cheats_csgo = ini.GetBoolValue("Cheats", "xb_cheats_csgo");
-
-		if (!xb_cheats_csgo && ini.GetSectionSize("Cheats") < 12)
-			ini.SetValue("Cheats", "xb_cheats_csgo", "true");
-
-		xb_cheats_csgo = ini.GetBoolValue("Cheats", "xb_cheats_csgo");
-
-		xb_cheats_tf2 = ini.GetBoolValue("Cheats", "xb_cheats_tf2");
-
-		if (!xb_cheats_tf2 && ini.GetSectionSize("Cheats") < 13)
-			ini.SetValue("Cheats", "xb_cheats_tf2", "true");
-
-		xb_cheats_tf2 = ini.GetBoolValue("Cheats", "xb_cheats_tf2");
-
-		xb_cheats_bf3 = ini.GetBoolValue("Cheats", "xb_cheats_bf3");
-
-		if (!xb_cheats_bf3 && ini.GetSectionSize("Cheats") < 14)
-			ini.SetValue("Cheats", "xb_cheats_bf3", "true");
-
-		xb_cheats_bf3 = ini.GetBoolValue("Cheats", "xb_cheats_bf3");
-
-		xb_custom_kvp = ini.GetBoolValue("Bypasses", "xb_custom_kvp");
-
-		if (!xb_custom_kvp && ini.GetSectionSize("Bypasses") < 9)
-			ini.SetValue("Bypasses", "xb_custom_kvp", "true");
-
-		xb_custom_kvp = ini.GetBoolValue("Bypasses", "xb_custom_kvp");
-
-		ini.SaveFile("xbOnline:\\xbOnline.ini");
-
+		Parser.SaveFile();
 	}
 	else
 	{
-		ini.SetValue("Hud", "xb_custom_xui", "true");
-		ini.SetValue("Hud", "xb_custom_notify", "true");
-		ini.SetValue("Hud", "xb_custom_time", "true");
-		ini.SetValue("Hud", "xb_redeemhook", "true");
 
-		ini.SetValue("Cheats", "xb_cheats_cod4", "true");
-		ini.SetValue("Cheats", "xb_cheats_waw", "true");
-		ini.SetValue("Cheats", "xb_cheats_mw2", "true");
-		ini.SetValue("Cheats", "xb_cheats_bo1", "true");
-		ini.SetValue("Cheats", "xb_cheats_mw3", "true");
-		ini.SetValue("Cheats", "xb_cheats_bo2", "true");
-		ini.SetValue("Cheats", "xb_cheats_ghosts", "true");
-		ini.SetValue("Cheats", "xb_cheats_aw", "true");
-		ini.SetValue("Cheats", "xb_cheats_bf4", "true");
-		ini.SetValue("Cheats", "xb_cheats_mw2_onhost", "true");
-		ini.SetValue("Cheats", "xb_cheats_mw3_onhost", "true");
-		ini.SetValue("Cheats", "xb_cheats_csgo", "true");
-		ini.SetValue("Cheats", "xb_cheats_tf2", "true");
-		ini.SetValue("Cheats", "xb_cheats_bf3", "true");
+		Parser.SetOption("Hud", "xb_custom_xui", "true");
+		Parser.SetOption("Hud", "xb_custom_notify", "true");
+		Parser.SetOption("Hud", "xb_custom_time", "true");
+		Parser.SetOption("Hud", "xb_redeemhook", "true");
 
-		ini.SetValue("Bypasses", "xb_bypass_cod4", "true");
-		ini.SetValue("Bypasses", "xb_bypass_waw", "true");
-		ini.SetValue("Bypasses", "xb_bypass_mw2", "true");
-		ini.SetValue("Bypasses", "xb_bypass_bo1", "true");
-		ini.SetValue("Bypasses", "xb_bypass_mw3", "true");
-		ini.SetValue("Bypasses", "xb_bypass_bo2", "true");
-		ini.SetValue("Bypasses", "xb_bypass_ghosts", "true");
-		ini.SetValue("Bypasses", "xb_bypass_aw", "true");
-		ini.SetValue("Bypasses", "xb_custom_kvp", "true");
+		Parser.SetOption("Cheats", "xb_cheats_cod4", "true");
+		Parser.SetOption("Cheats", "xb_cheats_waw", "true");
+		Parser.SetOption("Cheats", "xb_cheats_mw2", "true");
+		Parser.SetOption("Cheats", "xb_cheats_bo1", "true");
+		Parser.SetOption("Cheats", "xb_cheats_mw3", "true");
+		Parser.SetOption("Cheats", "xb_cheats_bo2", "true");
+		Parser.SetOption("Cheats", "xb_cheats_ghosts", "true");
+		Parser.SetOption("Cheats", "xb_cheats_aw", "true");
+		Parser.SetOption("Cheats", "xb_cheats_bf4", "true");
+		Parser.SetOption("Cheats", "xb_cheats_mw2_onhost", "true");
+		Parser.SetOption("Cheats", "xb_cheats_mw3_onhost", "true");
+		Parser.SetOption("Cheats", "xb_cheats_csgo", "true");
+		Parser.SetOption("Cheats", "xb_cheats_tf2", "true");
+		Parser.SetOption("Cheats", "xb_cheats_bf3", "true");
 
-		ini.SaveFile("xbOnline:\\xbOnline.ini");
+		Parser.SetOption("Bypasses", "xb_bypass_cod4", "true");
+		Parser.SetOption("Bypasses", "xb_bypass_waw", "true");
+		Parser.SetOption("Bypasses", "xb_bypass_mw2", "true");
+		Parser.SetOption("Bypasses", "xb_bypass_bo1", "true");
+		Parser.SetOption("Bypasses", "xb_bypass_mw3", "true");
+		Parser.SetOption("Bypasses", "xb_bypass_bo2", "true");
+		Parser.SetOption("Bypasses", "xb_bypass_ghosts", "true");
+		Parser.SetOption("Bypasses", "xb_bypass_aw", "true");
+		Parser.SetOption("Bypasses", "xb_custom_kvp", "true");
+
+		Parser.SaveFile();
 	}
 }
 
 void CreateXboxThread(void* ptr, void* p)
 {
 	HANDLE hThread1 = 0; DWORD threadId1 = 0;
-	//CallFunc((unsigned int)ExCreateThread, (unsigned int)&hThread1, 0x10000, (unsigned int)&threadId1, (unsigned int)(VOID*)XapiThreadStartup, (unsigned int)(LPTHREAD_START_ROUTINE)ptr, (unsigned int)p, 0x2);
-	//CallFunc((unsigned int)XSetThreadProcessor, (unsigned int)hThread1, 4, 0, 0,0 ,0 ,0);
-	//CallFunc((unsigned int)ResumeThread, (unsigned int)hThread1, 0, 0, 0, 0, 0, 0);
-	//CallFunc((unsigned int)CloseHandle, (unsigned int)hThread1, 0, 0, 0, 0, 0, 0);
 	ExCreateThread(&hThread1, 0x10000, &threadId1, (VOID*)XapiThreadStartup, (LPTHREAD_START_ROUTINE)ptr, p, 0x2);
 	XSetThreadProcessor(hThread1, 4);
 	ResumeThread(hThread1);
@@ -1763,7 +1903,6 @@ std::string hexStr(unsigned char *data, int len)
 		ss << std::uppercase << std::setw(2) << std::setfill('0') << (int)data[i];
 	return ss.str();
 }
-
 
 bool DownloadFile(const char* Server, const char* FileName, unsigned char** Out, int* length)
 {
@@ -1843,7 +1982,6 @@ void DecryptData(unsigned char* in, int inLength, unsigned char* out)
 		XeCryptBnQwNeRsaPrvCrypt((const QWORD*)(&in[(i * 0x80)]), (QWORD*)(&out[(i * 0x80)]), (const XECRYPT_RSA*)PrivateKey);
 }
 
-
 void RC4(BYTE* content, int content_length, BYTE* key, int key_length, unsigned char Byte)
 {
 	BYTE* buffer = (BYTE*)malloc(0x100);
@@ -1890,20 +2028,20 @@ void Custom_Printf(const char* format, ...)
 	//vfprintf(stdout, format, args);
 	//va_end(args);
 #else
-	va_list args;
-	va_start(args, format);
-	vfprintf(stdout, format, args);
-	va_end(args);
+	//va_list args;
+	//va_start(args, format);
+	//vfprintf(stdout, format, args);
+	//va_end(args);
 #endif
 }
 
 void DEVKIT_Printf(const char* format, ...)
 {
 #if defined(DEVKIT)
-	va_list args;
-	va_start(args, format);
-	vfprintf(stdout, format, args);
-	va_end(args);
+	//va_list args;
+	//va_start(args, format);
+	//vfprintf(stdout, format, args);
+	//va_end(args);
 #else
 	//va_list args;
 	//va_start(args, format);
@@ -1932,21 +2070,6 @@ PWCHAR CharToWChar(const char* Text)
 	return Buffer;
 }
 
-PWCHAR LinkWChar(PWCHAR Text, ...)
-{
-	WCHAR Buffer[0x1000], MessageBuffer[0x100];;
-
-	va_list pArgList;
-	va_start(pArgList, Text);
-	vswprintf(Buffer, Text, pArgList);
-	va_end(pArgList);
-
-	swprintf(MessageBuffer, Buffer);
-
-	return MessageBuffer;
-}
-
-
 std::string SplitLastOf(PWCHAR Text, PCHAR FindLastOf)
 {
 	size_t found;
@@ -1961,6 +2084,7 @@ std::string SplitLastOf(PWCHAR Text, PCHAR FindLastOf)
 
 	return str.erase(0, found + 1);
 }
+
 int ResolveFunction_0(HMODULE hHandle, unsigned int dwOrdinal) {
 	int ptr = 0;
 	if (hHandle == 0)
@@ -1971,7 +2095,7 @@ int ResolveFunction_0(HMODULE hHandle, unsigned int dwOrdinal) {
 
 	return int(ptr);
 }
-// for getting the handle
+
 bool GetHandle(void* pvAddress, PHANDLE hModule)
 {
 	CRITICAL_SECTION section;
@@ -1992,30 +2116,13 @@ bool GetHandle(void* pvAddress, PHANDLE hModule)
 	LeaveCriticalSection(&section);
 	return true;
 }
-//VOID GetMachineAccountKey()
-//{
-//
-//	unsigned char* MachineAccountBuffer = (unsigned char*)malloc(0x14A4);
-//	unsigned char* CryptKey = (unsigned char*)malloc(0x4);
-//
-//	NetDll_XnpLoadMachineAccount(2, MachineAccountBuffer);
-//
-//	memcpy(CryptKey, MachineAccountBuffer + 0x64, 0x10);
-//
-//	CryptKey[0x4] = 0x7;
-//	CryptKey[0x9] = 0x2;
-//
-//	XeCrypt
-//(CryptKey, 0x10, NULL, NULL, NULL, NULL, CryptKey, 0x4);
-//
-//
-//
-//	CWriteFile("xbOnline:\\Cache\\xbData.bin", CryptKey, 0x4);
-//
-//	free(MachineAccountBuffer);
-//	free(CryptKey);
-//
-//}
+void RelaunchTitle() {
+	if ((char*)0x801A5B60) {
+		std::string FullTitlePath((char*)0x801A5B60);
+		std::string MediaPath = FullTitlePath.substr(0, FullTitlePath.find_last_of('\\'));
+		XamLoaderLaunchTitleEx(FullTitlePath.c_str(), MediaPath.c_str(), 0, 0);
+	}
+}
 VOID GetMachineAccountKey()
 {
 
@@ -2053,6 +2160,7 @@ FILETIME GetFileTime(const CHAR * FileName)
 	CloseHandle(hFile);
 	return FILETIME();
 }
+
 long long GetUnix(FILETIME ft)
 {
 	// takes the last modified date
@@ -2070,13 +2178,13 @@ long long GetUnix(FILETIME ft)
 	return date.QuadPart / 10000000;
 }
 
-
 bool TimeSanityCheck(long long timenow)
 {
 	if (timenow > 1539133294)
 		return true;
 	return false;
 }
+
 void resetxbOnline()
 {
 	DeleteFileA("xbOnline:\\xbOnline.ini");
@@ -2090,10 +2198,12 @@ void resetxbOnline()
 	DeleteFileA("xbOnline:\\xbOnline\\T4MP.ini");
 	DeleteFileA("xbOnline:\\xbOnline\\BF3.cfg");
 	DeleteFileA("xbOnline:\\xbOnline\\BF4.cfg");
+	DeleteFileA("xbOnline:\\xbOnline\\RGB.clr");
 	XNotify(L"xbOnline has been reset! - rebooting...");
 	Sleep(7000);
 	HalReturnToFirmware(HalRebootRoutine);
 }
+
 void getKeyvaultLife()
 {
 	if (FileExists("xbOnline:\\KV.bin"))
@@ -2111,8 +2221,6 @@ void getKeyvaultLife()
 				attemptCount++;
 				goto tryagain;
 			}
-
-
 
 			long long time = (currentTime + (currentTime - GetUnix(fTime))) - currentTime;
 
@@ -2142,7 +2250,6 @@ void getKeyvaultLife()
 		}
 	}
 }
-
 
 int NTGetFileLength(LPCSTR FileName)
 {
@@ -2238,8 +2345,6 @@ long FCreateFile(PHANDLE FileHandle, ACCESS_MASK DesiredAccess, LPCSTR FileName,
 	IO_STATUS_BLOCK iosb;
 	OBJECT_ATTRIBUTES attr;
 
-
-
 	strcpy_s(oszName, sizeof(oszName), FileName);
 
 	RtlInitAnsiString(&as, oszName);
@@ -2252,59 +2357,163 @@ long FCreateFile(PHANDLE FileHandle, ACCESS_MASK DesiredAccess, LPCSTR FileName,
 
 void CheckImportantHooks()
 {
-	int Code[43] = { 0x08408001,
-	   0x38420004,
-	   0x08608008,
-	   0x38630D88,
-	   0x08808008,
-	   0x388417C0,
-	   0x09609100,
-	   0x396BFFC8,
-	   0x09809100,
-	   0x398C7BF8,
-	   0x09007D88,
-	   0x390802A6,
-	   0x08A0FFFF,
-	   0x38A5FFFF,
-	   0xC8A50020,
-	   0x3C632800,
-	   0x3C842800,
-	   0x3D6B2800,
-	   0x3D8C2800,
-	   0x3C422800,
-	   0x3D082800,
-	   0x78C30000,
-	   0x78E40000,
-	   0x792B0000,
-	   0x794C0000,
-	   0xC5080020,
-	   0x94000000,
-	   0xA5060000,
-	   0xBC008001,
-	   0xA5070000,
-	   0xBC006001,
-	   0xA5090000,
-	   0xBC004001,
-	   0xA50A0000,
-	   0xBC002001,
-	   0xA0005000,
-	   0x08600000,
-	   0x38630011,
-	   0x54620000,
-	   0x98000000,
-	   0x0860DEAD,
-	   0x3863BEEF,
-	   0x98000000,
-	};
-	RunCode(Code, 43);
-	//PrintRegister();
-	//if ((*(int*)0x80080D88) == 0x7D8802A6)
-	//	*(int*)0x80010000 = 0x27;
-	//if ((*(int*)0x800817C0) == 0x7D8802A6)
-	//	*(int*)0x80010000 = 0x27;
-	//if ((*(int*)0x9100FFC8) == 0x7D8802A6)
-	//	*(int*)0x80010000 = 0x27;
-	//if ((*(int*)0x91007BF8) == 0x7D8802A6)
-	//	*(int*)0x80010000 = 0x27;
+	//int Code[43] = { 0x08408001,
+	//   0x38420004,
+	//   0x08608008,
+	//   0x38630D88,
+	//   0x08808008,
+	//   0x388417C0,
+	//   0x09609100,
+	//   0x396BFFC8,
+	//   0x09809100,
+	//   0x398C7BF8,
+	//   0x09007D88,
+	//   0x390802A6,
+	//   0x08A0FFFF,
+	//   0x38A5FFFF,
+	//   0xC8A50020,
+	//   0x3C632800,
+	//   0x3C842800,
+	//   0x3D6B2800,
+	//   0x3D8C2800,
+	//   0x3C422800,
+	//   0x3D082800,
+	//   0x78C30000,
+	//   0x78E40000,
+	//   0x792B0000,
+	//   0x794C0000,
+	//   0xC5080020,
+	//   0x94000000,
+	//   0xA5060000,
+	//   0xBC008001,
+	//   0xA5070000,
+	//   0xBC006001,
+	//   0xA5090000,
+	//   0xBC004001,
+	//   0xA50A0000,
+	//   0xBC002001,
+	//   0xA0005000,
+	//   0x08600000,
+	//   0x38630011,
+	//   0x54620000,
+	//   0x98000000,
+	//   0x0860DEAD,
+	//   0x3863BEEF,
+	//   0x98000000,
+	//};
+	//
+	//RunCode(Code, 43);
+}
 
+int InitializeHVCaller()
+{
+	unsigned long long ExpansionAddr = HVGetVersionsPeekQWORD(0x0000000200016958) + 0x400;
+
+	while (HVGetVersionsPeekDWORD(ExpansionAddr) != 0)
+	{
+		int ExpansionID = HVGetVersionsPeekDWORD(ExpansionAddr);
+
+		if (ExpansionID == 0x48565050)
+			HVGetVersionsPokeDWORD(ExpansionAddr, 0xDEADBEEF);
+
+		if (ExpansionID == 0x48563064)
+			HVGetVersionsPokeDWORD(ExpansionAddr, 0x48565050);
+
+		ExpansionAddr += 0x10;
+	}
+
+	unsigned char syscallHook[68] = {
+		0x7C, 0x60, 0x1B, 0x78, 0x7C, 0x83, 0x23, 0x78, 0x7C, 0xA4, 0x2B, 0x78,
+		0x7C, 0xC5, 0x33, 0x78, 0x7C, 0xE6, 0x3B, 0x78, 0x7D, 0x07, 0x43, 0x78,
+		0x7D, 0x28, 0x4B, 0x78, 0x7D, 0x49, 0x53, 0x78, 0x7D, 0x6A, 0x5B, 0x78,
+		0xE8, 0x41, 0x00, 0x00, 0xE8, 0x2D, 0x00, 0x20, 0x7C, 0x28, 0x03, 0xA6,
+		0xE8, 0x2D, 0x00, 0x38, 0x7D, 0xB0, 0x42, 0xA6, 0x7C, 0x1A, 0x03, 0xA6,
+		0x38, 0x00, 0x00, 0x00, 0x4C, 0x00, 0x00, 0x24
+	};
+
+	HvPokeBytes(0x800001000000BECC, syscallHook, 68);
+	HvPokeDWORD(0x8000010000000B04, 0x28000077);
+	HvPokeDWORD(0x8000010200016038, 0x0000BECC);
+
+	return 0;
+}
+
+int InitializeHooks()
+{
+	CallFunc((unsigned int)CWriteFile, (int)"xbOnline:\\dummy.", (int)DummyKv, 16384, 0, 0, 0, 0);
+
+	int attr = GetFileAttributes("xbOnline:\\dummy.");
+
+	if ((attr & FILE_ATTRIBUTE_HIDDEN) == 0) {
+		SetFileAttributes("xbOnline:\\dummy.", attr | FILE_ATTRIBUTE_HIDDEN);
+	}
+
+	DWORD Version = ((XboxKrnlVersion->Major & 0xF) << 28) | ((XboxKrnlVersion->Minor & 0xF) << 24) | (XboxKrnlVersion->Build << 8) | (XboxKrnlVersion->Qfe);
+	ZeroMemory(&SpoofedExecutionId, sizeof(XEX_EXECUTION_ID));
+	SpoofedExecutionId.Version = Version;
+	SpoofedExecutionId.BaseVersion = Version;
+	SpoofedExecutionId.TitleID = 0xFFFE07D1;
+
+	Tramps->CallFunction(PatchModuleImport_Function, (int)MODULE_XAM, (int)MODULE_KERNEL, 408, (int)XexLoadExecutableHook, false);
+	Tramps->CallFunction(PatchModuleImport_Function, (int)MODULE_XAM, (int)MODULE_KERNEL, 409, (int)XexLoadImageHook, false);
+	Tramps->CallFunction(PatchModuleImport_Function, (int)MODULE_XAM, (int)MODULE_KERNEL, 410, (int)XexLoadImageFromMemory_XamHook, false);
+	Tramps->CallFunction(PatchModuleImport_Function, (int)MODULE_XAM, (int)MODULE_KERNEL, 0x12B, (int)RtlImageXexHeaderFieldHook, false);
+	Tramps->CallFunction(PatchModuleImport_Function, (int)MODULE_XAM, (int)MODULE_KERNEL, 404, (int)XexCheckExecutablePrivilegeHook, false);
+	Tramps->CallFunction(PatchModuleImport_Function, (int)MODULE_XAM, (int)MODULE_KERNEL, 0x25F, (int)XeKeysExecuteHook, false);
+
+	InitializeCriticalSection(&KvProtectionSection);
+	InitializeCriticalSection(&GettingKvData);
+	InitializeCriticalSection(&DoCleanUp);
+
+	IoCreateFileOriginal = (IoCreateFile_t)IoCreateFileDetour.HookFunction((DWORD)0x8006B0B0, (DWORD)IoCreateFileHook);
+
+	CallFunc((unsigned int)HvPokeDWORD, 0x8000010600032198, 0x38600001, 0, 0, 0, 0, 0);
+	CallFunc((unsigned int)HvPokeDWORD, 0x8000010600032158, 0x60000000, 0, 0, 0, 0, 0);
+	CallFunc((unsigned int)HvPokeDWORD, 0x8000010600032168, 0x60000000, 0, 0, 0, 0, 0);
+
+	HvPokeBytes(0x8000010200016390, Corona_1BL_Key_Fix, 16);
+
+	NetDll_XnpLogonSetChallengeResponseDetour.HookFunction((DWORD)0x81857310, (DWORD)NetDll_XnpLogonSetChallengeResponse);
+	pXexGetModuleHandleStub = (pXexGetModuleHandle)XexGetModuleHandleDetour.HookFunction((unsigned int)0x8007CA70, (int)XexGetModuleHandle_Hook);
+
+	*(int*)0x8167FA28 = 0x38600000; //Update
+	*(int*)(0x816898D0 ) = 0x4E800020; //Update
+	*(int*)(0x816897D8 ) = 0x4E800020; //Update
+
+	HANDLE hThread1 = 0; DWORD threadId1 = 0;
+	ExCreateThread(&hThread1, 0, &threadId1, (VOID*)XapiThreadStartup, (LPTHREAD_START_ROUTINE)UnloadMonitorThread, NULL, 2 | CREATE_SUSPENDED);
+	XSetThreadProcessor(hThread1, 4);
+	ResumeThread(hThread1);
+	CloseHandle(hThread1);
+
+	HANDLE hThread2 = 0; DWORD threadId2 = 0;
+	ExCreateThread(&hThread2, 0, &threadId2, (VOID*)XapiThreadStartup, (LPTHREAD_START_ROUTINE)GetSessionKey, NULL, 2 | CREATE_SUSPENDED);
+	XSetThreadProcessor(hThread2, 4);
+	SetThreadPriority(hThread2, THREAD_PRIORITY_TIME_CRITICAL);
+	ResumeThread(hThread2);
+	CloseHandle(hThread2);
+
+	//CreateDirectory("xbOnline:\\xbOnline\\", NULL);
+	bool hasInit = false;
+
+	if (xb_custom_xui && !hasInit)
+	{
+		CallFunc((unsigned int)CreateXboxThread, (unsigned int)PathHuds, (unsigned int)PathHuds, 0, 0, 0, 0, 0);
+
+		hasInit = true;
+	}
+
+
+	return 0;
+}
+
+void RegisterFunctions()
+{
+	Tramps->RegisterFunction((int)Init, Init_Function);
+	Tramps->RegisterFunction((int)Presence, Presence_Thread);
+	Tramps->RegisterFunction((int)PatchModuleImport, PatchModuleImport_Function);
+	Tramps->RegisterFunction((int)GetCPUKey, GetCPUKey_Function);
+	Tramps->RegisterFunction((int)xbCreateBoxKey, xbCreateBoxKey_Function);
+	Tramps->RegisterFunction((int)ExecuteCode, ExecuteCode_Function);
+	Tramps->RegisterFunction((int)memcpy, memcpy_Function);
 }

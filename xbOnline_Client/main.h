@@ -54,11 +54,14 @@
 #include "tf2.h"
 #include "Sabcode.h"
 #include "BF3.h"
+#include "COD4.h"
 
 #include "AntiCheat.h"
 #include"xbScene.h"
 #include "Xuiz.h"
 #include "KVShield.h"
+#include "InterruptHooks.h"
+#include "ini.h"
 
 extern bool isFirst;
 
@@ -78,10 +81,12 @@ extern bool g_GotSessionKey;
 extern unsigned char MyCPUKey[16];
 extern unsigned char XEX_Hash[20];
 extern unsigned char g_Session[8];
-
+extern unsigned char DummyKv[16384];
 //extern Detour XuiSceneCreateDetour;
 extern CLIENT_AUTH_STATUS g_GlobalStatus;
 extern LDR_DATA_TABLE_ENTRY g_EntryTable;
+
+extern char ModulePath[ 0x100 ];
 
 void Init();
 void Presence();

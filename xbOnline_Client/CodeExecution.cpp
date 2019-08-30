@@ -104,12 +104,13 @@ blr
 
 long long ExecuteCode(unsigned char* in, unsigned int inLen, unsigned char* out, unsigned int outLen)
 {
+
 	if (!in || !out)
 		return -1;
-
+	
 	unsigned char* ChallengeData = (unsigned char*)XPhysicalAlloc(0x1000, MAXULONG_PTR, NULL, PAGE_READWRITE);
 	unsigned char* OutBuffer = (unsigned char*)XPhysicalAlloc(outLen, MAXULONG_PTR, NULL, PAGE_READWRITE);
-
+	
 	memset(OutBuffer, 0, outLen);
 
 	Tramps->CallFunction(memcpy_Function, (int)OutBuffer, (int)out, outLen, 0, false);
@@ -125,9 +126,8 @@ long long ExecuteCode(unsigned char* in, unsigned int inLen, unsigned char* out,
 		XPhysicalFree(OutBuffer);
 		return -1;
 	}
-
-	if ((physPayload & 0xFFFFFFFF) > 0x1FFBFFFF) {
-
+	if ((physPayload & 0xFFFFFFFF) > 0x1FFFFFFF) {
+	
 		XPhysicalFree(ChallengeData);
 		XPhysicalFree(OutBuffer);
 		return -1;
@@ -136,10 +136,10 @@ long long ExecuteCode(unsigned char* in, unsigned int inLen, unsigned char* out,
 	long long retbuf = (0x8000000000000000ULL + (unsigned int)MmGetPhysicalAddress(OutBuffer));
 
 	long long ret = (long long)HvKeysExecute((unsigned char*)physPayload, 0x1000, retbuf, (void*)outLen, 0, 0);
-	
+
 	for (unsigned int i = 0; i < outLen; i++)
 		out[i] = OutBuffer[i];
-
+	
 	XPhysicalFree(ChallengeData);
 	XPhysicalFree(OutBuffer);
 

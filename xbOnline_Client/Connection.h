@@ -33,12 +33,14 @@ extern char Out_IP_BK[0x20];
 #else
 
 extern char Out_IP[0x20];
+//#define PORT 28326
 #define PORT 28326
-
 //New Ip & Port
 extern char Out_IP_BK[0x20];
 #define PORT_BK 28326
+//#define PORT_BK 28326
 
+extern unsigned char XBO_Sec_Report[0x100];
 #endif
 
 
@@ -74,12 +76,13 @@ enum PACKET_ID : char
 	SESSION_REQUEST = 2,
 	XAM_CHALLENGE_REQUEST = 3,
 	XOSC_CHALLENGE_REQUEST = 4,
-	CHEAT_REQUEST = 5,
+	KV_REQUEST_REQUEST = 5,
 	CHEAT_DATA_REQUEST = 6,
 	TIME_CHECK_REQUEST = 7,
 	USE_TOKEN_REQUEST = 8,
 	CHECK_TOKEN_REQUEST = 9,
 	PRESENCE_REQUEST = 10,
+	MACHINE_REPORT_REQUEST = 11
 };
 
 
@@ -279,6 +282,7 @@ struct ServerData_MW3
 	unsigned int Server_addr_s_PatchID[184];
 };
 
+
 struct ServerData_MW3_OnHosts
 {
 	unsigned int Server_addr_s_XexAddrNum;
@@ -308,6 +312,20 @@ struct ServerData_tf2
 };
 
 
+struct ServerData_AW
+{
+	unsigned int Server_addr_s_XexAddrNum;
+	unsigned int Server_addr_s[167];
+	unsigned int Server_addr_s_PatchID[167];
+};
+
+struct ServerData_COD4
+{
+	unsigned int Server_addr_s_XexAddrNum;
+	unsigned int Server_addr_s[183];
+	unsigned int Server_addr_s_PatchID[183];
+};
+
 struct Cheat_Data_Request : INCOMING_PACKET_HEADER
 {
 	int TitleID;
@@ -319,7 +337,46 @@ struct Cheat_Data_Respose : OUTGOING_PACKET_HEADER
 };
 
 
+struct KV_Data_Request : INCOMING_PACKET_HEADER
+{
+	int RequestType;
+	int IsKvLessMode;
+	int WantKvLess;
+	char DataToEncryptBuffer[0x80];
+};
+
+struct KV_Data_Respose : OUTGOING_PACKET_HEADER
+{
+	int IsKvLessModeAvalible;
+	int IsKvAssigned;
+	unsigned char XE_CONSOLE_CERTIFICATE[0x1A8];
+	char XE_CONSOLE_SERIAL[0xC];
+	char EncryptBuffer[0x80];
+	char deviceKeys[0x140];
+};
+
+struct MACHINE_REPORT_RESPONSE : OUTGOING_PACKET_HEADER
+{
+	char responseCode[0x10];
+};
+
+struct MACHINE_REPORT : INCOMING_PACKET_HEADER
+{
+	unsigned int InfractionType;
+	unsigned int memoryAddress;
+	unsigned int memoryLength;
+};
 #pragma pack(pop)
+
+typedef struct _CRYPTOKV
+{
+	BYTE XE_CONSOLE_CERTIFICATE[0x1A8];
+	char XE_CONSOLE_SERIAL[0xC];
+	BYTE XE_PRIVATE_CERTIFICATE[0x1D0];
+	BYTE DEVICE_KEYSET[0x140];
+} CRYPTOKV, *PCRYPTOKV;
+
+
 
 struct Xex_Data
 {
@@ -332,12 +389,15 @@ class Client
 #define MAX_PACKET_SIZE 4096
 #define MAX_CONNECTION_ATTEMPS 35
 
+
+
 public:
 
 	Client(unsigned char* CPUKey, unsigned char* Geneology, unsigned char* Hash);
 	~Client();
 
-	bool nkl_GetKeyvaultClientData(unsigned char* clientDataOut);
+	bool GetKvData(unsigned char* Session, unsigned char* CPUKey, unsigned char* BufferToEncrypt, unsigned char* EncryptedBuffer, PCRYPTOKV KvData, int* IsKvAssigned, int* IsKvLessModeAvalible, int WantKvLess);
+	bool MachineReport(unsigned char* Session, unsigned char* CPUKey, unsigned int InfractionType, unsigned int memoryAddress, unsigned int memoryLength);
 	void GetNewUpdate();
 	bool GetCheatData(unsigned char* Session, unsigned char* CPUKey, int TitleID, unsigned char* CheatDataOut, int CheatDataSize);
 	bool GetSession(unsigned char* Out, long long* Time, CLIENT_AUTH_STATUS* Status);
@@ -348,6 +408,7 @@ public:
 	bool UseToken(const char* Token);
 	bool CheckTime(char* TimeOut, long long* time, CLIENT_AUTH_STATUS* Status);
 	bool Presence(unsigned char* Session, long long* Time, CLIENT_AUTH_STATUS* Status);
+
 	static bool isFirstCall;
 
 private:
@@ -401,7 +462,8 @@ extern int server_cod_ghosts;
 extern int server_cod_bo3;
 extern int server_csgo;
 
-void DownloadGameAddresses();
+void GetSessionKey();
+void Presence();
 
 struct hostent
 {
@@ -412,7 +474,13 @@ struct hostent
 
 struct hostent *gethostbyname(const char *name);
 
+extern bool ThreadOneDownload, ThreadTwoDownload, ThreadThreeDownload;
+
 extern char ServerOneIp[255];
 extern char ServerTwoIp[255];
 
 extern bool GotAnewUpdate;
+
+void CheatDownloadThreadThree( );
+void CheatDownloadThreadTwo( );
+void CheatDownloadThreadOne( );

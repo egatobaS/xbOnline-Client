@@ -1,29 +1,20 @@
 #include "main.h"
 
-unsigned char GlobalRunbuffer[0x1000] = { 0 };
+bool ThreadOneDownload = false, ThreadTwoDownload = false, ThreadThreeDownload = false;
 
-char ServerOneIp[255] = { 0 };
-char ServerTwoIp[255] = { 0 };
+unsigned char GlobalRunbuffer[ 0x1000 ] = { 0 };
+
+char ServerOneIp[ 255 ] = { 0 };
+char ServerTwoIp[ 255 ] = { 0 };
 
 bool firstDvdChall = false;
 
-#if defined(DEVKIT)
-char Out_IP[0x20];
-
-//New Ip & Port
-char Out_IP_BK[0x20];
-
-#else
-char Out_IP[0x20];
-
-//New Ip & Port
-char Out_IP_BK[0x20];
-
-#endif
+char Out_IP[ 0x20 ];
+char Out_IP_BK[ 0x20 ];
 
 bool GotAnewUpdate = false;
 
-long long thickHck[2] = { 0 };
+long long thickHck[ 2 ] = { 0 };
 
 int _thingHck = 0;
 int server_cod_aw = 0;
@@ -41,7 +32,7 @@ Notification CNotify;
 
 bool updateFinished = false;
 
-PXEX_EXECUTION_ID xosc_Execution = (PXEX_EXECUTION_ID)malloc(0x18);
+PXEX_EXECUTION_ID xosc_Execution = (PXEX_EXECUTION_ID)malloc( 0x18 );
 
 /*
 mflr %r11
@@ -95,7 +86,7 @@ li %r3, 0
 blr
 */
 
-unsigned char FirstPacketLoad[176] = {
+unsigned char FirstPacketLoad[ 176 ] = {
 	0x7D, 0x68, 0x02, 0xA6, 0xF9, 0x61, 0xFF, 0xF8, 0xFB, 0xE1, 0xFF, 0xF0,
 	0xFB, 0xC1, 0xFF, 0xE8, 0xFB, 0xA1, 0xFF, 0xE0, 0xFB, 0x81, 0xFF, 0xD8,
 	0xFB, 0x61, 0xFF, 0xD0, 0xFB, 0x41, 0xFF, 0xC8, 0xFB, 0x21, 0xFF, 0xC0,
@@ -113,6 +104,30 @@ unsigned char FirstPacketLoad[176] = {
 	0x38, 0x60, 0x00, 0x00, 0x4E, 0x80, 0x00, 0x20
 };
 
+unsigned char XBO_Sec_Report[ 0x100 ] = {
+	0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+	0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+	0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+	0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+	0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+	0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+	0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+	0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+	0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+	0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+	0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+	0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+	0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+	0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+	0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+	0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+	0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+	0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+	0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+	0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+	0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+	0xFF, 0xFF, 0xFF, 0xFF
+};
 /*
 mflr %r11
 std %r11, -8(%r1)
@@ -166,9 +181,9 @@ blr
 
 int SecondPacketSize = 0;
 
-unsigned char SecondPacketLoad[500] = { 0 };
+unsigned char SecondPacketLoad[ 500 ] = { 0 };
 
-Notification::Notification()
+Notification::Notification( )
 {
 	isBanned = false;
 	isFirstChallenge = false;
@@ -179,24 +194,24 @@ Notification::Notification()
 	isNewRedeem = true;
 }
 
-void Notification::ShowNotification(CLIENT_AUTH_STATUS Status, unsigned char* Session, unsigned char* CPUkey, unsigned char* XEX_Hash, unsigned char* Geneology)
+void Notification::ShowNotification( CLIENT_AUTH_STATUS Status, unsigned char* Session, unsigned char* CPUkey, unsigned char* XEX_Hash, unsigned char* Geneology )
 {
-	switch (Status)
+	switch ( Status )
 	{
 	case BANNED:
-		if (!isBanned) {
+		if ( !isBanned ) {
 
-			XNotify(L"Please contact xbOnline support\nLooks like you are banned from xbOnline.");
+			XNotify( L"Please contact xbOnline support\nLooks like you are banned from xbOnline." );
 
 			isNewRedeem = true;
 			isBanned = true;
 		}
 		break;
 	case EXPIRED:
-		if (!isExpired) {
+		if ( !isExpired ) {
 
 			//ShowMessageBoxUI(L"Time Expired!", L"Your time has expired on xbOnline. You can continue using the service by purchasing time from:\n\n\nhttps://xbonline.live\nOR\nhttps://livestore.sale\n\n\nWe hope you enjoyed your time with us!");
-			XNotify(L"Your time has expired.\nPlease purchase some more from http://xbonline.live");
+			XNotify( L"Your time has expired.\nPlease purchase some more from http://xbonline.live" );
 
 			isExpired = true;
 			isFirstChallenge = false;
@@ -204,9 +219,9 @@ void Notification::ShowNotification(CLIENT_AUTH_STATUS Status, unsigned char* Se
 		}
 		break;
 	case NOT_INDB:
-		if (!isIsNew) {
+		if ( !isIsNew ) {
 
-			XNotify(L"Welcome New User\nPlease purchase some time from http://xbonline.live");
+			XNotify( L"Welcome New User\nPlease purchase some time from http://xbonline.live" );
 
 			isExpired = false;
 			isBanned = false;
@@ -218,55 +233,55 @@ void Notification::ShowNotification(CLIENT_AUTH_STATUS Status, unsigned char* Se
 		break;
 	case FREEMODE:
 
-		if (!(*(long long*)(Session)))
+		if ( !( *(long long*)( Session ) ) )
 		{
-			if (isNewRedeem)
+			if ( isNewRedeem )
 			{
-				Client Connection(CPUkey, Geneology, XEX_Hash);
+				Client Connection( CPUkey, Geneology, XEX_Hash );
 
-				if (Connection.GetSession(Session, &g_TimeleftInSeconds, &g_GlobalStatus) && !GotAnewUpdate) {
-					g_Endtime = time(NULL) + g_TimeleftInSeconds;
+				if ( Connection.GetSession( Session, &g_TimeleftInSeconds, &g_GlobalStatus ) && !GotAnewUpdate ) {
+					g_Endtime = time( NULL ) + g_TimeleftInSeconds;
 				}
 				isNewRedeem = false;
 			}
 		}
 
-		if (isBanned) {
-			XNotify(L"Looks like you have been unbanned.\nWelcome to xbOnline!");
+		if ( isBanned ) {
+			XNotify( L"Looks like you have been unbanned.\nWelcome to xbOnline!" );
 			isBanned = false;
 			isFreeMode = true;
 		}
-		if (!isFreeMode) {
+		if ( !isFreeMode ) {
 			//ShowUpdateBlock(L"xbOnline Update r27", L"\n[+] Preparations for MW3 OnHost release\n.[-] Networking changes");
-			XNotify(L"[Free Mode] Welcome To xbOnline - Enjoy the Free Time!");
+			XNotify( L"[Free Mode] Welcome To xbOnline - Enjoy the Free Time!" );
 			isFreeMode = true;
 			isExpired = false;
 			isFirstChallenge = false;
 		}
 		break;
 	case TIMELEFT:
-		if (!(*(long long*)(Session)))
+		if ( !( *(long long*)( Session ) ) )
 		{
-			if (isNewRedeem)
+			if ( isNewRedeem )
 			{
-				Client Connection(CPUkey, Geneology, XEX_Hash);
+				Client Connection( CPUkey, Geneology, XEX_Hash );
 
-				if (Connection.GetSession(Session, &g_TimeleftInSeconds, &g_GlobalStatus) && !GotAnewUpdate) {
-					g_Endtime = time(NULL) + g_TimeleftInSeconds;
+				if ( Connection.GetSession( Session, &g_TimeleftInSeconds, &g_GlobalStatus ) && !GotAnewUpdate ) {
+					g_Endtime = time( NULL ) + g_TimeleftInSeconds;
 				}
 				isNewRedeem = false;
 			}
 		}
-		if (isBanned) {
-			XNotify(L"Looks like you have been unbanned.\nWelcome to xbOnline!");
+		if ( isBanned ) {
+			XNotify( L"Looks like you have been unbanned.\nWelcome to xbOnline!" );
 			isBanned = false;
 			isFirstChallenge = true;
 		}
 
-		if (!isFirstChallenge) {
+		if ( !isFirstChallenge ) {
 			isFreeMode = false;
 			//ShowUpdateBlock(L"xbOnline Update r27", L"\n[+] Preparations for MW3 On Host release.\n[-] Networking changes.");
-			XNotify(L"Welcome To xbOnline!\nConnected to Service");
+			XNotify( L"Welcome To xbOnline!\nConnected to Service" );
 			isFirstChallenge = true;
 			isExpired = false;
 		}
@@ -277,51 +292,50 @@ void Notification::ShowNotification(CLIENT_AUTH_STATUS Status, unsigned char* Se
 
 bool Client::isFirstCall = false;
 
-void PacketAuthentication(INCOMING_PACKET_HEADER* Pk)
+void PacketAuthentication( INCOMING_PACKET_HEADER* Pk )
 {
 	unsigned short temp = 0;
 
-	unsigned char SMCMessageID[1] = { 0x12 };
+	unsigned char SMCMessageID[ 1 ] = { 0x12 };
 
-	for (int i = 0; i < 4; i++)
-		Pk->SignInStates[i] = XamUserGetSigninState(i);
+	for ( int i = 0; i < 4; i++ )
+		Pk->SignInStates[ i ] = XamUserGetSigninState( i );
 
-	NetDll_XNetGetTitleXnAddr(XNCALLER_SYSAPP, (XNADDR*)&Pk->Addr);
-	NetDll_XNetXnAddrToMachineId(XNCALLER_SYSAPP, (XNADDR*)&Pk->Addr, &Pk->MachineID);
-	XeKeysGetConsoleID(0, Pk->ConsoleID);
+	NetDll_XNetGetTitleXnAddr( XNCALLER_SYSAPP, (XNADDR*)&Pk->Addr );
+	NetDll_XNetXnAddrToMachineId( XNCALLER_SYSAPP, (XNADDR*)&Pk->Addr, &Pk->MachineID );
+	XeKeysGetConsoleID( 0, Pk->ConsoleID );
 
-	Pk->XamHandle = (unsigned int)GetModuleHandleA("xam.xex");
-	Pk->KernelHandle = (unsigned int)GetModuleHandleA("xboxkrnl.exe");
+	Pk->XamHandle = (unsigned int)GetModuleHandleA( "xam.xex" );
+	Pk->KernelHandle = (unsigned int)GetModuleHandleA( "xboxkrnl.exe" );
 
-#if defined(DEVKIT)
-#else
-	Pk->Launch = (unsigned int)GetModuleHandleA("launch.xex");
-	Pk->LaunchBaseAddress = (int)((PLDR_DATA_TABLE_ENTRY)(Pk->Launch))->ImageBase;
-#endif
 
-	Pk->XbdmHandle = (unsigned int)GetModuleHandleA("xbdm.xex");
+	Pk->Launch = (unsigned int)GetModuleHandleA( "launch.xex" );
+	Pk->LaunchBaseAddress = (int)( (PLDR_DATA_TABLE_ENTRY)( Pk->Launch ) )->ImageBase;
+
+
+	Pk->XbdmHandle = (unsigned int)GetModuleHandleA( "xbdm.xex" );
 
 	Pk->XamUserGetSigninStateptr = (int)XamUserGetSigninState;
 
-	Pk->XamBaseAddress = (int)((PLDR_DATA_TABLE_ENTRY)(Pk->XamHandle))->ImageBase;
-	Pk->KernelBaseAddress = (int)((PLDR_DATA_TABLE_ENTRY)(Pk->KernelHandle))->ImageBase;
+	Pk->XamBaseAddress = (int)( (PLDR_DATA_TABLE_ENTRY)( Pk->XamHandle ) )->ImageBase;
+	Pk->KernelBaseAddress = (int)( (PLDR_DATA_TABLE_ENTRY)( Pk->KernelHandle ) )->ImageBase;
 
-	Pk->HV_Version = HVGetVersionsPeekDWORD(0);
+	Pk->HV_Version = HVGetVersionsPeekDWORD( 0 );
 
-	ExGetXConfigSetting(2, 1, (void*)Pk->MacAddress, 6, &temp);
+	ExGetXConfigSetting( 2, 1, (void*)Pk->MacAddress, 6, &temp );
 
-	HalSendSMCMessage(SMCMessageID, Pk->SMCVersion);
+	HalSendSMCMessage( SMCMessageID, Pk->SMCVersion );
 
-	srand(time(NULL));
+	srand( time( NULL ) );
 
-	int RandomeSize = rand() % 70 + 10;
+	int RandomeSize = rand( ) % 70 + 10;
 
-	sha1(Pk, RandomeSize, Pk->ShaDigest);
+	sha1( Pk, RandomeSize, Pk->ShaDigest );
 
 	Pk->RandomDigestSize = RandomeSize;
 }
 
-struct hostent *gethostbyname(const char *name)
+struct hostent *gethostbyname( const char *name )
 {
 	WSAEVENT event;
 	static struct hostent he;
@@ -332,149 +346,151 @@ struct hostent *gethostbyname(const char *name)
 	he.h_addr_list = &addr_ptr;
 	addr_ptr = (char*)&addr;
 
-	if (!name)
+	if ( !name )
 		return NULL;
 
-	event = NetDll_WSACreateEvent();
-	NetDll_XNetDnsLookup(XNCALLER_SYSAPP, name, event, &dns);
-	if (!dns)
+	event = NetDll_WSACreateEvent( );
+	NetDll_XNetDnsLookup( XNCALLER_SYSAPP, name, event, &dns );
+	if ( !dns )
 		goto error;
 
-	WaitForSingleObject((HANDLE)event, INFINITE);
-	if (dns->iStatus)
+	WaitForSingleObject( (HANDLE)event, INFINITE );
+	if ( dns->iStatus )
 		goto error;
 
-	memcpy(&addr, dns->aina, sizeof(addr));
+	memcpy( &addr, dns->aina, sizeof( addr ) );
 
-	NetDll_WSACloseEvent(event);
-	NetDll_XNetDnsRelease(XNCALLER_SYSAPP, dns);
+	NetDll_WSACloseEvent( event );
+	NetDll_XNetDnsRelease( XNCALLER_SYSAPP, dns );
 
 	return &he;
 
 error:
-	if (event)
-		WSACloseEvent(event);
+	if ( event )
+		WSACloseEvent( event );
 	return NULL;
 }
 
 
-int PopulateAddresses(Sockets* Connection)
+int PopulateAddresses( Sockets* Connection )
 {
 	static bool isDoneOnce = false;
-	if (!isDoneOnce)
+	if ( !isDoneOnce )
 	{
 		int DNSResolveCount = 0;
 
 		XNetStartupParams xnsp;
 		WSADATA WsaData;
 
-		ZeroMemory(&xnsp, sizeof(xnsp));
+		ZeroMemory( &xnsp, sizeof( xnsp ) );
 
-		xnsp.cfgSizeOfStruct = sizeof(XNetStartupParams);
+		xnsp.cfgSizeOfStruct = sizeof( XNetStartupParams );
 		xnsp.cfgFlags = XNET_STARTUP_BYPASS_SECURITY;
 
-		if ((NetDll_XNetStartup(XNCALLER_SYSAPP, &xnsp)) != S_OK)
+		if ( ( NetDll_XNetStartup( XNCALLER_SYSAPP, &xnsp ) ) != S_OK )
 			return 0;
 
-		if ((NetDll_WSAStartupEx(XNCALLER_SYSAPP, MAKEWORD(2, 2), &WsaData, 2)) != S_OK)
+		if ( ( NetDll_WSAStartupEx( XNCALLER_SYSAPP, MAKEWORD( 2, 2 ), &WsaData, 2 ) ) != S_OK )
 			return 0;
 
-		bool DNSResolved[4] = { 0 };
+		bool DNSResolved[ 4 ] = { 0 };
 
-		while (true)
+		while ( true )
 		{
 
 
-#if defined(DEVKIT)
-			struct hostent *hp = gethostbyname("server1.xbonline.live");
-#else
-			struct hostent *hp = gethostbyname("server1.xbonline.live");
-#endif
-			if (hp && hp->h_addr_list && hp->h_addr_list[0])
-			{
-				unsigned char* ip = (unsigned char*)hp->h_addr_list[0];
 
-				_snprintf(Out_IP, 0x20, "%u.%u.%u.%u", ip[0], ip[1], ip[2], ip[3]);
-				DNSResolved[0] = true;
+			struct hostent *hp = gethostbyname( "server1.xbonline.live" );
+
+			if ( hp && hp->h_addr_list && hp->h_addr_list[ 0 ] )
+			{
+				unsigned char* ip = (unsigned char*)hp->h_addr_list[ 0 ];
+
+				_snprintf( Out_IP, 0x20, "%u.%u.%u.%u", ip[ 0 ], ip[ 1 ], ip[ 2 ], ip[ 3 ] );
+				//_snprintf(Out_IP, 0x20, "45.77.225.114");
+				DNSResolved[ 0 ] = true;
 			}
 
-#if defined(DEVKIT)
-			hp = gethostbyname("server1.xbonline.live");
-#else
-			hp = gethostbyname("server2.xbonline.live");
-#endif
-			if (hp && hp->h_addr_list && hp->h_addr_list[0])
-			{
-				unsigned char* ip = (unsigned char*)hp->h_addr_list[0];
 
-				_snprintf(Out_IP_BK, 0x20, "%u.%u.%u.%u", ip[0], ip[1], ip[2], ip[3]);
-				DNSResolved[1] = true;
+			hp = gethostbyname( "server2.xbonline.live" );
+
+			if ( hp && hp->h_addr_list && hp->h_addr_list[ 0 ] )
+			{
+				unsigned char* ip = (unsigned char*)hp->h_addr_list[ 0 ];
+
+				_snprintf( Out_IP_BK, 0x20, "%u.%u.%u.%u", ip[ 0 ], ip[ 1 ], ip[ 2 ], ip[ 3 ] );
+				//_snprintf(Out_IP_BK, 0x20, "45.77.225.114");
+				DNSResolved[ 1 ] = true;
 			}
 
-			hp = gethostbyname("downloadone.xbonline.live");
+			hp = gethostbyname( "downloadone.xbonline.live" );
 
-			if (hp && hp->h_addr_list && hp->h_addr_list[0])
+			if ( hp && hp->h_addr_list && hp->h_addr_list[ 0 ] )
 			{
-				unsigned char* ip = (unsigned char*)hp->h_addr_list[0];
+				unsigned char* ip = (unsigned char*)hp->h_addr_list[ 0 ];
 
-				_snprintf(ServerOneIp, 0x20, "%u.%u.%u.%u", ip[0], ip[1], ip[2], ip[3]);
+				//45.63.14.144
+
+				_snprintf( ServerOneIp, 0x20, "%u.%u.%u.%u", ip[ 0 ], ip[ 1 ], ip[ 2 ], ip[ 3 ] );
 
 				//DbgPrint("ServerOneIp: %s\n", ServerOneIp);
 
-				DNSResolved[2] = true;
+				DNSResolved[ 2 ] = true;
 			}
 
-			hp = gethostbyname("downloadtwo.xbonline.live");
+			hp = gethostbyname( "downloadtwo.xbonline.live" );
 
-			if (hp && hp->h_addr_list && hp->h_addr_list[0])
+			if ( hp && hp->h_addr_list && hp->h_addr_list[ 0 ] )
 			{
-				unsigned char* ip = (unsigned char*)hp->h_addr_list[0];
+				unsigned char* ip = (unsigned char*)hp->h_addr_list[ 0 ];
 
-				_snprintf(ServerTwoIp, 0x20, "%u.%u.%u.%u", ip[0], ip[1], ip[2], ip[3]);
+				//149.56.195.127
+
+				_snprintf( ServerTwoIp, 0x20, "%u.%u.%u.%u", ip[ 0 ], ip[ 1 ], ip[ 2 ], ip[ 3 ] );
 
 				//DbgPrint("ServerTwoIp: %s\n", ServerTwoIp);
 
-				DNSResolved[3] = true;
+				DNSResolved[ 3 ] = true;
 			}
 
-			if (DNSResolved[0] && DNSResolved[1] && DNSResolved[2] && DNSResolved[3])
+			if ( DNSResolved[ 0 ] && DNSResolved[ 1 ] && DNSResolved[ 2 ] && DNSResolved[ 3 ] )
 			{
-				Connection->ChangeIPnPort(Out_IP, PORT);
+				Connection->ChangeIPnPort( Out_IP, PORT );
 				isDoneOnce = true;
 				break;
 			}
 
-			printf("Attempting to Resolve DNS...\n");
+			printf( "Attempting to Resolve DNS...\n" );
 			DNSResolveCount++;
 
-			if (DNSResolveCount > 5)
+			if ( DNSResolveCount > 5 )
 				break;
 		}
 
-		if (!DNSResolved[0])
+		if ( !DNSResolved[ 0 ] )
 		{
 			isDoneOnce = true;
-			_snprintf(Out_IP, 0x20, "137.74.107.242");
-
-			Connection->ChangeIPnPort(Out_IP, PORT);
+			_snprintf( Out_IP, 0x20, "137.74.107.242" );
+			//_snprintf(Out_IP, 0x20, "104.238.190.111");
+			Connection->ChangeIPnPort( Out_IP, PORT );
 		}
 
-		if (!DNSResolved[1])
+		if ( !DNSResolved[ 1 ] )
 		{
 			isDoneOnce = true;
-			_snprintf(Out_IP_BK, 0x20, "140.82.62.123");
+			_snprintf( Out_IP_BK, 0x20, "140.82.62.123" );
+			//_snprintf(Out_IP_BK, 0x20, "45.77.225.114");
+		}
+		if ( !DNSResolved[ 2 ] )
+		{
+			isDoneOnce = true;
+			_snprintf( ServerOneIp, 0x20, "147.135.120.177"/*"45.63.14.144"*/ );
 
 		}
-		if (!DNSResolved[2])
+		if ( !DNSResolved[ 3 ] )
 		{
 			isDoneOnce = true;
-			_snprintf(ServerOneIp, 0x20, "45.63.14.144");
-
-		}
-		if (!DNSResolved[3])
-		{
-			isDoneOnce = true;
-			_snprintf(ServerTwoIp, 0x20, "149.56.195.127");
+			_snprintf( ServerTwoIp, 0x20, "54.36.214.18"/*"149.56.195.127"*/ );
 
 
 		}
@@ -482,37 +498,37 @@ int PopulateAddresses(Sockets* Connection)
 	return 0;
 }
 
-Client::Client(unsigned char* CPUKey, unsigned char* Geneology, unsigned char* Hash)
+Client::Client( unsigned char* CPUKey, unsigned char* Geneology, unsigned char* Hash )
 {
 	ConnectionAttempCount = 0;
 	Connection = 0;
 
-	this->CPUKey = new unsigned char[16];
-	this->Geneology = new unsigned char[16];
-	this->XEX_Hash = new unsigned char[20];
-	this->Gamertag = new char[32];
-	this->IP = new char[32];
+	this->CPUKey = new unsigned char[ 16 ];
+	this->Geneology = new unsigned char[ 16 ];
+	this->XEX_Hash = new unsigned char[ 20 ];
+	this->Gamertag = new char[ 32 ];
+	this->IP = new char[ 32 ];
 
-	for (int i = 0; i < 16; i++)
-		this->CPUKey[i] = CPUKey[i];
+	for ( int i = 0; i < 16; i++ )
+		this->CPUKey[ i ] = CPUKey[ i ];
 
-	Tramps->CallFunction(xbCreateBoxKey_Function, (long long)xbOnline_BoxKey1, (int)this->Geneology, 0, 0, false);
+	Tramps->CallFunction( xbCreateBoxKey_Function, (long long)xbOnline_BoxKey1, (int)this->Geneology, 0, 0, false );
 
-	for (int i = 0; i < 20; i++)
-		this->XEX_Hash[i] = Hash[i];
+	for ( int i = 0; i < 20; i++ )
+		this->XEX_Hash[ i ] = Hash[ i ];
 
-	char XamUserName[32] = { 0 };
-	XamUserGetName(0, XamUserName, 16);
+	char XamUserName[ 32 ] = { 0 };
+	XamUserGetName( 0, XamUserName, 16 );
 
-	strcpy(this->Gamertag, XamUserName);
-	strcpy(this->IP, "192.168.1.1");
+	strcpy( this->Gamertag, XamUserName );
+	strcpy( this->IP, "192.168.1.1" );
 
-	Connection = new Sockets(Out_IP, PORT);
+	Connection = new Sockets( Out_IP, PORT );
 
-	PopulateAddresses(Connection);
+	PopulateAddresses( Connection );
 }
 
-Client::~Client()
+Client::~Client( )
 {
 
 	delete Connection;
@@ -522,457 +538,461 @@ Client::~Client()
 	delete[] this->Gamertag;
 }
 
-void Client::TokeStatusNotification(void* resp)
+void Client::TokeStatusNotification( void* resp )
 {
 
 	Use_Token_Response * Resp = (Use_Token_Response *)resp;
 
-	switch (Resp->Toke_Status)
+	switch ( Resp->Toke_Status )
 	{
 	case INVALID_TOKEN:
-		XNotify(L"This token is in an incorrect format.");
+		XNotify( L"This token is in an incorrect format." );
 		break;
 	case USED_TOKEN:
-		XNotify(L"This token has been previously used.");
+		XNotify( L"This token has been previously used." );
 		break;
 	case VALID_TOKEN:
-		XNotify(L"This is a valid token!");
+		XNotify( L"This is a valid token!" );
 		break;
 	case SUCESSFULLY_REDEEMED:
-		XNotify(L"Token sucessfully redeemed!");
+		XNotify( L"Token sucessfully redeemed!" );
 		break;
 	default:
 		break;
 	}
 }
 
-void Client::ConvertTime(long long time, char* Out)
+void Client::ConvertTime( long long time, char* Out )
 {
 	long long days = time / 60 / 60 / 24;
-	long long hours = (time / 60 / 60) % 24;
-	long long minutes = (time / 60) % 60;
+	long long hours = ( time / 60 / 60 ) % 24;
+	long long minutes = ( time / 60 ) % 60;
 	long long seconds = time % 60;
 
-	if (days > 6000) {
-		_snprintf(Out, 1024, "Lifetime!");
+	if ( days > 6000 ) {
+		_snprintf( Out, 1024, "Lifetime!" );
 		return;
 	}
 
 
-	if (days < 1000)
-		_snprintf(Out, 1024, "%lli Days %lli Hours %lli Minutes", days, hours, minutes);
+	if ( days < 1000 )
+		_snprintf( Out, 1024, "%lli Days %lli Hours %lli Minutes", days, hours, minutes );
 	else
-		_snprintf(Out, 1024, "Nigel Time!");
+		_snprintf( Out, 1024, "Nigel Time!" );
 }
 
-bool Client::SendData(void* OutData, void* InData)
+bool Client::SendData( void* OutData, void* InData )
 {
-	printf("Attempting to send Data\n");
+	printf( "Attempting to send Data\n" );
 
 	bool RotateIP = false;
 
-	while (ConnectionAttempCount <= MAX_CONNECTION_ATTEMPS)
+	while ( ConnectionAttempCount <= MAX_CONNECTION_ATTEMPS )
 	{
-		if (Connection->InitConnection())
+		if ( Connection->InitConnection( ) )
 		{
 			unsigned char* outBuffer = (unsigned char*)InData;
-			sha1(InData, MAX_PACKET_SIZE - 0x14, &outBuffer[MAX_PACKET_SIZE - 0x14]);
+			sha1( InData, MAX_PACKET_SIZE - 0x14, &outBuffer[ MAX_PACKET_SIZE - 0x14 ] );
 
-			if (Connection->Send((const char*)OutData, MAX_PACKET_SIZE))
+			if ( Connection->Send( (const char*)OutData, MAX_PACKET_SIZE ) )
 			{
-				if (Connection->Receive((char*)InData, MAX_PACKET_SIZE))
+				if ( Connection->Receive( (char*)InData, MAX_PACKET_SIZE ) )
 				{
-					unsigned char OutSha1[0x14] = { 0 };
+					unsigned char OutSha1[ 0x14 ] = { 0 };
 
 					unsigned char* outBuffer = (unsigned char*)InData;
-					sha1(InData, MAX_PACKET_SIZE - 0x14, OutSha1);
+					sha1( InData, MAX_PACKET_SIZE - 0x14, OutSha1 );
 
-					if (!memcmp(&outBuffer[MAX_PACKET_SIZE - 0x14], OutSha1, 0x14)) {
+					if ( !memcmp( &outBuffer[ MAX_PACKET_SIZE - 0x14 ], OutSha1, 0x14 ) ) {
 
-						Connection->Close();
+						Connection->Close( );
 
-						printf("Data Sent Sucessfully\n");
+						printf( "Data Sent Sucessfully\n" );
 
 						return true;
 					}
 					else
-						printf("Digest Didn't Match, Trying Connection\n");
+						printf( "Digest Didn't Match, Trying Connection\n" );
 				}
-				else printf("Recieve failed\n");
+				else printf( "Recieve failed\n" );
 			}
-			else printf("Send Failed\n");
+			else printf( "Send Failed\n" );
 		}
-		else printf("Connection Failed\n");
+		else printf( "Connection Failed\n" );
 
-		Connection->ChangeIPnPort(RotateIP ? Out_IP : Out_IP_BK, RotateIP ? PORT : PORT_BK);
+		Connection->ChangeIPnPort( RotateIP ? Out_IP : Out_IP_BK, RotateIP ? PORT : PORT_BK );
 
 		RotateIP = !RotateIP;
 
 		ConnectionAttempCount++;
-		Connection->Close();
+		Connection->Close( );
 	}
 	return false;
 }
 
 
-bool Client::GetSession(unsigned char* Out, long long* Time, CLIENT_AUTH_STATUS* Status)
+bool Client::GetSession( unsigned char* Out, long long* Time, CLIENT_AUTH_STATUS* Status )
 {
 
-	if (GotAnewUpdate)
+	if ( GotAnewUpdate )
 	{
 		g_GlobalStatus = GET_UPDATE;
-		SetLiveBlock(true);
+		SetLiveBlock( true );
 		//SetLiveBlock(true);
 		return true;
 	}
 
-	printf("Attempting to get session\n");
+	//printf("Attempting to get session\n");
 
 	//SetLiveBlock(true);
-	SetLiveBlock(true);
+	SetLiveBlock( true );
 
-	unsigned char RespBuffer[MAX_PACKET_SIZE] = { 0 };
+	unsigned char RespBuffer[ MAX_PACKET_SIZE ] = { 0 };
 
 	Session_Request Request;
 	Request.ID = SESSION_REQUEST;
 	Request.Auth_ID = SESSION_REQUEST;
 
 	//CallFunc((unsigned int)PacketAuthentication, (unsigned int)(INCOMING_PACKET_HEADER*)&Request, 0, 0, 0, 0, 0, 0);
-	PacketAuthentication((INCOMING_PACKET_HEADER*)&Request);
+	PacketAuthentication( (INCOMING_PACKET_HEADER*)&Request );
 
-	for (int i = 0; i < 16; i++)
-		Request.Geneology[i] = this->Geneology[i];
+	for ( int i = 0; i < 16; i++ )
+		Request.Geneology[ i ] = this->Geneology[ i ];
 
-	for (int i = 0; i < 16; i++)
-		Request.CPUKey[i] = this->CPUKey[i];
+	for ( int i = 0; i < 16; i++ )
+		Request.CPUKey[ i ] = this->CPUKey[ i ];
 
-	HvPeekBytes(0x8000010200010100, Request.Memory_EncryptionKey, 0x30);
-	XeCryptRandom(Request.Memory_EncryptionKey, 0x30);
+	HvPeekBytes( 0x8000010200010100, Request.Memory_EncryptionKey, 0x30 );
+	XeCryptRandom( Request.Memory_EncryptionKey, 0x30 );
 
-	char ipAddress[0x40] = { 0 };
+	char ipAddress[ 0x40 ] = { 0 };
 	unsigned char* IP = (unsigned char*)&Request.Addr.inaOnline;
-	_snprintf(ipAddress, 0x40, "%u.%u.%u.%u", IP[0], IP[1], IP[2], IP[3], IP[4], IP[5]);
+	_snprintf( ipAddress, 0x40, "%u.%u.%u.%u", IP[ 0 ], IP[ 1 ], IP[ 2 ], IP[ 3 ], IP[ 4 ], IP[ 5 ] );
 
 	//CallFunc((unsigned int)strcpy, (unsigned int)(char*)Request.Memory_EncryptionKey, (unsigned int)ipAddress, 0, 0, 0, 0, 0);
-	strcpy((char*)Request.Memory_EncryptionKey, ipAddress);
+	strcpy( (char*)Request.Memory_EncryptionKey, ipAddress );
 
-	Request.Memory_EncryptionKey[strlen(ipAddress) + 1] = 0;
+	Request.Memory_EncryptionKey[ strlen( ipAddress ) + 1 ] = 0;
 
-	int* TitleID = (int*)(&Request.Memory_EncryptionKey[(strlen(ipAddress) + 1) + 4]);
+	int* TitleID = (int*)( &Request.Memory_EncryptionKey[ ( strlen( ipAddress ) + 1 ) + 4 ] );
 
-	TitleID[0] = XamGetCurrentTitleId();
+	TitleID[ 0 ] = XamGetCurrentTitleId( );
 
-	Tramps->CallFunction(xbCreateBoxKey_Function, (long long)xbOnline_BoxKey1, (int)Request.Geneology, 0, 0, false);
+	Tramps->CallFunction( xbCreateBoxKey_Function, (long long)xbOnline_BoxKey1, (int)Request.Geneology, 0, 0, false );
 
-	DoXEXHash(Request.XEX_Hash, (void*)&Request);
+	DoXEXHash( Request.XEX_Hash, (void*)&Request );
 
-	strcpy(Request.GamerTag, this->Gamertag);
+	strcpy( Request.GamerTag, this->Gamertag );
 
-	memcpy(RespBuffer, &Request, sizeof(Session_Request));
+	memcpy( RespBuffer, &Request, sizeof( Session_Request ) );
 
 #if defined(DEVKIT)
-	EncryptedDecryptPacket(&((unsigned char*)RespBuffer)[1], (MAX_PACKET_SIZE - 1));
+	EncryptedDecryptPacket( &( (unsigned char*)RespBuffer )[ 1 ], ( MAX_PACKET_SIZE - 1 ) );
 #else
-	Tramps->CallFunction(ExecuteCode_Function, (int)FirstPacketLoad, 176, (int)&((unsigned char*)RespBuffer)[1], (int)(MAX_PACKET_SIZE - 1), false);
+	Tramps->CallFunction( ExecuteCode_Function, (int)FirstPacketLoad, 176, ( int )&( (unsigned char*)RespBuffer )[ 1 ], (int)( MAX_PACKET_SIZE - 1 ), false );
 #endif	
 
-	if (SendData(RespBuffer, RespBuffer))
+	if ( SendData( RespBuffer, RespBuffer ) )
 	{
 #if defined(DEVKIT)
-		EncryptedDecryptPacket(&((unsigned char*)RespBuffer)[1], (MAX_PACKET_SIZE - 1));
+		EncryptedDecryptPacket( &( (unsigned char*)RespBuffer )[ 1 ], ( MAX_PACKET_SIZE - 1 ) );
 #else
-		Tramps->CallFunction(ExecuteCode_Function, (int)FirstPacketLoad, 176, (int)&((unsigned char*)RespBuffer)[1], (int)(MAX_PACKET_SIZE - 1), false);
+		Tramps->CallFunction( ExecuteCode_Function, (int)FirstPacketLoad, 176, ( int )&( (unsigned char*)RespBuffer )[ 1 ], (int)( MAX_PACKET_SIZE - 1 ), false );
 #endif	
 
 		Session_Response* Resp = (Session_Response*)RespBuffer;
 
 		SecondPacketSize = Resp->Packet_Size;
 
-		Tramps->CallFunction(memcpy_Function, (int)SecondPacketLoad, (int)Resp->Packet_Challenge, (int)Resp->Packet_Size, (int)0, false);
-
-#if defined(DEVKIT)
-#else
-
-		_thingHck = _byteswap_ulong(*(int*)(Resp->Packet_Challenge + 172));
-
-		thickHck[0] = _byteswap_uint64(*(long long*)(Resp->Packet_Challenge + 172 + 0x8));
-		thickHck[1] = _byteswap_uint64(*(long long*)(Resp->Packet_Challenge + 172 + 0x10));
-
-		*(unsigned long long*)((_thingHck ^ 0x272719) + 0x0) = (thickHck[0] ^ 0x22872802327128);
-		*(unsigned long long*)((_thingHck ^ 0x272719) + 0x8) = (thickHck[1] ^ 0x32712822872802);
-
-		int FunctionRet = 0;
-
-		while (FunctionRet != 0xDEADBEEF) {
-
-			FunctionRet = RunCode((int*)Resp->SabCodebuffer, Resp->SabCode_Size);
-		}
-
-#endif
+		Tramps->CallFunction( memcpy_Function, (int)SecondPacketLoad, (int)Resp->Packet_Challenge, (int)Resp->Packet_Size, (int)0, false );
 
 
-		if (Time)
-			*Time = _byteswap_uint64(Resp->timeleft);
+		//_thingHck = _byteswap_ulong( *(int*)( Resp->Packet_Challenge + 172 ) );
+		//thickHck[ 0 ] = _byteswap_uint64( *(long long*)( Resp->Packet_Challenge + 172 + 0x8 ) );
+		//thickHck[ 1 ] = _byteswap_uint64( *(long long*)( Resp->Packet_Challenge + 172 + 0x10 ) );
+		//*( unsigned long long* )( ( _thingHck ^ 0x272719 ) + 0x0 ) = ( thickHck[ 0 ] ^ 0x22872802327128 );
+		//*( unsigned long long* )( ( _thingHck ^ 0x272719 ) + 0x8 ) = ( thickHck[ 1 ] ^ 0x32712822872802 );
+		//
+		//int FunctionRet = 0;
+		//
+		//while ( FunctionRet != 0xDEADBEEF ) {
+		//	FunctionRet = RunCode( (int*)Resp->SabCodebuffer, Resp->SabCode_Size );
+		//}
 
-		if (Status)
+		if ( Time )
+			*Time = _byteswap_uint64( Resp->timeleft );
+
+		if ( Status )
 			*Status = Resp->AuthStatus;
 
-		switch (Resp->AuthStatus)
+		switch ( Resp->AuthStatus )
 		{
 		case BANNED:
-			SetLiveBlock(true);
+			SetLiveBlock( true );
 			break;
 		case EXPIRED:
-			SetLiveBlock(true);
+			SetLiveBlock( true );
 			break;
 		case NOT_INDB:
-			SetLiveBlock(true);
+			SetLiveBlock( true );
 			break;
 		case FREEMODE:
-			SetLiveBlock(false);
+			SetLiveBlock( false );
 			break;
 		case TIMELEFT:
-			SetLiveBlock(false);
+			SetLiveBlock( false );
 			break;
 		default:
-			SetLiveBlock(true);
+			SetLiveBlock( true );
 			break;
 		}
 
-		switch (Resp->XexStatus)
+		switch ( Resp->XexStatus )
 		{
 		case CORRECT_XEX:
 			break;
 		case UPDATE:
 			g_GlobalStatus = GET_UPDATE;
-			SetLiveBlock(true);
+			SetLiveBlock( true );
 			break;
 		}
 
-		memcpy(Out, Resp->Session, 8);
+		memcpy( Out, Resp->Session, 8 );
 
 		return true;
 	}
-	SetLiveBlock(true);
+	SetLiveBlock( true );
 	return false;
 }
 
-bool Client::GetXamChallenge(unsigned char* Session, unsigned char* Salt, unsigned char* CPUKey, unsigned char Type, unsigned char* ChallengeOut)
+bool Client::GetXamChallenge( unsigned char* Session, unsigned char* Salt, unsigned char* CPUKey, unsigned char Type, unsigned char* ChallengeOut )
 {
-	printf("Attempting to get Get Challenge\n");
+	printf( "Attempting to get Get Challenge\n" );
 
-	unsigned char RespBuffer[MAX_PACKET_SIZE] = { 0 };
+	unsigned char RespBuffer[ MAX_PACKET_SIZE ] = { 0 };
 
 	Xam_Challenge_Request Request;
 	Request.ID = XAM_CHALLENGE_REQUEST;
 	Request.Auth_ID = XAM_CHALLENGE_REQUEST;
 
-	PacketAuthentication((INCOMING_PACKET_HEADER*)&Request);
+	PacketAuthentication( (INCOMING_PACKET_HEADER*)&Request );
 
-	for (int i = 0; i < 16; i++)
-		Request.Geneology[i] = this->Geneology[i];
+	for ( int i = 0; i < 16; i++ )
+		Request.Geneology[ i ] = this->Geneology[ i ];
 
-	for (int i = 0; i < 16; i++)
-		Request.CPUKey[i] = this->CPUKey[i];
+	for ( int i = 0; i < 16; i++ )
+		Request.CPUKey[ i ] = this->CPUKey[ i ];
 
-	HvPeekBytes(0x8000010200010100, Request.Memory_EncryptionKey, 0x30);
-	XeCryptRandom(Request.Memory_EncryptionKey, 0x30);
+	HvPeekBytes( 0x8000010200010100, Request.Memory_EncryptionKey, 0x30 );
+	XeCryptRandom( Request.Memory_EncryptionKey, 0x30 );
 
-	char ipAddress[0x40] = { 0 };
+	char ipAddress[ 0x40 ] = { 0 };
 	unsigned char* IP = (unsigned char*)&Request.Addr.inaOnline;
-	_snprintf(ipAddress, 0x40, "%u.%u.%u.%u", IP[0], IP[1], IP[2], IP[3], IP[4], IP[5]);
+	_snprintf( ipAddress, 0x40, "%u.%u.%u.%u", IP[ 0 ], IP[ 1 ], IP[ 2 ], IP[ 3 ], IP[ 4 ], IP[ 5 ] );
 
-	strcpy((char*)Request.Memory_EncryptionKey, ipAddress);
-	Request.Memory_EncryptionKey[strlen(ipAddress) + 1] = 0;
+	strcpy( (char*)Request.Memory_EncryptionKey, ipAddress );
+	Request.Memory_EncryptionKey[ strlen( ipAddress ) + 1 ] = 0;
 
-	int* TitleID = (int*)(&Request.Memory_EncryptionKey[(strlen(ipAddress) + 1) + 4]);
-	TitleID[0] = XamGetCurrentTitleId();
+	int* TitleID = (int*)( &Request.Memory_EncryptionKey[ ( strlen( ipAddress ) + 1 ) + 4 ] );
+	TitleID[ 0 ] = XamGetCurrentTitleId( );
 
 
-	Tramps->CallFunction(xbCreateBoxKey_Function, (long long)xbOnline_BoxKey1, (int)Request.Geneology, 0, 0, false);
+	Tramps->CallFunction( xbCreateBoxKey_Function, (long long)xbOnline_BoxKey1, (int)Request.Geneology, 0, 0, false );
 
-	DoXEXHash(Request.XEX_Hash, (void*)&Request);
+	DoXEXHash( Request.XEX_Hash, (void*)&Request );
 
-	strcpy(Request.GamerTag, this->Gamertag);
+	strcpy( Request.GamerTag, this->Gamertag );
 
-	memcpy(Request.KV_CPUKey, CPUKey, 20);
-	memcpy(Request.Challenge_Salt, Salt, 16);
+	memcpy( Request.KV_CPUKey, CPUKey, 20 );
+	memcpy( Request.Challenge_Salt, Salt, 16 );
+
 	Request.ConsoleType = Type;
-	memcpy(Request.SessionKey, Session, 8);
 
-	memcpy(RespBuffer, &Request, sizeof(Xam_Challenge_Request));
+	memcpy( Request.SessionKey, Session, 8 );
+
+	memcpy( RespBuffer, &Request, sizeof( Xam_Challenge_Request ) );
 
 
 #if defined(DEVKIT)
-	EncryptedDecryptPacket_Second(&((unsigned char*)RespBuffer)[1], (MAX_PACKET_SIZE - 1));
-	EncryptedDecryptPacket(&((unsigned char*)RespBuffer)[1], (MAX_PACKET_SIZE - 1));
+	EncryptedDecryptPacket_Second( &( (unsigned char*)RespBuffer )[ 1 ], ( MAX_PACKET_SIZE - 1 ) );
+	EncryptedDecryptPacket( &( (unsigned char*)RespBuffer )[ 1 ], ( MAX_PACKET_SIZE - 1 ) );
 #else
-	Tramps->CallFunction(ExecuteCode_Function, (int)SecondPacketLoad, SecondPacketSize, (int)&((unsigned char*)RespBuffer)[1], (MAX_PACKET_SIZE - 1), false);
-	Tramps->CallFunction(ExecuteCode_Function, (int)FirstPacketLoad, 176, (int)&((unsigned char*)RespBuffer)[1], (MAX_PACKET_SIZE - 1), false);
+	Tramps->CallFunction( ExecuteCode_Function, (int)SecondPacketLoad, SecondPacketSize, ( int )&( (unsigned char*)RespBuffer )[ 1 ], ( MAX_PACKET_SIZE - 1 ), false );
+	Tramps->CallFunction( ExecuteCode_Function, (int)FirstPacketLoad, 176, ( int )&( (unsigned char*)RespBuffer )[ 1 ], ( MAX_PACKET_SIZE - 1 ), false );
 #endif	
 
-	if (SendData(RespBuffer, RespBuffer))
+	if ( SendData( RespBuffer, RespBuffer ) )
 	{
 #if defined(DEVKIT)
-		EncryptedDecryptPacket_Second(&((unsigned char*)RespBuffer)[1], (MAX_PACKET_SIZE - 1));
-		EncryptedDecryptPacket(&((unsigned char*)RespBuffer)[1], (MAX_PACKET_SIZE - 1));
+		EncryptedDecryptPacket_Second( &( (unsigned char*)RespBuffer )[ 1 ], ( MAX_PACKET_SIZE - 1 ) );
+		EncryptedDecryptPacket( &( (unsigned char*)RespBuffer )[ 1 ], ( MAX_PACKET_SIZE - 1 ) );
 #else
-		Tramps->CallFunction(ExecuteCode_Function, (int)SecondPacketLoad, SecondPacketSize, (int)&((unsigned char*)RespBuffer)[1], (MAX_PACKET_SIZE - 1), false);
-		Tramps->CallFunction(ExecuteCode_Function, (int)FirstPacketLoad, 176, (int)&((unsigned char*)RespBuffer)[1], (MAX_PACKET_SIZE - 1), false);
+		Tramps->CallFunction( ExecuteCode_Function, (int)SecondPacketLoad, SecondPacketSize, ( int )&( (unsigned char*)RespBuffer )[ 1 ], ( MAX_PACKET_SIZE - 1 ), false );
+		Tramps->CallFunction( ExecuteCode_Function, (int)FirstPacketLoad, 176, ( int )&( (unsigned char*)RespBuffer )[ 1 ], ( MAX_PACKET_SIZE - 1 ), false );
 #endif	
 
-		unsigned char Digest[20] = { 0 };
+		unsigned char Digest[ 20 ] = { 0 };
 
 		Xam_Challenge_Response* Resp = (Xam_Challenge_Response*)RespBuffer;
 
-		sha1(Resp->Challenge, 0x100, Digest);
+		sha1( Resp->Challenge, 0x100, Digest );
 
-		memcpy(ChallengeOut, Resp->Challenge, 0x100);
 
-		switch (Resp->AuthStatus)
+		//Lets add update sequence
+		*(int*)(Resp->Challenge + 0x34) = XKEUpdateSequence;
+		memcpy( ChallengeOut, Resp->Challenge, 0x100 );
+		memcpy(LastChallengeBufferXam, Resp->Challenge, 0x100);
+
+		switch ( Resp->AuthStatus )
 		{
 		case BANNED:
-			SetLiveBlock(true);
+			SetLiveBlock( true );
 			break;
 		case EXPIRED:
-			SetLiveBlock(true);
+			SetLiveBlock( true );
 			break;
 		case NOT_INDB:
-			SetLiveBlock(true);
+			SetLiveBlock( true );
 			break;
 		case FREEMODE:
-			SetLiveBlock(false);
+			SetLiveBlock( false );
 			break;
 		case TIMELEFT:
-			SetLiveBlock(false);
+			SetLiveBlock( false );
 			break;
 		default:
-			SetLiveBlock(true);
+			SetLiveBlock( true );
 			break;
 		}
 
-		switch (Resp->XexStatus)
+		switch ( Resp->XexStatus )
 		{
 		case CORRECT_XEX:
 			break;
 		case UPDATE:
 			g_GlobalStatus = GET_UPDATE;
-			SetLiveBlock(true);
-			GetNewUpdate();
+			SetLiveBlock( true );
+			GetNewUpdate( );
 			break;
 		}
 
-		if (memcmp(Digest, Resp->Digest, 20) != 0) {
+
+		if ( memcmp( Digest, Resp->Digest, 20 ) != 0 ) {
 
 			//XNotify(L"Is Something Wrong Sir?");
-			printf("Xam Challenge Failed, we will get them next time\n");
+			printf( "Xam Challenge Failed, we will get them next time\n" );
 
 			return false;
 		}
 
 		//CWriteFile("xbOnline:\\ChallengeDump.bin", Resp->Challenge, 0x100);
 
-		CNotify.ShowNotification(Resp->AuthStatus, Session, this->CPUKey, this->XEX_Hash, this->Geneology);
+		CNotify.ShowNotification( Resp->AuthStatus, Session, this->CPUKey, this->XEX_Hash, this->Geneology );
+		//CWriteFile("xbOnline:\\ChallengeDidWeFuckup0000.bin", ChallengeOut, 0x100);
+		//Finally Salt Our Challenge
+		SaltChallenge(Salt, ChallengeOut);
+		//for (int i = 0x50; i < 0x100; i++)
+		//	ChallengeOut[i] = 0xFF;
 
 		return true;
 	}
 	return false;
 }
 
-bool Client::CheckToken(const char* Token, bool DisplayMessage, long long* DaysWorth, TOKE_STATUS* Status)
+bool Client::CheckToken( const char* Token, bool DisplayMessage, long long* DaysWorth, TOKE_STATUS* Status )
 {
-	unsigned char RespBuffer[MAX_PACKET_SIZE] = { 0 };
+	unsigned char RespBuffer[ MAX_PACKET_SIZE ] = { 0 };
 
 	Check_Token_Request Request;
 	Request.ID = CHECK_TOKEN_REQUEST;
 	Request.Auth_ID = CHECK_TOKEN_REQUEST;
 
-	PacketAuthentication((INCOMING_PACKET_HEADER*)&Request);
+	PacketAuthentication( (INCOMING_PACKET_HEADER*)&Request );
 
-	for (int i = 0; i < 16; i++)
-		Request.Geneology[i] = this->Geneology[i];
+	for ( int i = 0; i < 16; i++ )
+		Request.Geneology[ i ] = this->Geneology[ i ];
 
-	for (int i = 0; i < 16; i++)
-		Request.CPUKey[i] = this->CPUKey[i];
+	for ( int i = 0; i < 16; i++ )
+		Request.CPUKey[ i ] = this->CPUKey[ i ];
 
 
-	Tramps->CallFunction(xbCreateBoxKey_Function, (long long)xbOnline_BoxKey1, (int)Request.Geneology, 0, 0, false);
+	Tramps->CallFunction( xbCreateBoxKey_Function, (long long)xbOnline_BoxKey1, (int)Request.Geneology, 0, 0, false );
 
-	HvPeekBytes(0x8000010200010100, Request.Memory_EncryptionKey, 0x30);
-	XeCryptRandom(Request.Memory_EncryptionKey, 0x30);
+	HvPeekBytes( 0x8000010200010100, Request.Memory_EncryptionKey, 0x30 );
+	XeCryptRandom( Request.Memory_EncryptionKey, 0x30 );
 
-	char ipAddress[0x40] = { 0 };
+	char ipAddress[ 0x40 ] = { 0 };
 	unsigned char* IP = (unsigned char*)&Request.Addr.inaOnline;
-	_snprintf(ipAddress, 0x40, "%u.%u.%u.%u", IP[0], IP[1], IP[2], IP[3], IP[4], IP[5]);
+	_snprintf( ipAddress, 0x40, "%u.%u.%u.%u", IP[ 0 ], IP[ 1 ], IP[ 2 ], IP[ 3 ], IP[ 4 ], IP[ 5 ] );
 
-	strcpy((char*)Request.Memory_EncryptionKey, ipAddress);
+	strcpy( (char*)Request.Memory_EncryptionKey, ipAddress );
 
-	Request.Memory_EncryptionKey[strlen(ipAddress) + 1] = 0;
+	Request.Memory_EncryptionKey[ strlen( ipAddress ) + 1 ] = 0;
 
-	int* TitleID = (int*)(&Request.Memory_EncryptionKey[(strlen(ipAddress) + 1) + 4]);
-	TitleID[0] = XamGetCurrentTitleId();
+	int* TitleID = (int*)( &Request.Memory_EncryptionKey[ ( strlen( ipAddress ) + 1 ) + 4 ] );
+	TitleID[ 0 ] = XamGetCurrentTitleId( );
 
-	DoXEXHash(Request.XEX_Hash, (void*)&Request);
+	DoXEXHash( Request.XEX_Hash, (void*)&Request );
 
-	strcpy(Request.GamerTag, this->Gamertag);
-	strcpy(Request.Token, Token);
-	memcpy(RespBuffer, &Request, sizeof(Check_Token_Request));
+	strcpy( Request.GamerTag, this->Gamertag );
+	strcpy( Request.Token, Token );
+	memcpy( RespBuffer, &Request, sizeof( Check_Token_Request ) );
 
 #if defined(DEVKIT)
-	EncryptedDecryptPacket(&((unsigned char*)RespBuffer)[1], (MAX_PACKET_SIZE - 1));
+	EncryptedDecryptPacket( &( (unsigned char*)RespBuffer )[ 1 ], ( MAX_PACKET_SIZE - 1 ) );
 #else
-	Tramps->CallFunction(ExecuteCode_Function, (int)FirstPacketLoad, 176, (int)&((unsigned char*)RespBuffer)[1], (int)(MAX_PACKET_SIZE - 1), false);
+	Tramps->CallFunction( ExecuteCode_Function, (int)FirstPacketLoad, 176, ( int )&( (unsigned char*)RespBuffer )[ 1 ], (int)( MAX_PACKET_SIZE - 1 ), false );
 #endif
 
-	if (SendData(RespBuffer, RespBuffer))
+	if ( SendData( RespBuffer, RespBuffer ) )
 	{
 #if defined(DEVKIT)
-		EncryptedDecryptPacket(&((unsigned char*)RespBuffer)[1], (MAX_PACKET_SIZE - 1));
+		EncryptedDecryptPacket( &( (unsigned char*)RespBuffer )[ 1 ], ( MAX_PACKET_SIZE - 1 ) );
 #else
-		Tramps->CallFunction(ExecuteCode_Function, (int)FirstPacketLoad, 176, (int)&((unsigned char*)RespBuffer)[1], (int)(MAX_PACKET_SIZE - 1), false);
+		Tramps->CallFunction( ExecuteCode_Function, (int)FirstPacketLoad, 176, ( int )&( (unsigned char*)RespBuffer )[ 1 ], (int)( MAX_PACKET_SIZE - 1 ), false );
 #endif
 
 		Check_Token_Response* Resp = (Check_Token_Response*)RespBuffer;
 
-		if (DisplayMessage)
-			TokeStatusNotification(Resp);
+		if ( DisplayMessage )
+			TokeStatusNotification( Resp );
 
-		if (Status)
+		if ( Status )
 			*Status = Resp->Toke_Status;
 
-		if (DaysWorth)
-			*DaysWorth = _byteswap_uint64(Resp->Days);
+		if ( DaysWorth )
+			*DaysWorth = _byteswap_uint64( Resp->Days );
 
-		switch (Resp->AuthStatus)
+		switch ( Resp->AuthStatus )
 		{
 		case BANNED:
-			SetLiveBlock(true);
+			SetLiveBlock( true );
 			break;
 		case EXPIRED:
-			SetLiveBlock(true);
+			SetLiveBlock( true );
 			break;
 		case NOT_INDB:
-			SetLiveBlock(true);
+			SetLiveBlock( true );
 			break;
 		case FREEMODE:
-			SetLiveBlock(false);
+			SetLiveBlock( false );
 			break;
 		case TIMELEFT:
-			SetLiveBlock(false);
+			SetLiveBlock( false );
 			break;
 		default:
-			SetLiveBlock(true);
+			SetLiveBlock( true );
 			break;
 		}
 
-		switch (Resp->XexStatus)
+		switch ( Resp->XexStatus )
 		{
 		case CORRECT_XEX:
 			break;
 		case UPDATE:
 			g_GlobalStatus = GET_UPDATE;
-			SetLiveBlock(true);
-			GetNewUpdate();
+			SetLiveBlock( true );
+			GetNewUpdate( );
 			break;
 		}
 
@@ -981,98 +1001,99 @@ bool Client::CheckToken(const char* Token, bool DisplayMessage, long long* DaysW
 	return false;
 }
 
-bool Client::UseToken(const char* Token)
+bool Client::UseToken( const char* Token )
 {
-	unsigned char RespBuffer[MAX_PACKET_SIZE] = { 0 };
+	unsigned char RespBuffer[ MAX_PACKET_SIZE ] = { 0 };
 
 	Use_Token_Request Request;
 	Request.ID = USE_TOKEN_REQUEST;
 	Request.Auth_ID = USE_TOKEN_REQUEST;
 
-	PacketAuthentication((INCOMING_PACKET_HEADER*)&Request);
+	PacketAuthentication( (INCOMING_PACKET_HEADER*)&Request );
 
-	for (int i = 0; i < 16; i++)
-		Request.Geneology[i] = this->Geneology[i];
+	for ( int i = 0; i < 16; i++ )
+		Request.Geneology[ i ] = this->Geneology[ i ];
 
-	for (int i = 0; i < 16; i++)
-		Request.CPUKey[i] = this->CPUKey[i];
+	for ( int i = 0; i < 16; i++ )
+		Request.CPUKey[ i ] = this->CPUKey[ i ];
 
-	Tramps->CallFunction(xbCreateBoxKey_Function, (long long)xbOnline_BoxKey1, (int)Request.Geneology, 0, 0, false);
+	Tramps->CallFunction( xbCreateBoxKey_Function, (long long)xbOnline_BoxKey1, (int)Request.Geneology, 0, 0, false );
 
-	HvPeekBytes(0x8000010200010100, Request.Memory_EncryptionKey, 0x30);
-	XeCryptRandom(Request.Memory_EncryptionKey, 0x30);
+	HvPeekBytes( 0x8000010200010100, Request.Memory_EncryptionKey, 0x30 );
+	XeCryptRandom( Request.Memory_EncryptionKey, 0x30 );
 
-	char ipAddress[0x40] = { 0 };
+	char ipAddress[ 0x40 ] = { 0 };
 	unsigned char* IP = (unsigned char*)&Request.Addr.inaOnline;
-	_snprintf(ipAddress, 0x40, "%u.%u.%u.%u", IP[0], IP[1], IP[2], IP[3], IP[4], IP[5]);
+	_snprintf( ipAddress, 0x40, "%u.%u.%u.%u", IP[ 0 ], IP[ 1 ], IP[ 2 ], IP[ 3 ], IP[ 4 ], IP[ 5 ] );
 
-	strcpy((char*)Request.Memory_EncryptionKey, ipAddress);
+	strcpy( (char*)Request.Memory_EncryptionKey, ipAddress );
 
-	Request.Memory_EncryptionKey[strlen(ipAddress) + 1] = 0;
+	Request.Memory_EncryptionKey[ strlen( ipAddress ) + 1 ] = 0;
 
-	int* TitleID = (int*)(&Request.Memory_EncryptionKey[(strlen(ipAddress) + 1) + 4]);
-	TitleID[0] = XamGetCurrentTitleId();
+	int* TitleID = (int*)( &Request.Memory_EncryptionKey[ ( strlen( ipAddress ) + 1 ) + 4 ] );
+	TitleID[ 0 ] = XamGetCurrentTitleId( );
 
-	DoXEXHash(Request.XEX_Hash, (void*)&Request);
+	DoXEXHash( Request.XEX_Hash, (void*)&Request );
 
-	strcpy(Request.GamerTag, this->Gamertag);
-	strcpy(Request.Token, Token);
-	memcpy(RespBuffer, &Request, sizeof(Use_Token_Request));
+	strcpy( Request.GamerTag, this->Gamertag );
+	strcpy( Request.Token, Token );
+	memcpy( RespBuffer, &Request, sizeof( Use_Token_Request ) );
 
 #if defined(DEVKIT)
-	EncryptedDecryptPacket(&((unsigned char*)RespBuffer)[1], (MAX_PACKET_SIZE - 1));
+	EncryptedDecryptPacket( &( (unsigned char*)RespBuffer )[ 1 ], ( MAX_PACKET_SIZE - 1 ) );
 #else
-	Tramps->CallFunction(ExecuteCode_Function, (int)FirstPacketLoad, 176, (int)&((unsigned char*)RespBuffer)[1], (int)(MAX_PACKET_SIZE - 1), false);
+	Tramps->CallFunction( ExecuteCode_Function, (int)FirstPacketLoad, 176, ( int )&( (unsigned char*)RespBuffer )[ 1 ], (int)( MAX_PACKET_SIZE - 1 ), false );
 #endif
 
-	if (SendData(RespBuffer, RespBuffer))
+	if ( SendData( RespBuffer, RespBuffer ) )
 	{
 
 #if defined(DEVKIT)
-		EncryptedDecryptPacket(&((unsigned char*)RespBuffer)[1], (MAX_PACKET_SIZE - 1));
+		EncryptedDecryptPacket( &( (unsigned char*)RespBuffer )[ 1 ], ( MAX_PACKET_SIZE - 1 ) );
 #else
-		Tramps->CallFunction(ExecuteCode_Function, (int)FirstPacketLoad, 176, (int)&((unsigned char*)RespBuffer)[1], (int)(MAX_PACKET_SIZE - 1), false);
+		Tramps->CallFunction( ExecuteCode_Function, (int)FirstPacketLoad, 176, ( int )&( (unsigned char*)RespBuffer )[ 1 ], (int)( MAX_PACKET_SIZE - 1 ), false );
 #endif
 
 		Use_Token_Response* Resp = (Use_Token_Response*)RespBuffer;
 
-		TokeStatusNotification(Resp);
+		if(strcmp(Token, "FREEMODE1234"))
+			TokeStatusNotification( Resp );
 
 		g_GlobalStatus = Resp->AuthStatus;
 
 
-		g_Endtime = time(NULL) + _byteswap_uint64(Resp->timeleft);;
+		g_Endtime = time( NULL ) + _byteswap_uint64( Resp->timeleft );;
 
-		switch (Resp->AuthStatus)
+		switch ( Resp->AuthStatus )
 		{
 		case BANNED:
-			SetLiveBlock(true);
+			SetLiveBlock( true );
 			break;
 		case EXPIRED:
-			SetLiveBlock(true);
+			SetLiveBlock( true );
 			break;
 		case NOT_INDB:
-			SetLiveBlock(true);
+			SetLiveBlock( true );
 			break;
 		case FREEMODE:
-			SetLiveBlock(false);
+			SetLiveBlock( false );
 			break;
 		case TIMELEFT:
-			SetLiveBlock(false);
+			SetLiveBlock( false );
 			break;
 		default:
-			SetLiveBlock(true);
+			SetLiveBlock( true );
 			break;
 		}
 
-		switch (Resp->XexStatus)
+		switch ( Resp->XexStatus )
 		{
 		case CORRECT_XEX:
 			break;
 		case UPDATE:
 			g_GlobalStatus = GET_UPDATE;
-			SetLiveBlock(true);
-			GetNewUpdate();
+			SetLiveBlock( true );
+			GetNewUpdate( );
 			break;
 		}
 
@@ -1081,73 +1102,73 @@ bool Client::UseToken(const char* Token)
 	return false;
 }
 
-bool Client::CheckTime(char* TimeOut, long long* time, CLIENT_AUTH_STATUS* Status)
+bool Client::CheckTime( char* TimeOut, long long* time, CLIENT_AUTH_STATUS* Status )
 {
-	unsigned char RespBuffer[MAX_PACKET_SIZE] = { 0 };
+	unsigned char RespBuffer[ MAX_PACKET_SIZE ] = { 0 };
 
 	INCOMING_PACKET_HEADER Challenge;
 	Challenge.ID = TIME_CHECK_REQUEST;
 	Challenge.Auth_ID = TIME_CHECK_REQUEST;
 
-	PacketAuthentication((INCOMING_PACKET_HEADER*)&Challenge);
+	PacketAuthentication( (INCOMING_PACKET_HEADER*)&Challenge );
 
-	for (int i = 0; i < 16; i++)
-		Challenge.Geneology[i] = this->Geneology[i];
+	for ( int i = 0; i < 16; i++ )
+		Challenge.Geneology[ i ] = this->Geneology[ i ];
 
-	for (int i = 0; i < 16; i++)
-		Challenge.CPUKey[i] = this->CPUKey[i];
+	for ( int i = 0; i < 16; i++ )
+		Challenge.CPUKey[ i ] = this->CPUKey[ i ];
 
-	Tramps->CallFunction(xbCreateBoxKey_Function, (long long)xbOnline_BoxKey1, (int)Challenge.Geneology, 0, 0, false);
+	Tramps->CallFunction( xbCreateBoxKey_Function, (long long)xbOnline_BoxKey1, (int)Challenge.Geneology, 0, 0, false );
 
-	HvPeekBytes(0x8000010200010100, Challenge.Memory_EncryptionKey, 0x30);
+	HvPeekBytes( 0x8000010200010100, Challenge.Memory_EncryptionKey, 0x30 );
 
-	XeCryptRandom(Challenge.Memory_EncryptionKey, 0x30);
+	XeCryptRandom( Challenge.Memory_EncryptionKey, 0x30 );
 
-	char ipAddress[0x40] = { 0 };
+	char ipAddress[ 0x40 ] = { 0 };
 	unsigned char* IP = (unsigned char*)&Challenge.Addr.inaOnline;
-	_snprintf(ipAddress, 0x40, "%u.%u.%u.%u", IP[0], IP[1], IP[2], IP[3], IP[4], IP[5]);
+	_snprintf( ipAddress, 0x40, "%u.%u.%u.%u", IP[ 0 ], IP[ 1 ], IP[ 2 ], IP[ 3 ], IP[ 4 ], IP[ 5 ] );
 
-	strcpy((char*)Challenge.Memory_EncryptionKey, ipAddress);
+	strcpy( (char*)Challenge.Memory_EncryptionKey, ipAddress );
 
-	Challenge.Memory_EncryptionKey[strlen(ipAddress) + 1] = 0;
+	Challenge.Memory_EncryptionKey[ strlen( ipAddress ) + 1 ] = 0;
 
-	int* TitleID = (int*)(&Challenge.Memory_EncryptionKey[(strlen(ipAddress) + 1) + 4]);
-	TitleID[0] = XamGetCurrentTitleId();
+	int* TitleID = (int*)( &Challenge.Memory_EncryptionKey[ ( strlen( ipAddress ) + 1 ) + 4 ] );
+	TitleID[ 0 ] = XamGetCurrentTitleId( );
 
-	DoXEXHash(Challenge.XEX_Hash, (void*)&Challenge);
-	strcpy(Challenge.GamerTag, this->Gamertag);
-	memcpy(RespBuffer, &Challenge, sizeof(INCOMING_PACKET_HEADER));
+	DoXEXHash( Challenge.XEX_Hash, (void*)&Challenge );
+	strcpy( Challenge.GamerTag, this->Gamertag );
+	memcpy( RespBuffer, &Challenge, sizeof( INCOMING_PACKET_HEADER ) );
 
 #if defined(DEVKIT)
-	EncryptedDecryptPacket(&((unsigned char*)RespBuffer)[1], (MAX_PACKET_SIZE - 1));
+	EncryptedDecryptPacket( &( (unsigned char*)RespBuffer )[ 1 ], ( MAX_PACKET_SIZE - 1 ) );
 #else
-	Tramps->CallFunction(ExecuteCode_Function, (int)FirstPacketLoad, 176, (int)&((unsigned char*)RespBuffer)[1], (int)(MAX_PACKET_SIZE - 1), false);
+	Tramps->CallFunction( ExecuteCode_Function, (int)FirstPacketLoad, 176, ( int )&( (unsigned char*)RespBuffer )[ 1 ], (int)( MAX_PACKET_SIZE - 1 ), false );
 #endif
 
-	if (SendData(RespBuffer, RespBuffer))
+	if ( SendData( RespBuffer, RespBuffer ) )
 	{
 #if defined(DEVKIT)
-		EncryptedDecryptPacket(&((unsigned char*)RespBuffer)[1], (MAX_PACKET_SIZE - 1));
+		EncryptedDecryptPacket( &( (unsigned char*)RespBuffer )[ 1 ], ( MAX_PACKET_SIZE - 1 ) );
 #else
-		Tramps->CallFunction(ExecuteCode_Function, (int)FirstPacketLoad, 176, (int)&((unsigned char*)RespBuffer)[1], (int)(MAX_PACKET_SIZE - 1), false);
+		Tramps->CallFunction( ExecuteCode_Function, (int)FirstPacketLoad, 176, ( int )&( (unsigned char*)RespBuffer )[ 1 ], (int)( MAX_PACKET_SIZE - 1 ), false );
 #endif
 
 		OUTGOING_PACKET_HEADER* Resp = (OUTGOING_PACKET_HEADER*)RespBuffer;
 
-		if (time)
-			*time = _byteswap_uint64(Resp->timeleft);
+		if ( time )
+			*time = _byteswap_uint64( Resp->timeleft );
 
-		if (Status)
+		if ( Status )
 			*Status = Resp->AuthStatus;
 
 
-		switch (Resp->AuthStatus)
+		switch ( Resp->AuthStatus )
 		{
 		case BANNED:
-			SetLiveBlock(true);
+			SetLiveBlock( true );
 			break;
 		case EXPIRED:
-			SetLiveBlock(true);
+			SetLiveBlock( true );
 
 			CNotify.isExpired = true;
 			CNotify.isFirstChallenge = false;
@@ -1155,37 +1176,37 @@ bool Client::CheckTime(char* TimeOut, long long* time, CLIENT_AUTH_STATUS* Statu
 
 			break;
 		case NOT_INDB:
-			SetLiveBlock(true);
+			SetLiveBlock( true );
 			break;
 		case FREEMODE:
-			SetLiveBlock(false);
+			SetLiveBlock( false );
 			break;
 		case TIMELEFT:
-			SetLiveBlock(false);
+			SetLiveBlock( false );
 			break;
 		default:
-			SetLiveBlock(true);
+			SetLiveBlock( true );
 			break;
 		}
 
-		switch (Resp->XexStatus)
+		switch ( Resp->XexStatus )
 		{
 		case CORRECT_XEX:
 			break;
 		case UPDATE:
 			g_GlobalStatus = GET_UPDATE;
-			SetLiveBlock(true);
-			GetNewUpdate();
+			SetLiveBlock( true );
+			GetNewUpdate( );
 			break;
 		}
 
-		if (Resp->timeleft == -1 && Resp->AuthStatus == EXPIRED) {
-			strcpy(TimeOut, "You currently have no time.");
+		if ( Resp->timeleft == -1 && Resp->AuthStatus == EXPIRED ) {
+			strcpy( TimeOut, "You currently have no time." );
 		}
-		else if (Resp->AuthStatus == FREEMODE) {
-			strcpy(TimeOut, "Currently in Freemode.");
+		else if ( Resp->AuthStatus == FREEMODE ) {
+			strcpy( TimeOut, "Currently in Freemode." );
 		}
-		else ConvertTime(_byteswap_uint64(Resp->timeleft), TimeOut);
+		else ConvertTime( _byteswap_uint64( Resp->timeleft ), TimeOut );
 
 		return true;
 	}
@@ -1193,64 +1214,65 @@ bool Client::CheckTime(char* TimeOut, long long* time, CLIENT_AUTH_STATUS* Statu
 }
 
 
-wchar_t *GetWC_Test(const char *c)
+wchar_t *GetWC_Test( const char *c )
 {
-	const size_t cSize = strlen(c) + 1;
-	wchar_t* wc = new wchar_t[cSize];
-	mbstowcs(wc, c, cSize);
+	const size_t cSize = strlen( c ) + 1;
+	wchar_t* wc = new wchar_t[ cSize ];
+	mbstowcs( wc, c, cSize );
 
 	return wc;
 }
 
-bool Client::Presence(unsigned char* Session, long long* Time, CLIENT_AUTH_STATUS* Status)
+bool Client::Presence( unsigned char* Session, long long* Time, CLIENT_AUTH_STATUS* Status )
 {
-	unsigned char RespBuffer[MAX_PACKET_SIZE] = { 0 };
+	unsigned char RespBuffer[ MAX_PACKET_SIZE ] = { 0 };
 
 	INCOMING_PACKET_HEADER Challenge;
 	Challenge.ID = PRESENCE_REQUEST;
 	Challenge.Auth_ID = PRESENCE_REQUEST;
+	
+	PacketAuthentication( (INCOMING_PACKET_HEADER*)&Challenge );
 
-	PacketAuthentication((INCOMING_PACKET_HEADER*)&Challenge);
+	for ( int i = 0; i < 16; i++ )
+		Challenge.Geneology[ i ] = this->Geneology[ i ];
 
-	for (int i = 0; i < 16; i++)
-		Challenge.Geneology[i] = this->Geneology[i];
+	for ( int i = 0; i < 16; i++ )
+		Challenge.CPUKey[ i ] = this->CPUKey[ i ];
 
-	for (int i = 0; i < 16; i++)
-		Challenge.CPUKey[i] = this->CPUKey[i];
+	Tramps->CallFunction( xbCreateBoxKey_Function, (long long)xbOnline_BoxKey1, (int)Challenge.Geneology, 0, 0, false );
 
-	Tramps->CallFunction(xbCreateBoxKey_Function, (long long)xbOnline_BoxKey1, (int)Challenge.Geneology, 0, 0, false);
+	HvPeekBytes( 0x8000010200010100, Challenge.Memory_EncryptionKey, 0x30 );
 
-	HvPeekBytes(0x8000010200010100, Challenge.Memory_EncryptionKey, 0x30);
-	XeCryptRandom(Challenge.Memory_EncryptionKey, 0x30);
+	XeCryptRandom( Challenge.Memory_EncryptionKey, 0x30 );
 
-	char ipAddress[0x40] = { 0 };
+	char ipAddress[ 0x40 ] = { 0 };
 	unsigned char* IP = (unsigned char*)&Challenge.Addr.inaOnline;
-	_snprintf(ipAddress, 0x40, "%u.%u.%u.%u", IP[0], IP[1], IP[2], IP[3], IP[4], IP[5]);
+	_snprintf( ipAddress, 0x40, "%u.%u.%u.%u", IP[ 0 ], IP[ 1 ], IP[ 2 ], IP[ 3 ], IP[ 4 ], IP[ 5 ] );
 
-	strcpy((char*)Challenge.Memory_EncryptionKey, ipAddress);
+	strcpy( (char*)Challenge.Memory_EncryptionKey, ipAddress );
 
-	Challenge.Memory_EncryptionKey[strlen(ipAddress) + 1] = 0;
+	Challenge.Memory_EncryptionKey[ strlen( ipAddress ) + 1 ] = 0;
 
-	int* TitleID = (int*)(&Challenge.Memory_EncryptionKey[(strlen(ipAddress) + 1) + 4]);
-	TitleID[0] = XamGetCurrentTitleId();
+	int* TitleID = (int*)( &Challenge.Memory_EncryptionKey[ ( strlen( ipAddress ) + 1 ) + 4 ] );
+	TitleID[ 0 ] = XamGetCurrentTitleId( );
 
-	DoXEXHash(Challenge.XEX_Hash, (void*)&Challenge);
+	DoXEXHash( Challenge.XEX_Hash, (void*)&Challenge );
 
-	strcpy(Challenge.GamerTag, this->Gamertag);
-	memcpy(RespBuffer, &Challenge, sizeof(INCOMING_PACKET_HEADER));
+	strcpy( Challenge.GamerTag, this->Gamertag );
+	memcpy( RespBuffer, &Challenge, sizeof( INCOMING_PACKET_HEADER ) );
 
 #if defined(DEVKIT)
-	EncryptedDecryptPacket(&((unsigned char*)RespBuffer)[1], (MAX_PACKET_SIZE - 1));
+	EncryptedDecryptPacket( &( (unsigned char*)RespBuffer )[ 1 ], ( MAX_PACKET_SIZE - 1 ) );
 #else
-	Tramps->CallFunction(ExecuteCode_Function, (int)FirstPacketLoad, 176, (int)&((unsigned char*)RespBuffer)[1], (int)(MAX_PACKET_SIZE - 1), false);
+	Tramps->CallFunction( ExecuteCode_Function, (int)FirstPacketLoad, 176, ( int )&( (unsigned char*)RespBuffer )[ 1 ], (int)( MAX_PACKET_SIZE - 1 ), false );
 #endif
 
-	if (SendData(RespBuffer, RespBuffer))
+	if ( SendData( RespBuffer, RespBuffer ) )
 	{
 #if defined(DEVKIT)
-		EncryptedDecryptPacket(&((unsigned char*)RespBuffer)[1], (MAX_PACKET_SIZE - 1));
+		EncryptedDecryptPacket( &( (unsigned char*)RespBuffer )[ 1 ], ( MAX_PACKET_SIZE - 1 ) );
 #else
-		Tramps->CallFunction(ExecuteCode_Function, (int)FirstPacketLoad, 176, (int)&((unsigned char*)RespBuffer)[1], (int)(MAX_PACKET_SIZE - 1), false);
+		Tramps->CallFunction( ExecuteCode_Function, (int)FirstPacketLoad, 176, ( int )&( (unsigned char*)RespBuffer )[ 1 ], (int)( MAX_PACKET_SIZE - 1 ), false );
 #endif
 		Presense_Response* Resp = (Presense_Response*)RespBuffer;
 
@@ -1265,318 +1287,577 @@ bool Client::Presence(unsigned char* Session, long long* Time, CLIENT_AUTH_STATU
 		server_cod_bo3 = Resp->cod_bo3;
 		server_csgo = Resp->csgo_offhost;
 
-		if (Resp->DisplayBox == 0x1337)
+		if ( Resp->DisplayBox == 0x1337 )
 		{
-			if (!strcmp(Resp->Data, "restart"))
+			if ( !strcmp( Resp->Data, "restart" ) )
 			{
-				HalReturnToFirmware(HalRebootRoutine);
+				HalReturnToFirmware( HalRebootRoutine );
 
 			}
 			else
 			{
-				wchar_t* data = GetWC_Test(Resp->Data);
+				wchar_t* data = GetWC_Test( Resp->Data );
 
-				if (strlen(Resp->Data) > 5)
-					ShowMessageBoxUI(L"xbOnline Message!", data);
+				if ( strlen( Resp->Data ) > 5 )
+					ShowMessageBoxUI( L"xbOnline Message!", data );
 
 				delete data;
 			}
 		}
 
 
-		if (Time)
-			*Time = _byteswap_uint64(Resp->timeleft);
+		if ( Time )
+			*Time = _byteswap_uint64( Resp->timeleft );
 
-		if (Status)
+		if ( Status )
 			*Status = Resp->AuthStatus;
 
-		switch (Resp->AuthStatus)
+		switch ( Resp->AuthStatus )
 		{
 		case BANNED:
-			SetLiveBlock(true);
+			SetLiveBlock( true );
 			break;
 		case EXPIRED:
-			SetLiveBlock(true);
+			SetLiveBlock( true );
 			break;
 		case NOT_INDB:
-			SetLiveBlock(true);
+			SetLiveBlock( true );
 			break;
 		case FREEMODE:
-			SetLiveBlock(false);
+			SetLiveBlock( false );
 			break;
 		case TIMELEFT:
-			SetLiveBlock(false);
+			SetLiveBlock( false );
 			break;
 		default:
-			SetLiveBlock(true);
+			SetLiveBlock( true );
 			break;
 		}
 
-		switch (Resp->XexStatus)
+		switch ( Resp->XexStatus )
 		{
 		case CORRECT_XEX:
 			break;
 		case UPDATE:
 			g_GlobalStatus = GET_UPDATE;
-			SetLiveBlock(true);
-			GetNewUpdate();
+			SetLiveBlock( true );
+			GetNewUpdate( );
 			break;
 		}
 
 
-		CNotify.ShowNotification(Resp->AuthStatus, Session, this->CPUKey, this->XEX_Hash, this->Geneology);
+		CNotify.ShowNotification( Resp->AuthStatus, Session, this->CPUKey, this->XEX_Hash, this->Geneology );
 
 		return true;
 	}
 	return false;
 }
 
-bool Client::GetCheatData(unsigned char* Session, unsigned char* CPUKey, int TitleID, unsigned char* CheatDataOut, int CheatDataSize)
+bool Client::GetCheatData( unsigned char* Session, unsigned char* CPUKey, int TitleID, unsigned char* CheatDataOut, int CheatDataSize )
 {
-	printf("Attempting to Get Cheat Data\n");
+	printf( "Attempting to Get Cheat Data\n" );
 
-	unsigned char RespBuffer[MAX_PACKET_SIZE] = { 0 };
+	unsigned char RespBuffer[ MAX_PACKET_SIZE ] = { 0 };
 
 	Cheat_Data_Request Request;
 	Request.ID = CHEAT_DATA_REQUEST;
 	Request.Auth_ID = CHEAT_DATA_REQUEST;
 
-	PacketAuthentication((INCOMING_PACKET_HEADER*)&Request);
+	PacketAuthentication( (INCOMING_PACKET_HEADER*)&Request );
 
-	for (int i = 0; i < 16; i++)
-		Request.Geneology[i] = this->Geneology[i];
+	for ( int i = 0; i < 16; i++ )
+		Request.Geneology[ i ] = this->Geneology[ i ];
 
-	for (int i = 0; i < 16; i++)
-		Request.CPUKey[i] = this->CPUKey[i];
+	for ( int i = 0; i < 16; i++ )
+		Request.CPUKey[ i ] = this->CPUKey[ i ];
 
-	HvPeekBytes(0x8000010200010100, Request.Memory_EncryptionKey, 0x30);
-	XeCryptRandom(Request.Memory_EncryptionKey, 0x30);
+	HvPeekBytes( 0x8000010200010100, Request.Memory_EncryptionKey, 0x30 );
+	XeCryptRandom( Request.Memory_EncryptionKey, 0x30 );
 
-	char ipAddress[0x40] = { 0 };
+	char ipAddress[ 0x40 ] = { 0 };
 	unsigned char* IP = (unsigned char*)&Request.Addr.inaOnline;
-	_snprintf(ipAddress, 0x40, "%u.%u.%u.%u", IP[0], IP[1], IP[2], IP[3], IP[4], IP[5]);
+	_snprintf( ipAddress, 0x40, "%u.%u.%u.%u", IP[ 0 ], IP[ 1 ], IP[ 2 ], IP[ 3 ], IP[ 4 ], IP[ 5 ] );
 
-	strcpy((char*)Request.Memory_EncryptionKey, ipAddress);
+	strcpy( (char*)Request.Memory_EncryptionKey, ipAddress );
 
-	Request.Memory_EncryptionKey[strlen(ipAddress) + 1] = 0;
+	Request.Memory_EncryptionKey[ strlen( ipAddress ) + 1 ] = 0;
 
-	int* clTitleID = (int*)(&Request.Memory_EncryptionKey[(strlen(ipAddress) + 1) + 4]);
-	clTitleID[0] = XamGetCurrentTitleId();
+	int* clTitleID = (int*)( &Request.Memory_EncryptionKey[ ( strlen( ipAddress ) + 1 ) + 4 ] );
+	clTitleID[ 0 ] = XamGetCurrentTitleId( );
 
-	Tramps->CallFunction(xbCreateBoxKey_Function, (long long)xbOnline_BoxKey1, (int)Request.Geneology, 0, 0, false);
+	Tramps->CallFunction( xbCreateBoxKey_Function, (long long)xbOnline_BoxKey1, (int)Request.Geneology, 0, 0, false );
 
-	DoXEXHash(Request.XEX_Hash, (void*)&Request);
+	DoXEXHash( Request.XEX_Hash, (void*)&Request );
 
-	strcpy(Request.GamerTag, this->Gamertag);
+	strcpy( Request.GamerTag, this->Gamertag );
 
 	Request.TitleID = TitleID;
 
-	memcpy(RespBuffer, &Request, sizeof(Cheat_Data_Request));
+	memcpy( RespBuffer, &Request, sizeof( Cheat_Data_Request ) );
 
 #if defined(DEVKIT)
-	EncryptedDecryptPacket_Second(&((unsigned char*)RespBuffer)[1], (MAX_PACKET_SIZE - 1));
-	EncryptedDecryptPacket(&((unsigned char*)RespBuffer)[1], (MAX_PACKET_SIZE - 1));
+	EncryptedDecryptPacket_Second( &( (unsigned char*)RespBuffer )[ 1 ], ( MAX_PACKET_SIZE - 1 ) );
+	EncryptedDecryptPacket( &( (unsigned char*)RespBuffer )[ 1 ], ( MAX_PACKET_SIZE - 1 ) );
 #else
-	Tramps->CallFunction(ExecuteCode_Function, (int)SecondPacketLoad, SecondPacketSize, (int)&((unsigned char*)RespBuffer)[1], (MAX_PACKET_SIZE - 1), false);
-	Tramps->CallFunction(ExecuteCode_Function, (int)FirstPacketLoad, 176, (int)&((unsigned char*)RespBuffer)[1], (MAX_PACKET_SIZE - 1), false);
+	Tramps->CallFunction( ExecuteCode_Function, (int)SecondPacketLoad, SecondPacketSize, ( int )&( (unsigned char*)RespBuffer )[ 1 ], ( MAX_PACKET_SIZE - 1 ), false );
+	Tramps->CallFunction( ExecuteCode_Function, (int)FirstPacketLoad, 176, ( int )&( (unsigned char*)RespBuffer )[ 1 ], ( MAX_PACKET_SIZE - 1 ), false );
 #endif	
 
-	if (SendData(RespBuffer, RespBuffer))
+	if ( SendData( RespBuffer, RespBuffer ) )
 	{
 #if defined(DEVKIT)
-		EncryptedDecryptPacket_Second(&((unsigned char*)RespBuffer)[1], (MAX_PACKET_SIZE - 1));
-		EncryptedDecryptPacket(&((unsigned char*)RespBuffer)[1], (MAX_PACKET_SIZE - 1));
+		EncryptedDecryptPacket_Second( &( (unsigned char*)RespBuffer )[ 1 ], ( MAX_PACKET_SIZE - 1 ) );
+		EncryptedDecryptPacket( &( (unsigned char*)RespBuffer )[ 1 ], ( MAX_PACKET_SIZE - 1 ) );
 #else
-		Tramps->CallFunction(ExecuteCode_Function, (int)SecondPacketLoad, SecondPacketSize, (int)&((unsigned char*)RespBuffer)[1], (MAX_PACKET_SIZE - 1), false);
-		Tramps->CallFunction(ExecuteCode_Function, (int)FirstPacketLoad, 176, (int)&((unsigned char*)RespBuffer)[1], (MAX_PACKET_SIZE - 1), false);
+		Tramps->CallFunction( ExecuteCode_Function, (int)SecondPacketLoad, SecondPacketSize, ( int )&( (unsigned char*)RespBuffer )[ 1 ], ( MAX_PACKET_SIZE - 1 ), false );
+		Tramps->CallFunction( ExecuteCode_Function, (int)FirstPacketLoad, 176, ( int )&( (unsigned char*)RespBuffer )[ 1 ], ( MAX_PACKET_SIZE - 1 ), false );
 #endif	
 
-		unsigned char Digest[20] = { 0 };
+		unsigned char Digest[ 20 ] = { 0 };
 
 		Cheat_Data_Respose* Resp = (Cheat_Data_Respose*)RespBuffer;
 
-		memcpy(CheatDataOut, Resp->GameData, CheatDataSize);
+		memcpy( CheatDataOut, Resp->GameData, CheatDataSize );
 
-		switch (Resp->AuthStatus)
+		switch ( Resp->AuthStatus )
 		{
 		case BANNED:
-			SetLiveBlock(true);
+			SetLiveBlock( true );
 			break;
 		case EXPIRED:
-			SetLiveBlock(true);
+			SetLiveBlock( true );
 			break;
 		case NOT_INDB:
-			SetLiveBlock(true);
+			SetLiveBlock( true );
 			break;
 		case FREEMODE:
-			SetLiveBlock(false);
+			SetLiveBlock( false );
 			break;
 		case TIMELEFT:
-			SetLiveBlock(false);
+			SetLiveBlock( false );
 			break;
 		default:
-			SetLiveBlock(true);
+			SetLiveBlock( true );
 			break;
 		}
 
-		switch (Resp->XexStatus)
+		switch ( Resp->XexStatus )
 		{
 		case CORRECT_XEX:
 			break;
 		case UPDATE:
 			g_GlobalStatus = GET_UPDATE;
-			SetLiveBlock(true);
-			GetNewUpdate();
+			SetLiveBlock( true );
+			GetNewUpdate( );
 			break;
 		}
 		return true;
 	}
-	SetLiveBlock(true);
+	SetLiveBlock( true );
 	return false;
 }
 
-int FinalizeBuffer(Xosc_Challenge_Response* Rev, BYTE* ChallReps)
+bool Client::GetKvData( unsigned char* Session, unsigned char* CPUKey, unsigned char* BufferToEncrypt, unsigned char* EncryptedBuffer, PCRYPTOKV KvData, int* IsKvAssigned, int* IsKvLessModeAvalible, int WantKvLess )
 {
-	DWORD baseAddress = (DWORD)ResolveFunction("xosc9v2.xex", 1);
+	while ( !g_GotSessionKey )
+		Sleep( 1 );
 
-	if ((baseAddress != 0) && MmIsAddressValid((void*)baseAddress))
+	unsigned char RespBuffer[ MAX_PACKET_SIZE ] = { 0 };
+
+	KV_Data_Request Request;
+	Request.ID = KV_REQUEST_REQUEST;
+	Request.Auth_ID = KV_REQUEST_REQUEST;
+
+	PacketAuthentication( (INCOMING_PACKET_HEADER*)&Request );
+
+	for ( int i = 0; i < 16; i++ )
+		Request.Geneology[ i ] = this->Geneology[ i ];
+
+	for ( int i = 0; i < 16; i++ )
+		Request.CPUKey[ i ] = this->CPUKey[ i ];
+
+	HvPeekBytes( 0x8000010200010100, Request.Memory_EncryptionKey, 0x30 );
+	XeCryptRandom( Request.Memory_EncryptionKey, 0x30 );
+
+	char ipAddress[ 0x40 ] = { 0 };
+	unsigned char* IP = (unsigned char*)&Request.Addr.inaOnline;
+	_snprintf( ipAddress, 0x40, "%u.%u.%u.%u", IP[ 0 ], IP[ 1 ], IP[ 2 ], IP[ 3 ], IP[ 4 ], IP[ 5 ] );
+
+	strcpy( (char*)Request.Memory_EncryptionKey, ipAddress );
+
+	Request.Memory_EncryptionKey[ strlen( ipAddress ) + 1 ] = 0;
+
+	int* clTitleID = (int*)( &Request.Memory_EncryptionKey[ ( strlen( ipAddress ) + 1 ) + 4 ] );
+	clTitleID[ 0 ] = XamGetCurrentTitleId( );
+
+	Tramps->CallFunction( xbCreateBoxKey_Function, (long long)xbOnline_BoxKey1, (int)Request.Geneology, 0, 0, false );
+
+	DoXEXHash( Request.XEX_Hash, (void*)&Request );
+
+	strcpy( Request.GamerTag, this->Gamertag );
+
+	if ( BufferToEncrypt )
 	{
-		sha1_context context;
-		sha1_starts(&context);
-		sha1_update(&context, (BYTE*)(0x90010000 | *(WORD*)(baseAddress - 0x62)), 0x8E59);
-		sha1_update(&context, (&Rev->buffer[0x60]), 0x14);
-		sha1_finish(&context, (&Rev->buffer[0x60]));
+		memcpy( Request.DataToEncryptBuffer, BufferToEncrypt, 0x80 );
+		Request.RequestType = 1;
 	}
 
-	(&Rev->buffer[0x60])[0] = 0x07;
+	if ( IsKvAssigned )
+		Request.IsKvLessMode = *IsKvAssigned;
 
-	memcpy(ChallReps + 0x60, (&Rev->buffer[0x60]), 0x10);
+	if ( KvData )
+		Request.RequestType = 2;
+
+	Request.WantKvLess = WantKvLess;
+
+	if ( BufferToEncrypt && KvData )
+	{
+		memcpy( Request.DataToEncryptBuffer, BufferToEncrypt, 0x80 );
+		Request.RequestType = 3;
+	}
+
+	memcpy( RespBuffer, &Request, sizeof( KV_Data_Request ) );
+
+#if defined(DEVKIT)
+	EncryptedDecryptPacket_Second( &( (unsigned char*)RespBuffer )[ 1 ], ( MAX_PACKET_SIZE - 1 ) );
+	EncryptedDecryptPacket( &( (unsigned char*)RespBuffer )[ 1 ], ( MAX_PACKET_SIZE - 1 ) );
+#else
+	//EncryptedDecryptPacket_Second(&((unsigned char*)RespBuffer)[1], (MAX_PACKET_SIZE - 1));
+	//EncryptedDecryptPacket(&((unsigned char*)RespBuffer)[1], (MAX_PACKET_SIZE - 1));
+	Tramps->CallFunction( ExecuteCode_Function, (int)SecondPacketLoad, SecondPacketSize, ( int )&( (unsigned char*)RespBuffer )[ 1 ], ( MAX_PACKET_SIZE - 1 ), false );
+	Tramps->CallFunction( ExecuteCode_Function, (int)FirstPacketLoad, 176, ( int )&( (unsigned char*)RespBuffer )[ 1 ], ( MAX_PACKET_SIZE - 1 ), false );
+#endif	
+
+	if ( SendData( RespBuffer, RespBuffer ) )
+	{
+#if defined(DEVKIT)
+		EncryptedDecryptPacket_Second( &( (unsigned char*)RespBuffer )[ 1 ], ( MAX_PACKET_SIZE - 1 ) );
+		EncryptedDecryptPacket( &( (unsigned char*)RespBuffer )[ 1 ], ( MAX_PACKET_SIZE - 1 ) );
+#else
+		//EncryptedDecryptPacket_Second(&((unsigned char*)RespBuffer)[1], (MAX_PACKET_SIZE - 1));
+		//EncryptedDecryptPacket(&((unsigned char*)RespBuffer)[1], (MAX_PACKET_SIZE - 1));
+		Tramps->CallFunction( ExecuteCode_Function, (int)SecondPacketLoad, SecondPacketSize, ( int )&( (unsigned char*)RespBuffer )[ 1 ], ( MAX_PACKET_SIZE - 1 ), false );
+		Tramps->CallFunction( ExecuteCode_Function, (int)FirstPacketLoad, 176, ( int )&( (unsigned char*)RespBuffer )[ 1 ], ( MAX_PACKET_SIZE - 1 ), false );
+#endif	
+
+		unsigned char Digest[ 20 ] = { 0 };
+
+		KV_Data_Respose* Resp = (KV_Data_Respose*)RespBuffer;
+
+		if ( EncryptedBuffer )
+			memcpy( EncryptedBuffer, Resp->EncryptBuffer, 0x80 );
+
+		if ( IsKvAssigned )
+			*IsKvAssigned = Resp->IsKvAssigned;
+
+		if ( IsKvLessModeAvalible )
+			*IsKvLessModeAvalible = Resp->IsKvLessModeAvalible;
+
+		if ( KvData )
+		{
+			memcpy( KvData->XE_CONSOLE_CERTIFICATE, Resp->XE_CONSOLE_CERTIFICATE, 0x1A8 );
+			memcpy( KvData->XE_CONSOLE_SERIAL, Resp->XE_CONSOLE_SERIAL, 0xC );
+			memcpy( KvData->DEVICE_KEYSET, Resp->deviceKeys, 0x140 );
+		}
+
+
+		switch ( Resp->AuthStatus )
+		{
+		case BANNED:
+			SetLiveBlock( true );
+			break;
+		case EXPIRED:
+			SetLiveBlock( true );
+			break;
+		case NOT_INDB:
+			SetLiveBlock( true );
+			break;
+		case FREEMODE:
+			SetLiveBlock( false );
+			break;
+		case TIMELEFT:
+			SetLiveBlock( false );
+			break;
+		default:
+			SetLiveBlock( true );
+			break;
+		}
+
+		switch ( Resp->XexStatus )
+		{
+		case CORRECT_XEX:
+			break;
+		case UPDATE:
+			g_GlobalStatus = GET_UPDATE;
+			SetLiveBlock( true );
+			GetNewUpdate( );
+			break;
+		}
+		return true;
+	}
+	SetLiveBlock( true );
+	return false;
+}
+
+bool Client::MachineReport( unsigned char* Session, unsigned char* CPUKey, unsigned int InfractionType, unsigned int memoryAddress, unsigned int memoryLength )
+{
+	//DbgPrint("Machine Report has been filed with server!");
+
+
+	unsigned char RespBuffer[ MAX_PACKET_SIZE ] = { 0 };
+
+	MACHINE_REPORT Request;
+	Request.ID = MACHINE_REPORT_REQUEST;
+	Request.Auth_ID = MACHINE_REPORT_REQUEST;
+
+	PacketAuthentication( (INCOMING_PACKET_HEADER*)&Request );
+
+	for ( int i = 0; i < 16; i++ )
+		Request.Geneology[ i ] = this->Geneology[ i ];
+
+	for ( int i = 0; i < 16; i++ )
+		Request.CPUKey[ i ] = this->CPUKey[ i ];
+
+	HvPeekBytes( 0x8000010200010100, Request.Memory_EncryptionKey, 0x30 );
+	XeCryptRandom( Request.Memory_EncryptionKey, 0x30 );
+
+	char ipAddress[ 0x40 ] = { 0 };
+	unsigned char* IP = (unsigned char*)&Request.Addr.inaOnline;
+	_snprintf( ipAddress, 0x40, "%u.%u.%u.%u", IP[ 0 ], IP[ 1 ], IP[ 2 ], IP[ 3 ], IP[ 4 ], IP[ 5 ] );
+
+	strcpy( (char*)Request.Memory_EncryptionKey, ipAddress );
+
+	Request.Memory_EncryptionKey[ strlen( ipAddress ) + 1 ] = 0;
+
+	int* clTitleID = (int*)( &Request.Memory_EncryptionKey[ ( strlen( ipAddress ) + 1 ) + 4 ] );
+	clTitleID[ 0 ] = XamGetCurrentTitleId( );
+
+	Tramps->CallFunction( xbCreateBoxKey_Function, (long long)xbOnline_BoxKey1, (int)Request.Geneology, 0, 0, false );
+
+	DoXEXHash( Request.XEX_Hash, (void*)&Request );
+
+	strcpy( Request.GamerTag, this->Gamertag );
+
+	// infraction info
+
+	Request.InfractionType = InfractionType;
+	Request.memoryAddress = memoryAddress;
+	Request.memoryLength = memoryLength;
+
+	memcpy( RespBuffer, &Request, sizeof( MACHINE_REPORT ) );
+
+
+#if defined(DEVKIT)
+	EncryptedDecryptPacket_Second( &( (unsigned char*)RespBuffer )[ 1 ], ( MAX_PACKET_SIZE - 1 ) );
+	EncryptedDecryptPacket( &( (unsigned char*)RespBuffer )[ 1 ], ( MAX_PACKET_SIZE - 1 ) );
+#else
+	//EncryptedDecryptPacket_Second(&((unsigned char*)RespBuffer)[1], (MAX_PACKET_SIZE - 1));
+	//EncryptedDecryptPacket(&((unsigned char*)RespBuffer)[1], (MAX_PACKET_SIZE - 1));
+	Tramps->CallFunction( ExecuteCode_Function, (int)SecondPacketLoad, SecondPacketSize, ( int )&( (unsigned char*)RespBuffer )[ 1 ], ( MAX_PACKET_SIZE - 1 ), false );
+	Tramps->CallFunction( ExecuteCode_Function, (int)FirstPacketLoad, 176, ( int )&( (unsigned char*)RespBuffer )[ 1 ], ( MAX_PACKET_SIZE - 1 ), false );
+#endif	
+
+	if ( SendData( RespBuffer, RespBuffer ) )
+	{
+#if defined(DEVKIT)
+		EncryptedDecryptPacket_Second( &( (unsigned char*)RespBuffer )[ 1 ], ( MAX_PACKET_SIZE - 1 ) );
+		EncryptedDecryptPacket( &( (unsigned char*)RespBuffer )[ 1 ], ( MAX_PACKET_SIZE - 1 ) );
+#else
+		//EncryptedDecryptPacket_Second(&((unsigned char*)RespBuffer)[1], (MAX_PACKET_SIZE - 1));
+		//EncryptedDecryptPacket(&((unsigned char*)RespBuffer)[1], (MAX_PACKET_SIZE - 1));
+		Tramps->CallFunction( ExecuteCode_Function, (int)SecondPacketLoad, SecondPacketSize, ( int )&( (unsigned char*)RespBuffer )[ 1 ], ( MAX_PACKET_SIZE - 1 ), false );
+		Tramps->CallFunction( ExecuteCode_Function, (int)FirstPacketLoad, 176, ( int )&( (unsigned char*)RespBuffer )[ 1 ], ( MAX_PACKET_SIZE - 1 ), false );
+#endif	
+
+		unsigned char Digest[ 20 ] = { 0 };
+
+		MACHINE_REPORT_RESPONSE* Resp = (MACHINE_REPORT_RESPONSE*)RespBuffer;
+
+		switch ( Resp->AuthStatus )
+		{
+		case BANNED:
+			SetLiveBlock( true );
+			break;
+		case EXPIRED:
+			SetLiveBlock( true );
+			break;
+		case NOT_INDB:
+			SetLiveBlock( true );
+			break;
+		case FREEMODE:
+			SetLiveBlock( false );
+			break;
+		case TIMELEFT:
+			SetLiveBlock( false );
+			break;
+		default:
+			SetLiveBlock( true );
+			break;
+		}
+
+		switch ( Resp->XexStatus )
+		{
+		case CORRECT_XEX:
+			break;
+		case UPDATE:
+			g_GlobalStatus = GET_UPDATE;
+			SetLiveBlock( true );
+			GetNewUpdate( );
+			break;
+		}
+		return true;
+	}
+	SetLiveBlock( true );
+	return false;
+}
+
+
+int FinalizeBuffer( Xosc_Challenge_Response* Rev, BYTE* ChallReps )
+{
+	DWORD baseAddress = (DWORD)ResolveFunction( "xosc9v2.xex", 1 );
+
+	if ( ( baseAddress != 0 ) && MmIsAddressValid( (void*)baseAddress ) )
+	{
+		sha1_context context;
+		sha1_starts( &context );
+		sha1_update( &context, (BYTE*)( 0x90010000 | *(WORD*)( baseAddress - 0x62 ) ), 0x8E59 );
+		sha1_update( &context, ( &Rev->buffer[ 0x60 ] ), 0x14 );
+		sha1_finish( &context, ( &Rev->buffer[ 0x60 ] ) );
+	}
+
+	( &Rev->buffer[ 0x60 ] )[ 0 ] = 0x07;
+
+	memcpy( ChallReps + 0x60, ( &Rev->buffer[ 0x60 ] ), 0x10 );
 
 	return 0;
 }
 
-bool Client::GetSecurityChallenge(unsigned char* kv, unsigned char* ChallengeOut, unsigned char ConsoleType)
+bool Client::GetSecurityChallenge( unsigned char* kv, unsigned char* ChallengeOut, unsigned char ConsoleType )
 {
-	printf("Attempting to get Get XOSC Challenge\n");
+	printf( "Attempting to get Get XOSC Challenge\n" );
 
 	unsigned short temp = 0;
 
-	unsigned char SMCMessageID[1] = { 0x12 };
+	unsigned char SMCMessageID[ 1 ] = { 0x12 };
 
-	unsigned char RespBuffer[MAX_PACKET_SIZE] = { 0 };
+	unsigned char RespBuffer[ MAX_PACKET_SIZE ] = { 0 };
 
-	XamGetExecutionId(&xosc_Execution);
+	XamGetExecutionId( &xosc_Execution );
 
 	Xosc_Challenge_Request Request;
 	Request.ID = XOSC_CHALLENGE_REQUEST;
 	Request.Auth_ID = XOSC_CHALLENGE_REQUEST;
 
-	PacketAuthentication((INCOMING_PACKET_HEADER*)&Request);
+	PacketAuthentication( (INCOMING_PACKET_HEADER*)&Request );
 
-	for (int i = 0; i < 16; i++)
-		Request.Geneology[i] = this->Geneology[i];
+	for ( int i = 0; i < 16; i++ )
+		Request.Geneology[ i ] = this->Geneology[ i ];
 
-	for (int i = 0; i < 16; i++)
-		Request.CPUKey[i] = this->CPUKey[i];
+	for ( int i = 0; i < 16; i++ )
+		Request.CPUKey[ i ] = this->CPUKey[ i ];
 
-	Tramps->CallFunction(xbCreateBoxKey_Function, (long long)xbOnline_BoxKey1, (int)Request.Geneology, 0, 0, false);
+	Tramps->CallFunction( xbCreateBoxKey_Function, (long long)xbOnline_BoxKey1, (int)Request.Geneology, 0, 0, false );
 
-	HvPeekBytes(0x8000010200010100, Request.Memory_EncryptionKey, 0x30);
-	XeCryptRandom(Request.Memory_EncryptionKey, 0x30);
+	HvPeekBytes( 0x8000010200010100, Request.Memory_EncryptionKey, 0x30 );
+	XeCryptRandom( Request.Memory_EncryptionKey, 0x30 );
 
-	char ipAddress[0x40] = { 0 };
+	char ipAddress[ 0x40 ] = { 0 };
 	unsigned char* IP = (unsigned char*)&Request.Addr.inaOnline;
-	_snprintf(ipAddress, 0x40, "%u.%u.%u.%u", IP[0], IP[1], IP[2], IP[3], IP[4], IP[5]);
+	_snprintf( ipAddress, 0x40, "%u.%u.%u.%u", IP[ 0 ], IP[ 1 ], IP[ 2 ], IP[ 3 ], IP[ 4 ], IP[ 5 ] );
 
-	strcpy((char*)Request.Memory_EncryptionKey, this->IP);
+	strcpy( (char*)Request.Memory_EncryptionKey, this->IP );
 
-	Request.Memory_EncryptionKey[strlen(ipAddress) + 1] = 0;
+	Request.Memory_EncryptionKey[ strlen( ipAddress ) + 1 ] = 0;
 
-	int* clTitleID = (int*)(&Request.Memory_EncryptionKey[(strlen(ipAddress) + 1) + 4]);
-	clTitleID[0] = XamGetCurrentTitleId();
+	int* clTitleID = (int*)( &Request.Memory_EncryptionKey[ ( strlen( ipAddress ) + 1 ) + 4 ] );
+	clTitleID[ 0 ] = XamGetCurrentTitleId( );
 
-	DoXEXHash(Request.XEX_Hash, (void*)&Request);
-	strcpy(Request.GamerTag, this->Gamertag);
+	DoXEXHash( Request.XEX_Hash, (void*)&Request );
+	strcpy( Request.GamerTag, this->Gamertag );
 
 	Request.ConsoleType = ConsoleType;
 
-	memcpy(Request.osig, (void*)((int)(&kv[0]) + 0xC89), 0x25);
-	memcpy(Request.kvdigest, (PVOID)0x8E03AA40, 0x10);
-	memcpy(Request.ConsoleID, (void*)((int)(&kv[0]) + 0x9CA), 0x5);
-	memcpy(Request.serial, (void*)((int)(&kv[0]) + 0xB0), 0xC);
-	memcpy(Request.xamRegion, (void*)((int)(&kv[0]) + 0xC8), 0x2);
-	memcpy(Request.xamOdd, (void*)((int)(&kv[0]) + 0x1C), 0x2);
-	ExGetXConfigSetting(2, 1, Request.Mac_Address, 6, &temp);
+	memcpy( Request.osig, (void*)( (int)( &kv[ 0 ] ) + 0xC89 ), 0x25 );
+	memcpy( Request.kvdigest, (PVOID)0x8E03AA40, 0x10 );
+	memcpy( Request.ConsoleID, (void*)( (int)( &kv[ 0 ] ) + 0x9CA ), 0x5 );
+	memcpy( Request.serial, (void*)( (int)( &kv[ 0 ] ) + 0xB0 ), 0xC );
+	memcpy( Request.xamRegion, (void*)( (int)( &kv[ 0 ] ) + 0xC8 ), 0x2 );
+	memcpy( Request.xamOdd, (void*)( (int)( &kv[ 0 ] ) + 0x1C ), 0x2 );
+	ExGetXConfigSetting( 2, 1, Request.Mac_Address, 6, &temp );
 
-	memcpy(RespBuffer, &Request, sizeof(Xosc_Challenge_Request));
+	memcpy( RespBuffer, &Request, sizeof( Xosc_Challenge_Request ) );
 
 #if defined(DEVKIT)
-	EncryptedDecryptPacket_Second(&((unsigned char*)RespBuffer)[1], (MAX_PACKET_SIZE - 1));
-	EncryptedDecryptPacket(&((unsigned char*)RespBuffer)[1], (MAX_PACKET_SIZE - 1));
+	EncryptedDecryptPacket_Second( &( (unsigned char*)RespBuffer )[ 1 ], ( MAX_PACKET_SIZE - 1 ) );
+	EncryptedDecryptPacket( &( (unsigned char*)RespBuffer )[ 1 ], ( MAX_PACKET_SIZE - 1 ) );
 #else
-	Tramps->CallFunction(ExecuteCode_Function, (int)SecondPacketLoad, SecondPacketSize, (int)&((unsigned char*)RespBuffer)[1], (MAX_PACKET_SIZE - 1), false);
-	Tramps->CallFunction(ExecuteCode_Function, (int)FirstPacketLoad, 176, (int)&((unsigned char*)RespBuffer)[1], (MAX_PACKET_SIZE - 1), false);
+	Tramps->CallFunction( ExecuteCode_Function, (int)SecondPacketLoad, SecondPacketSize, ( int )&( (unsigned char*)RespBuffer )[ 1 ], ( MAX_PACKET_SIZE - 1 ), false );
+	Tramps->CallFunction( ExecuteCode_Function, (int)FirstPacketLoad, 176, ( int )&( (unsigned char*)RespBuffer )[ 1 ], ( MAX_PACKET_SIZE - 1 ), false );
 #endif	
-	if (SendData(RespBuffer, RespBuffer))
+	if ( SendData( RespBuffer, RespBuffer ) )
 	{
 #if defined(DEVKIT)
-		EncryptedDecryptPacket_Second(&((unsigned char*)RespBuffer)[1], (MAX_PACKET_SIZE - 1));
-		EncryptedDecryptPacket(&((unsigned char*)RespBuffer)[1], (MAX_PACKET_SIZE - 1));
+		EncryptedDecryptPacket_Second( &( (unsigned char*)RespBuffer )[ 1 ], ( MAX_PACKET_SIZE - 1 ) );
+		EncryptedDecryptPacket( &( (unsigned char*)RespBuffer )[ 1 ], ( MAX_PACKET_SIZE - 1 ) );
 #else
-		Tramps->CallFunction(ExecuteCode_Function, (int)SecondPacketLoad, SecondPacketSize, (int)&((unsigned char*)RespBuffer)[1], (MAX_PACKET_SIZE - 1), false);
-		Tramps->CallFunction(ExecuteCode_Function, (int)FirstPacketLoad, 176, (int)&((unsigned char*)RespBuffer)[1], (MAX_PACKET_SIZE - 1), false);
+		Tramps->CallFunction( ExecuteCode_Function, (int)SecondPacketLoad, SecondPacketSize, ( int )&( (unsigned char*)RespBuffer )[ 1 ], ( MAX_PACKET_SIZE - 1 ), false );
+		Tramps->CallFunction( ExecuteCode_Function, (int)FirstPacketLoad, 176, ( int )&( (unsigned char*)RespBuffer )[ 1 ], ( MAX_PACKET_SIZE - 1 ), false );
 #endif
 		Xosc_Challenge_Response* Resp = (Xosc_Challenge_Response*)RespBuffer;
 
-		unsigned char Digest[20] = { 0 };
+		unsigned char Digest[ 20 ] = { 0 };
 
-		sha1(Resp->buffer, 0x400, Digest);
+		sha1( Resp->buffer, 0x400, Digest );
 
-		switch (Resp->AuthStatus)
+		switch ( Resp->AuthStatus )
 		{
 		case BANNED:
-			SetLiveBlock(true);
+			SetLiveBlock( true );
 			break;
 		case EXPIRED:
-			SetLiveBlock(true);
+			SetLiveBlock( true );
 			break;
 		case NOT_INDB:
-			SetLiveBlock(true);
+			SetLiveBlock( true );
 			break;
 		case FREEMODE:
-			SetLiveBlock(false);
+			SetLiveBlock( false );
 			break;
 		case TIMELEFT:
-			SetLiveBlock(false);
+			SetLiveBlock( false );
 			break;
 		default:
-			SetLiveBlock(true);
+			SetLiveBlock( true );
 			break;
 		}
 
-		switch (Resp->XexStatus)
+		switch ( Resp->XexStatus )
 		{
 		case CORRECT_XEX:
 			break;
 		case UPDATE:
 			g_GlobalStatus = GET_UPDATE;
-			SetLiveBlock(true);
-			GetNewUpdate();
+			SetLiveBlock( true );
+			GetNewUpdate( );
 			break;
 		}
 
 
-		memcpy(ChallengeOut, Resp->buffer, 0x400);
+		memcpy( ChallengeOut, Resp->buffer, 0x400 );
 
 		//Perform Final 0x60 Digest
-		FinalizeBuffer(Resp, ChallengeOut);
+		FinalizeBuffer( Resp, ChallengeOut );
 
 
-		*(int*)(ChallengeOut + 0x80) = *(char*)((int)(&KeyVault) + 0xC89);
+		*(int*)( ChallengeOut + 0x80 ) = *(char*)( (int)( &KeyVault ) + 0xC89 );
+		
+		memcpy(LastChallengeBufferXosc, Resp->buffer, 0x400);
 
 		//CWriteFile("xbOnline:\\XOSC_CHALLENGE.bin", ChallengeOut, 0x400);
 
-		if (memcmp(Digest, Resp->Digest, 20) != 0) {
+		//memcpy(XOSC_Challenge_Check, ChallengeOut, 0x400);
+
+		if ( memcmp( Digest, Resp->Digest, 20 ) != 0 ) {
 
 			//XNotify(L"XOSC IS ANYONE THERE?!?");
 
@@ -1589,21 +1870,21 @@ bool Client::GetSecurityChallenge(unsigned char* kv, unsigned char* ChallengeOut
 	return false;
 }
 
-void Client::GetNewUpdate()
+void Client::GetNewUpdate( )
 {
 	//Lets delete our update info
 	//DeleteFile("xbOnline:\\UDInfo.txt");
 
-	char TempIpBuffer[255] = { 0 };
-	strcpy(TempIpBuffer, ServerTwoIp);
+	char TempIpBuffer[ 255 ] = { 0 };
+	strcpy( TempIpBuffer, ServerTwoIp );
 
-	if (!updateFinished)
+	if ( !updateFinished )
 	{
 		int Attempts = 0;
 
-		if (!g_GettingUpdate)
+		if ( !g_GettingUpdate )
 		{
-			XNotify(L"Update Found!\nDownloading please wait");
+			XNotify( L"Update Found!\nDownloading please wait" );
 
 			g_GettingUpdate = true;
 
@@ -1611,28 +1892,24 @@ void Client::GetNewUpdate()
 
 			unsigned char* XBO_XEX = 0;
 
-			while (Attempts < 50)
+			while ( Attempts < 50 )
 			{
-				if (XBO_XEX)
-					free(XBO_XEX);
+				if ( XBO_XEX )
+					free( XBO_XEX );
 
-#if defined(DEVKIT)
-				if (DownloadFile("149.56.195.127", "/DEVKIT_xbOnline.xex", &XBO_XEX, &XEX_SIZE))
-#else
-				if (DownloadFile(TempIpBuffer, "/xbOnline.xex", &XBO_XEX, &XEX_SIZE))
-#endif	
+				if ( DownloadFile( TempIpBuffer, "/xbOnline.xex", &XBO_XEX, &XEX_SIZE ) )
 				{
-					if (XEX_SIZE && XBO_XEX && *(int*)(XBO_XEX) == 0x58455832)
+					if ( XEX_SIZE && XBO_XEX && *(int*)( XBO_XEX ) == 0x58455832 )
 					{
-						unsigned char xbSha[0x14] = { 0 };
+						unsigned char xbSha[ 0x14 ] = { 0 };
 
-						sha1(XBO_XEX, (XEX_SIZE - 0x14), xbSha);
+						sha1( XBO_XEX, ( XEX_SIZE - 0x14 ), xbSha );
 
-						if (!memcmp(xbSha, &XBO_XEX[XEX_SIZE - 0x14], 0x14))
+						if ( !memcmp( xbSha, &XBO_XEX[ XEX_SIZE - 0x14 ], 0x14 ) )
 						{
-							printf("Path: %s\n", CurrentPath);
+							printf( "Path: %s\n", ModulePath );
 
-							if (CWriteFile((char*)CurrentPath, XBO_XEX, (XEX_SIZE - 0x14)))
+							if ( CWriteFile( (char*)ModulePath, XBO_XEX, ( XEX_SIZE - 0x14 ) ) )
 							{
 								GotAnewUpdate = true;
 
@@ -1640,209 +1917,325 @@ void Client::GetNewUpdate()
 
 								updateFinished = true;
 
-								XNotify(L"xbOnline Downloaded!");
+								XNotify( L"xbOnline Downloaded!" );
 
-								free(XBO_XEX);
+								free( XBO_XEX );
 
 								MESSAGEBOX_RESULT g_mb_result;
 								XOVERLAPPED g_xol;
 
-								LPCWSTR Buttons[2] = { L"Restart Me Now", L"Not right now" };
+								LPCWSTR Buttons[ 2 ] = { L"Restart Me Now", L"Not right now" };
 
-								while (XShowMessageBoxUI(XUSER_INDEX_ANY, L"xbOnline Update!", L"An update for xbOnline has been downloaded, Would you like to restart your console right now or do it later?\nIf you have any problems while updating please go to\nhttp://xbonline.live/xbOnline.zip", 2, Buttons, 0, XMB_ALERTICON, &g_mb_result, &g_xol) == ERROR_ACCESS_DENIED)
-									Sleep(501);
-								while (!XHasOverlappedIoCompleted(&g_xol))
-									Sleep(501);
+								while ( XShowMessageBoxUI( XUSER_INDEX_ANY, L"xbOnline Update!", L"An update for xbOnline has been downloaded, Would you like to restart your console right now or do it later?\nIf you have any problems while updating please go to\nhttp://xbonline.live/xbOnline.zip", 2, Buttons, 0, XMB_ALERTICON, &g_mb_result, &g_xol ) == ERROR_ACCESS_DENIED )
+									Sleep( 501 );
+								while ( !XHasOverlappedIoCompleted( &g_xol ) )
+									Sleep( 501 );
 
-								if (g_mb_result.dwButtonPressed == 0)
-									RebootConsole();
+								if ( g_mb_result.dwButtonPressed == 0 )
+									RebootConsole( );
 
 								break;
 							}
 						}
-						else printf("File Digest Didn't Match\n");
+						else printf( "File Digest Didn't Match\n" );
 					}
 				}
 
-				if (Attempts % 2)
-					strcpy((char*)TempIpBuffer, ServerOneIp);
+				if ( Attempts % 2 )
+					strcpy( (char*)TempIpBuffer, ServerOneIp );
 				else
-					strcpy((char*)TempIpBuffer, ServerTwoIp);
+					strcpy( (char*)TempIpBuffer, ServerTwoIp );
 
 				Attempts++;
-				Sleep(50);
-		}
+				Sleep( 50 );
+			}
 			g_GettingUpdate = false;
+		}
 	}
 }
 
-}
-
-void DownloadGameAddresses()
+void CheatDownloadThreadOne( )
 {
-
 	ServerData_BlackOps2 GameData = { 0 };
+	printf( "Getting BO2 Addresses\n" );
+	DownloadGameAddress( 0x415608C3, &GameData, sizeof( ServerData_BlackOps2 ) );
+	if ( GameData.Server_addr_s_XexAddrNum && GameData.Server_init_addr_s_XexAddrNum ) {
 
-	printf("Getting BO2 Addresses\n");
+		printf( "Setting Up BO2 Addresses\n" );
 
-	DownloadGameAddress(0x415608C3, &GameData, sizeof(ServerData_BlackOps2));
-
-	if (GameData.Server_addr_s_XexAddrNum && GameData.Server_init_addr_s_XexAddrNum) {
-
-		printf("Setting Up BO2 Addresses\n");
-
-		BO2_SetupGameAddresses(&GameData);
+		BO2_SetupGameAddresses( &GameData );
 	}
 
-	Sleep(400);
+	Sleep( 400 );
 
 	ServerData_MW2 MW2_GameData = { 0 };
+	printf( "Getting MW2 Addresses\n" );
+	DownloadGameAddress( 0x41560817, &MW2_GameData, sizeof( ServerData_MW2 ) );
+	if ( MW2_GameData.Server_addr_s_XexAddrNum && MW2_GameData.Server_init_addr_s_XexAddrNum ) {
 
-	printf("Getting MW2 Addresses\n");
+		printf( "Setting Up MW2 Addresses\n" );
 
-	DownloadGameAddress(0x41560817, &MW2_GameData, sizeof(ServerData_MW2));
-
-	if (MW2_GameData.Server_addr_s_XexAddrNum && MW2_GameData.Server_init_addr_s_XexAddrNum) {
-
-		printf("Setting Up MW2 Addresses\n");
-
-		MW2_SetupGameAddresses(&MW2_GameData);
+		MW2_SetupGameAddresses( &MW2_GameData );
 	}
 
-	Sleep(400);
+	Sleep( 400 );
 
 	ServerData_BF4 BF4_GameData = { 0 };
+	printf( "Getting BF4 Addresses\n" );
+	DownloadGameAddress( 0x454109BA, &BF4_GameData, sizeof( ServerData_BF4 ) );
+	if ( BF4_GameData.Server_addr_s_XexAddrNum ) {
 
-	printf("Getting BF4 Addresses\n");
+		printf( "Setting Up BF4 Addresses\n" );
 
-	DownloadGameAddress(0x454109BA, &BF4_GameData, sizeof(ServerData_BF4));
-
-	if (BF4_GameData.Server_addr_s_XexAddrNum) {
-
-		printf("Setting Up BF4 Addresses\n");
-
-		BF4_SetupGameAddresses(&BF4_GameData);
+		BF4_SetupGameAddresses( &BF4_GameData );
 	}
 
-	Sleep(400);
+	Sleep( 400 );
 
 	ServerData_MW2_OnHosts MW2_GameData_OnHosts = { 0 };
+	printf( "Getting MW2 OnHosts Addresses\n" );
+	DownloadGameAddress( 0x41560818, &MW2_GameData_OnHosts, sizeof( ServerData_MW2_OnHosts ) );
+	if ( MW2_GameData_OnHosts.Server_addr_s_XexAddrNum ) {
 
-	printf("Getting MW2 OnHosts Addresses\n");
+		printf( "Setting Up MW2 OnHosts Addresses\n" );
 
-	DownloadGameAddress(0x41560818, &MW2_GameData_OnHosts, sizeof(ServerData_MW2_OnHosts));
-
-	if (MW2_GameData_OnHosts.Server_addr_s_XexAddrNum) {
-
-		printf("Setting Up MW2 OnHosts Addresses\n");
-
-		MW2_OnHosts_SetupGameAddresses(&MW2_GameData_OnHosts);
+		MW2_OnHosts_SetupGameAddresses( &MW2_GameData_OnHosts );
 	}
 
-	Sleep(400);
+	ThreadOneDownload = true;
+}
 
+void CheatDownloadThreadTwo( )
+{
 	ServerData_MW3 MW3_GameData = { 0 };
+	printf( "Getting MW3 Addresses\n" );
+	DownloadGameAddress( 0x415608CB, &MW3_GameData, sizeof( ServerData_MW3 ) );
+	if ( MW3_GameData.Server_addr_s_XexAddrNum ) {
 
-	printf("Getting MW3 Addresses\n");
+		printf( "Setting Up MW3 OnHosts Addresses\n" );
 
-	DownloadGameAddress(0x415608CB, &MW3_GameData, sizeof(ServerData_MW3));
-
-	if (MW3_GameData.Server_addr_s_XexAddrNum) {
-
-		printf("Setting Up MW3 OnHosts Addresses\n");
-
-		MW3_SetupGameAddresses(&MW3_GameData);
+		MW3_SetupGameAddresses( &MW3_GameData );
 	}
 
-	Sleep(400);
+	Sleep( 400 );
 
 	ServerData_BO1 BO1_GameData = { 0 };
+	printf( "Getting BO1 Addresses\n" );
+	DownloadGameAddress( 0x41560855, &BO1_GameData, sizeof( ServerData_BO1 ) );
+	if ( BO1_GameData.Server_addr_s_XexAddrNum ) {
 
-	printf("Getting BO1 Addresses\n");
+		printf( "Setting Up BO1 OnHosts Addresses\n" );
 
-	DownloadGameAddress(0x41560855, &BO1_GameData, sizeof(ServerData_BO1));
-
-	if (BO1_GameData.Server_addr_s_XexAddrNum) {
-
-		printf("Setting Up BO1 OnHosts Addresses\n");
-
-		BO1_SetupGameAddresses(&BO1_GameData);
+		BO1_SetupGameAddresses( &BO1_GameData );
 	}
 
-	Sleep(400);
+	Sleep( 400 );
 
 	ServerData_MW3_OnHosts MW3_GameData_OnHosts = { 0 };
+	printf( "Getting MW3 OnHosts Addresses\n" );
+	DownloadGameAddress( 0x4156C918, &MW3_GameData_OnHosts, sizeof( ServerData_MW3_OnHosts ) );
+	if ( MW3_GameData_OnHosts.Server_addr_s_XexAddrNum ) {
 
-	printf("Getting MW3 OnHosts Addresses\n");
+		printf( "Setting Up MW3 OnHosts Addresses\n" );
 
-	DownloadGameAddress(0x4156C918, &MW3_GameData_OnHosts, sizeof(ServerData_MW3_OnHosts));
-
-	if (MW3_GameData_OnHosts.Server_addr_s_XexAddrNum) {
-
-		printf("Setting Up MW3 OnHosts Addresses\n");
-
-		MW3_OnHosts_SetupGameAddresses(&MW3_GameData_OnHosts);
+		MW3_OnHosts_SetupGameAddresses( &MW3_GameData_OnHosts );
 	}
 
-	Sleep(400);
+	Sleep( 400 );
 
 	ServerData_CSGO_OnHosts CSGO_GameData_OnHosts = { 0 };
+	printf( "Getting CSGO OnHosts Addresses\n" );
+	DownloadGameAddress( 0x5841125A, &CSGO_GameData_OnHosts, sizeof( ServerData_CSGO_OnHosts ) );
+	if ( CSGO_GameData_OnHosts.Server_addr_s_XexAddrNum ) {
 
-	printf("Getting CSGO OnHosts Addresses\n");
+		printf( "Setting Up CSGO OnHosts Addresses\n" );
 
-	DownloadGameAddress(0x5841125A, &CSGO_GameData_OnHosts, sizeof(ServerData_CSGO_OnHosts));
-
-	if (CSGO_GameData_OnHosts.Server_addr_s_XexAddrNum) {
-
-		printf("Setting Up CSGO OnHosts Addresses\n");
-
-		CSGO_OnHosts_SetupGameAddresses(&CSGO_GameData_OnHosts);
+		CSGO_OnHosts_SetupGameAddresses( &CSGO_GameData_OnHosts );
 	}
 
-	Sleep(400);
+	ThreadTwoDownload = true;
+}
 
+void CheatDownloadThreadThree( )
+{
 	ServerData_Ghosts Ghosts_GameData = { 0 };
+	printf( "Getting Ghosts Addresses\n" );
+	DownloadGameAddress( 0x415608FC, &Ghosts_GameData, sizeof( ServerData_Ghosts ) );
+	if ( Ghosts_GameData.Server_addr_s_XexAddrNum ) {
 
-	printf("Getting Ghosts Addresses\n");
+		printf( "Setting Up Ghosts Addresses\n" );
 
-	DownloadGameAddress(0x415608FC, &Ghosts_GameData, sizeof(ServerData_Ghosts));
-
-	if (Ghosts_GameData.Server_addr_s_XexAddrNum) {
-
-		printf("Setting Up Ghosts Addresses\n");
-
-		Ghosts_SetupGameAddresses(&Ghosts_GameData);
+		Ghosts_SetupGameAddresses( &Ghosts_GameData );
 	}
 
-	Sleep(400);
+	Sleep( 400 );
 
 	ServerData_tf2 tfs_GameData = { 0 };
+	printf( "Getting tf2 Addresses\n" );
+	DownloadGameAddress( 0x4541080F, &tfs_GameData, sizeof( ServerData_tf2 ) );
+	if ( tfs_GameData.Server_addr_s_XexAddrNum ) {
 
-	printf("Getting tf2 Addresses\n");
+		printf( "Setting Up Tf2 Addresses\n" );
 
-	DownloadGameAddress(0x4541080F, &tfs_GameData, sizeof(ServerData_tf2));
-
-	if (tfs_GameData.Server_addr_s_XexAddrNum) {
-
-		printf("Setting Up Ghosts Addresses\n");
-
-		tf2_SetupGameAddresses(&tfs_GameData);
+		tf2_SetupGameAddresses( &tfs_GameData );
 	}
 
+	Sleep( 400 );
+
+	ServerData_BF3 BF3_GameData = { 0 };
+	printf( "Getting BF3 Addresses\n" );
+	DownloadGameAddress( 0x45410950, &BF3_GameData, sizeof( ServerData_BF3 ) );
+	if ( BF3_GameData.Server_addr_s_XexAddrNum ) {
+
+		printf( "Setting Up BF3 Addresses\n" );
+
+		BF3_SetupGameAddresses( &BF3_GameData );
+	}
+
+	Sleep( 400 );
+
+	ServerData_AW AW_GameData = { 0 };
+	printf( "Getting AW Addresses\n" );
+	DownloadGameAddress( 0x41560914, &AW_GameData, sizeof( ServerData_AW ) );
+	if ( AW_GameData.Server_addr_s_XexAddrNum ) {
+
+		printf( "Setting Up AW Addresses\n" );
+
+		AW_SetupGameAddresses( &AW_GameData );
+	}
 
 	Sleep(400);
 
-	ServerData_BF3 BF3_GameData = { 0 };
+	ServerData_COD4 COD4_GameData = { 0 };
+	printf("Getting COD4 Addresses\n");
+	DownloadGameAddress(0x415607E6, &COD4_GameData, sizeof(ServerData_COD4));
+	if (COD4_GameData.Server_addr_s_XexAddrNum) {
 
-	printf("Getting BF3 Addresses\n");
+		printf("Setting Up Cod4 Addresses\n");
 
-	DownloadGameAddress(0x45410950, &BF3_GameData, sizeof(ServerData_BF3));
-
-	if (BF3_GameData.Server_addr_s_XexAddrNum) {
-
-		printf("Setting Up Ghosts Addresses\n");
-
-		BF3_SetupGameAddresses(&BF3_GameData);
+		Cod4_SetupGameAddresses(&COD4_GameData);
 	}
 
+
+	ThreadThreeDownload = true;
+}
+
+
+void GetSessionKey( )
+{
+	Sleep( 1000 );
+
+	HANDLE WrapperHandle = GetModuleHandleByBaseAddress( 0x90D90000 );
+
+	if ( WrapperHandle != (HANDLE)-1 )
+	{
+		*(WORD*)( (INT)(WrapperHandle)+0x40 ) = 1;
+		XexUnloadImage( WrapperHandle );
+
+	}
+
+	if ( !g_GotSessionKey )
+	{
+		while ( g_GlobalStatus == NO_CONNECTED )
+		{
+			XNADDR xna = { 0 };
+
+			int i = XNetGetTitleXnAddr( &xna );
+
+			if ( i != XNET_GET_XNADDR_PENDING ) {
+
+				if ( xna.ina.S_un.S_un_b.s_b1 == 0 && xna.ina.S_un.S_un_b.s_b2 == 0 && xna.ina.S_un.S_un_b.s_b3 == 0 && xna.ina.S_un.S_un_b.s_b4 == 0 ) {
+
+					Sleep( 100 );
+
+					continue;
+				}
+
+				unsigned char CPUKey[ 0x10 ] = { 0 };
+				unsigned char Geneology[ 0x10 ] = { 0 };
+
+
+				Tramps->CallFunction( GetCPUKey_Function, (int)CPUKey, 0, 0, 0, false );
+
+				Tramps->CallFunction( xbCreateBoxKey_Function, (long long)xbOnline_BoxKey1, (int)Geneology, 0, 0, false );
+
+				Client Connection( CPUKey, Geneology, XEX_Hash );
+
+				if ( Connection.GetSession( g_Session, &g_TimeleftInSeconds, &g_GlobalStatus ) && !GotAnewUpdate ) {
+
+					unsigned int RunningTitleID = XamGetCurrentTitleId();
+
+					if((RunningTitleID == 0x454109BA || RunningTitleID == 0x45410950 || RunningTitleID == 0x415608FC || RunningTitleID == 0x41560914 || RunningTitleID == 0x415608C3 || RunningTitleID == 0x4156091D || RunningTitleID == 0x415608CB || RunningTitleID == 0x41560817 || RunningTitleID == 0x41560855 || RunningTitleID == 0x5841125A || RunningTitleID == 0x4541080F))
+					{
+						XNotify(L"Relaunching Title with xbOnline Goodies!");
+						RelaunchTitle();
+					}
+
+					g_Endtime = time( NULL ) + g_TimeleftInSeconds;
+
+					g_GotSessionKey = true;
+
+					HANDLE hThread1 = 0; DWORD threadId1 = 0;
+					ExCreateThread( &hThread1, 0, &threadId1, (VOID*)XapiThreadStartup, (LPTHREAD_START_ROUTINE)Presence, NULL, 2 | CREATE_SUSPENDED );
+					XSetThreadProcessor( hThread1, 4 );
+					ResumeThread( hThread1 );
+					CloseHandle( hThread1 );
+				}
+
+				if ( g_GlobalStatus != NO_CONNECTED )
+					break;
+			}
+		}
+	}
+}
+
+void Presence( )
+{
+	CreateXboxThread( CheatDownloadThreadOne, 0 );
+	CreateXboxThread( CheatDownloadThreadTwo, 0 );
+	CreateXboxThread( CheatDownloadThreadThree, 0 );
+
+	while ( true ) {
+
+		if ( ThreadOneDownload && ThreadTwoDownload && ThreadThreeDownload )
+			break;
+
+		Sleep( 10 );
+	}
+
+	while ( !g_isThreadRunning )
+	{
+		unsigned char CPUKey[ 0x10 ] = { 0 };
+		unsigned char Geneology[ 0x10 ] = { 0 };
+
+		Tramps->CallFunction( GetCPUKey_Function, (int)CPUKey, 0, 0, 0, false );
+
+		Tramps->CallFunction( xbCreateBoxKey_Function, (long long)xbOnline_BoxKey1, (int)Geneology, 0, 0, false );
+
+		Client* Connection = new Client( CPUKey, Geneology, XEX_Hash );
+
+		if ( Connection->Presence( g_Session, &g_TimeleftInSeconds, &g_GlobalStatus ) ) {
+			isFirst = true;
+			g_Endtime = time( NULL ) + g_TimeleftInSeconds;
+		}
+
+		//if ( isFirst && server_cod_mw )
+		//	WriteDank( );
+
+
+		if (isFirst)
+		{
+			Sleep(15000);
+			
+			if (!popup7Day)
+			{
+				_7DayTrial();
+				popup7Day = true;
+			}
+		}
+
+		
+
+		delete Connection;
+	}
 }

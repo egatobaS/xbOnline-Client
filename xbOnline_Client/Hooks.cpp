@@ -1,27 +1,16 @@
 #include "main.h"
 
-bool ExecutudeChallenge = false;
-
-char CrashData_1[0x500] = { 0 };
-char CrashData_2[0x500] = { 0 };
-char CrashData_3[0x500] = { 0 };
-
 Detour HrBreakDetour;
 Detour XamInputGetStateDetour;
 Detour KeDebugMonitorFunctionDetour;
+
 XEX_EXECUTION_ID SpoofedExecutionId;
 XamInputGetStateStub XamInputGetStateOriginal;
 
-typedef int(*pKeDebugMonitorFunction)(EXCEPTION_POINTERS * ExceptionInfo);
-pKeDebugMonitorFunction KeDebugMonitorFunctionStub;
-
 HrBreakStub HrBreakOriginal;
 
-#if defined(DEVKIT)
-NetDll_XnpLogonSetChallengeResponseStub NetDll_XnpLogonSetChallengeResponseOriginal = (NetDll_XnpLogonSetChallengeResponseStub)0x81848528;
-#else
-NetDll_XnpLogonSetChallengeResponseStub NetDll_XnpLogonSetChallengeResponseOriginal = (NetDll_XnpLogonSetChallengeResponseStub)0x81740F48;
-#endif
+NetDll_XnpLogonSetChallengeResponseStub NetDll_XnpLogonSetChallengeResponseOriginal = (NetDll_XnpLogonSetChallengeResponseStub)0x817412B8;
+
 
 DMHRAPI HrBreak(LPCSTR szCommand, LPSTR szResponse, DWORD cchResponse, PDM_CMDCONT pdmcc)
 {
@@ -82,6 +71,7 @@ DMHRAPI HrBreak(LPCSTR szCommand, LPSTR szResponse, DWORD cchResponse, PDM_CMDCO
 
 		return E_FAIL;
 	}
+
 	return HrBreakOriginal(szCommand, szResponse, cchResponse, pdmcc);
 }
 
@@ -278,45 +268,7 @@ XEX_EXECUTION_ID* RtlImageXexHeaderFieldHook(void* HeaderBase, DWORD ImageKey)
 	return ExecID;
 }
 
-void DumpCrash()
-{
-	FILE* fp = NULL;
-	fopen_s(&fp, "HDD:\\xbOnline.log", "a");
-
-	if (fp != NULL) {
-
-		printf(CrashData_1);
-		fprintf(fp, CrashData_1);
-
-		printf(CrashData_2);
-		fprintf(fp, CrashData_2);
-
-		printf(CrashData_3);
-		fprintf(fp, CrashData_3);
-	}
-	fclose(fp);
-}
-
-int KeDebugMonitorFunction(EXCEPTION_POINTERS * ExceptionInfo)
-{
-
-	sprintf(CrashData_1, "Exception Information\nException Address: 0x%08X\nException Code: 0x%08X\n\nGeneral Purpose Registers\nCR : 0x%016I64X XER: 0x%016I64X\nr0 : 0x%016I64X r1 : 0x%016I64X r2 : 0x%016I64X\nr3 : 0x%016I64X r4 : 0x%016I64X r5 : 0x%016I64X\nr6 : 0x%016I64X r7 : 0x%016I64X r8 : 0x%016I64X\nr9 : 0x%016I64X r10: 0x%016I64X r11: 0x%016I64X\n", ExceptionInfo->ExceptionRecord->ExceptionAddress, ExceptionInfo->ExceptionRecord->ExceptionCode, ExceptionInfo->ContextRecord->Cr, ExceptionInfo->ContextRecord->Xer, ExceptionInfo->ContextRecord->Gpr0, ExceptionInfo->ContextRecord->Gpr1, ExceptionInfo->ContextRecord->Gpr2, ExceptionInfo->ContextRecord->Gpr3, ExceptionInfo->ContextRecord->Gpr4, ExceptionInfo->ContextRecord->Gpr5, ExceptionInfo->ContextRecord->Gpr6, ExceptionInfo->ContextRecord->Gpr7, ExceptionInfo->ContextRecord->Gpr8, ExceptionInfo->ContextRecord->Gpr9, ExceptionInfo->ContextRecord->Gpr10, ExceptionInfo->ContextRecord->Gpr11);
-	sprintf(CrashData_2, "r12: 0x%016I64X r13: 0x%016I64X r14: 0x%016I64X\nr15: 0x%016I64X r16: 0x%016I64X r17: 0x%016I64X\nr18: 0x%016I64X r19: 0x%016I64X r20: 0x%016I64X\nr21: 0x%016I64X r22: 0x%016I64X r23: 0x%016I64X\nr24: 0x%016I64X r25: 0x%016I64X r26: 0x%016I64X\nr27: 0x%016I64X r28: 0x%016I64X r29: 0x%016I64X\nr30: 0x%016I64X r31: 0x%016I64X\n\n", ExceptionInfo->ContextRecord->Gpr12, ExceptionInfo->ContextRecord->Gpr13, ExceptionInfo->ContextRecord->Gpr14, ExceptionInfo->ContextRecord->Gpr15, ExceptionInfo->ContextRecord->Gpr16, ExceptionInfo->ContextRecord->Gpr17, ExceptionInfo->ContextRecord->Gpr18, ExceptionInfo->ContextRecord->Gpr19, ExceptionInfo->ContextRecord->Gpr20, ExceptionInfo->ContextRecord->Gpr21, ExceptionInfo->ContextRecord->Gpr22, ExceptionInfo->ContextRecord->Gpr23, ExceptionInfo->ContextRecord->Gpr24, ExceptionInfo->ContextRecord->Gpr25, ExceptionInfo->ContextRecord->Gpr26, ExceptionInfo->ContextRecord->Gpr27, ExceptionInfo->ContextRecord->Gpr28, ExceptionInfo->ContextRecord->Gpr29, ExceptionInfo->ContextRecord->Gpr30, ExceptionInfo->ContextRecord->Gpr31);
-	sprintf(CrashData_3, "Control Registers\nMSR: 0x%08X IAR :  0x%08X\nLR : 0x%08X CTR :  0x%08X\n\nCall Stack\n0x%08X (Exception Address)\n0x%08X (Link Register)\n\n", ExceptionInfo->ContextRecord->Msr, ExceptionInfo->ContextRecord->Iar, ExceptionInfo->ContextRecord->Lr, ExceptionInfo->ContextRecord->Ctr, ExceptionInfo->ExceptionRecord->ExceptionAddress, ExceptionInfo->ContextRecord->Lr);
-
-	HANDLE hThread1 = 0; DWORD threadId1 = 0;
-	ExCreateThread(&hThread1, 0x100000, &threadId1, (VOID*)XapiThreadStartup, (LPTHREAD_START_ROUTINE)DumpCrash, 0, 0x2);
-	XSetThreadProcessor(hThread1, 4);
-	ResumeThread(hThread1);
-	CloseHandle(hThread1);
-
-	XLaunchNewImage(NULL, NULL);
-
-	return KeDebugMonitorFunctionStub(ExceptionInfo);
-}
-
 bool UnloadTest = false;
-
 
 void UnloadMonitorThread(void* ptr)
 {
@@ -332,7 +284,6 @@ void UnloadMonitorThread(void* ptr)
 }
 
 bool isLastTitleCSGO = false, isLastTitleTF2 = false;
-bool isDevkit = false;
 
 void HookXexLoad(PLDR_DATA_TABLE_ENTRY ModuleHandle)
 {
@@ -344,24 +295,6 @@ void HookXexLoad(PLDR_DATA_TABLE_ENTRY ModuleHandle)
 
 	if (ExecutionId == 0) return;
 
-
-#if defined(DEVKIT)
-	if ((!wcscmp(ModuleHandle->BaseDllName.Buffer, L"xshell.xex")))
-	{
-		wchar_t* XboxDev = L"%s@blasts.pw";
-
-		memcpy((wchar_t*)0x8160E254, XboxDev, (sizeof("%s@blasts.pw") * 2) + 1);
-
-		strcpy((char*)0x8160D8E4, "%ws@blasts.pw");
-		strcpy((char*)0x8160D898, "@blasts.pw");
-
-		*(int*)(0x817A69CC) = 0x60000000;
-	}
-#endif	
-
-#if defined(DEVKIT)
-
-#else
 	if ((!wcscmp(ModuleHandle->BaseDllName.Buffer, L"hud.xex")))
 	{
 		if (xb_custom_xui)
@@ -376,88 +309,113 @@ void HookXexLoad(PLDR_DATA_TABLE_ENTRY ModuleHandle)
 
 			if (GetHandle((void*)DashBaseAddr, (PHANDLE)&dashHandle))
 				XuiElementBeginRender_Orig = (XuiElementBeginRender_t)XuiElementBeginRenderDetour.HookFunction((DWORD)ResolveFunction_0(dashHandle, 0x28D3), (DWORD)XuiElementBeginRender_hook);
-			//PatchInJump_2(0x921E7A10, (DWORD*)xuiz_s::xam_s::XuiSceneCreate, false);
-			//XuiSceneCreateDetour_Dash.HookFunction("dash.xex", MODULE_XAM, 855, (DWORD)xuiz_s::xam_s::XuiSceneCreate);
-			//XuiSceneCreateDetour_Dash.HookFunction(0x921E7A10, (DWORD)xuiz_s::xam_s::XuiSceneCreate_Dash);
 		}
 	}
-#endif	
 
 
-	switch (ExecutionId->TitleID)
+	if (g_GlobalStatus != NO_CONNECTED)
 	{
-
-	case 0x454109BA:
-	{
-		while (!isFirst) Sleep(1);
-
-		if (ModuleHandle->TimeDateStamp == 0x5642B1D0)
+		switch (ExecutionId->TitleID)
 		{
-			isChallengeMultiplayer = true;
-			UnloadTest = true;
 
-			while (UnloadTest) {
-				Sleep(10);
-			}
-
-			ThreadPastGameData* FirstData = new ThreadPastGameData;
-
-			int ID = GameManager.GetValidID();
-
-			FirstData->ID = ID;
-			FirstData->TitleID = ExecutionId->TitleID;
-			strcpy(FirstData->titleName, "/ClientIcon.png");
-			strcpy(FirstData->titleIp, ServerOneIp);
-
-			strcpy(FirstData->Name, "XAPI.xex");
-
-			FirstData->istoLoadAnotherGame = false;
-
-			FirstData->isCheatEnabled = xb_cheats_bf4;
-
-			if (g_GlobalStatus != EXPIRED)
-			{
-				KeDebugMonitorFunctionStub = (pKeDebugMonitorFunction)KeDebugMonitorFunctionDetour.HookFunction((unsigned int)0x882FB7B8, (int)KeDebugMonitorFunction);
-
-				if (xb_cheats_bf4 && BattleField4_BuildFunctions() && ((g_GlobalStatus == TIMELEFT) || (g_GlobalStatus == FREEMODE)))
-					CreateXboxThread(LoadCheat, (void*)FirstData);
-				else
-				{
-					if (FirstData)
-						delete FirstData;
-				}
-			}
-		}
-		break;
-	}
-
-	case 0x45410950:
-	{
-#if defined(DEVKIT)
-
-		static HANDLE Nig = NULL;
-
-		if (!Nig)
-			XexLoadImage("xbOnline:\\SwapDisc.xex", 8, 0, &Nig);
-
-		if (!wcscmp(ModuleHandle->BaseDllName.Buffer, L"BF.Main.xex"))
-			*(int*)0x834dde90 = 0x48000068;
-
-
-		break;
-#endif
-
-		if (!wcscmp(ModuleHandle->BaseDllName.Buffer, L"BF.Main.xex"))
+		case 0x454109BA:
 		{
 			while (!isFirst) Sleep(1);
 
-			if (((ExecutionId->Version & 0x0000FF00) >> 8) == 0)
+			if (ModuleHandle->TimeDateStamp == 0x5642B1D0)
 			{
-				isChallengeMultiplayer = (ModuleHandle->TimeDateStamp == 0x50FEF168);
+				isChallengeMultiplayer = true;
+				UnloadTest = true;
 
-#if defined(DEVKIT)
-				*(int*)0x834dde90 = 0x48000068;
-#endif
+				while (UnloadTest) {
+					Sleep(10);
+				}
+
+				ThreadPastGameData* FirstData = new ThreadPastGameData;
+
+				int ID = GameManager.GetValidID();
+
+				FirstData->ID = ID;
+				FirstData->TitleID = ExecutionId->TitleID;
+				strcpy(FirstData->titleName, "/ClientIcon.png");
+				strcpy(FirstData->titleIp, ServerOneIp);
+
+				strcpy(FirstData->Name, "XAPI.xex");
+
+				FirstData->istoLoadAnotherGame = false;
+
+				FirstData->isCheatEnabled = xb_cheats_bf4;
+
+				if (g_GlobalStatus != EXPIRED)
+				{
+
+					if (xb_cheats_bf4 && BattleField4_BuildFunctions() && ((g_GlobalStatus == TIMELEFT) || (g_GlobalStatus == FREEMODE) || (g_GlobalStatus == NO_CONNECTED)))
+						CreateXboxThread(LoadCheat, (void*)FirstData);
+					else
+					{
+						if (FirstData)
+							delete FirstData;
+					}
+				}
+			}
+			break;
+		}
+
+		case 0x45410950:
+		{
+			if (!wcscmp(ModuleHandle->BaseDllName.Buffer, L"BF.Main.xex"))
+			{
+				while (!isFirst) Sleep(1);
+
+				if (((ExecutionId->Version & 0x0000FF00) >> 8) == 0)
+				{
+					isChallengeMultiplayer = (ModuleHandle->TimeDateStamp == 0x50FEF168);
+
+
+					GameManager.UnloadCheats();
+
+					ThreadPastGameData* FirstData = new ThreadPastGameData;
+
+					int ID = GameManager.GetValidID();
+
+					FirstData->ID = ID;
+					FirstData->TitleID = ExecutionId->TitleID;
+					strcpy(FirstData->titleName, "/xbOHd.png");
+					strcpy(FirstData->titleIp, ServerOneIp);
+
+					strcpy(FirstData->Name, "XAPI.xex");
+
+					FirstData->istoLoadAnotherGame = false;
+
+					FirstData->isCheatEnabled = xb_cheats_bf3;
+
+					if (g_GlobalStatus != EXPIRED)
+					{
+						if (xb_cheats_bf3 && isChallengeMultiplayer && BattleField3_BuildFunctions() && ((g_GlobalStatus == TIMELEFT) || (g_GlobalStatus == FREEMODE)))
+						{
+							CreateXboxThread(LoadCheat, (void*)FirstData);
+						}
+						else
+						{
+							if (FirstData)
+								delete FirstData;
+						}
+					}
+				}
+				break;
+			}
+		}
+
+		case 0x415608FC:
+		{
+			while (!isFirst) Sleep(1);
+
+			if (((ExecutionId->Version & 0x0000FF00) >> 8) == 17)
+			{
+				isChallengeMultiplayer = (ModuleHandle->TimeDateStamp == 0x544F01BE);
+
+				InitGhosts();
+
 				GameManager.UnloadCheats();
 
 				ThreadPastGameData* FirstData = new ThreadPastGameData;
@@ -466,18 +424,60 @@ void HookXexLoad(PLDR_DATA_TABLE_ENTRY ModuleHandle)
 
 				FirstData->ID = ID;
 				FirstData->TitleID = ExecutionId->TitleID;
-				strcpy(FirstData->titleName, "/xbOHd.png");
+				strcpy(FirstData->titleName, "/CoolImage.png");
 				strcpy(FirstData->titleIp, ServerOneIp);
 
 				strcpy(FirstData->Name, "XAPI.xex");
 
 				FirstData->istoLoadAnotherGame = false;
 
-				FirstData->isCheatEnabled = xb_cheats_bf3;
+				FirstData->isCheatEnabled = xb_cheats_ghosts;
 
 				if (g_GlobalStatus != EXPIRED)
 				{
-					if (xb_cheats_bf3 && isChallengeMultiplayer && BattleField3_BuildFunctions() && ((g_GlobalStatus == TIMELEFT) || (g_GlobalStatus == FREEMODE)))
+					if (xb_cheats_ghosts && server_cod_ghosts && isChallengeMultiplayer && Ghosts_BuildFunctions() && ((g_GlobalStatus == TIMELEFT) || (g_GlobalStatus == FREEMODE)))
+					{
+						CreateXboxThread(LoadCheat, (void*)FirstData);
+					}
+					else
+					{
+						if (FirstData)
+							delete FirstData;
+					}
+				}
+			}
+
+			break;
+		}
+
+		case 0x41560914:
+		{
+			while (!isFirst) Sleep(1);
+
+			if (((ExecutionId->Version & 0x0000FF00) >> 8) == 17) {
+				isChallengeMultiplayer = (ModuleHandle->TimeDateStamp == 0x55C2C3C7);
+
+				GameManager.UnloadCheats();
+
+				ThreadPastGameData* FirstData = new ThreadPastGameData;
+
+				int ID = GameManager.GetValidID();
+
+				FirstData->ID = ID;
+				FirstData->TitleID = ExecutionId->TitleID;
+				strcpy(FirstData->titleName, "/xbOnline_NiceImage.png");
+				strcpy(FirstData->titleIp, ServerOneIp);
+
+				strcpy(FirstData->Name, "Ihelper.xex");
+				FirstData->istoLoadAnotherGame = false;
+				FirstData->isCheatEnabled = xb_cheats_aw;
+
+				if (g_GlobalStatus != EXPIRED)
+				{
+					if (xb_bypass_aw)
+						InitAW();
+
+					if (xb_cheats_aw && server_cod_aw && isChallengeMultiplayer && AW_BuildFunctions() && ((g_GlobalStatus == TIMELEFT) || (g_GlobalStatus == FREEMODE)))
 					{
 						CreateXboxThread(LoadCheat, (void*)FirstData);
 					}
@@ -490,333 +490,39 @@ void HookXexLoad(PLDR_DATA_TABLE_ENTRY ModuleHandle)
 			}
 			break;
 		}
-	}
 
-	case 0x415608FC:
-	{
-		while (!isFirst) Sleep(1);
-
-		if (((ExecutionId->Version & 0x0000FF00) >> 8) == 17)
+		case 0x415608C3:
 		{
-			isChallengeMultiplayer = (ModuleHandle->TimeDateStamp == 0x544F01BE);
+			while (!isFirst) Sleep(1);
 
-			InitGhosts();
+			if (((ExecutionId->Version & 0x0000FF00) >> 8) == 18) {
 
-			GameManager.UnloadCheats();
+				isChallengeMultiplayer = (ModuleHandle->TimeDateStamp == 0x53643D71);
 
-			ThreadPastGameData* FirstData = new ThreadPastGameData;
+				GameManager.UnloadCheats();
 
-			int ID = GameManager.GetValidID();
-
-			FirstData->ID = ID;
-			FirstData->TitleID = ExecutionId->TitleID;
-			strcpy(FirstData->titleName, "/CoolImage.png");
-			strcpy(FirstData->titleIp, ServerOneIp);
-
-			strcpy(FirstData->Name, "XAPI.xex");
-
-			FirstData->istoLoadAnotherGame = false;
-
-			FirstData->isCheatEnabled = xb_cheats_ghosts;
-
-			if (g_GlobalStatus != EXPIRED)
-			{
-				if (xb_cheats_ghosts && server_cod_ghosts && isChallengeMultiplayer && Ghosts_BuildFunctions() && ((g_GlobalStatus == TIMELEFT) || (g_GlobalStatus == FREEMODE)))
-				{
-					CreateXboxThread(LoadCheat, (void*)FirstData);
-				}
-				else
-				{
-					if (FirstData)
-						delete FirstData;
-				}
-			}
-		}
-
-		break;
-	}
-
-	case 0x41560914:
-	{
-		while (!isFirst) Sleep(1);
-
-		if (((ExecutionId->Version & 0x0000FF00) >> 8) == 17) {
-			isChallengeMultiplayer = (ModuleHandle->TimeDateStamp == 0x55C2C3C7);
-			InitAW();
-		}
-		break;
-	}
-
-	case 0x415608C3:
-	{
-		while (!isFirst) Sleep(1);
-
-		if (((ExecutionId->Version & 0x0000FF00) >> 8) == 18) {
-
-			isChallengeMultiplayer = (ModuleHandle->TimeDateStamp == 0x53643D71);
-
-			GameManager.UnloadCheats();
-
-			ThreadPastGameData* FirstData = new ThreadPastGameData;
-
-			int ID = GameManager.GetValidID();
-
-			FirstData->ID = ID;
-			FirstData->TitleID = ExecutionId->TitleID;
-			strcpy(FirstData->titleName, "/xbOnline_Notify.png");
-			strcpy(FirstData->titleIp, ServerOneIp);
-
-			strcpy(FirstData->Name, "XAPI.xex");
-
-			FirstData->istoLoadAnotherGame = false;
-
-			FirstData->isCheatEnabled = xb_cheats_bo2;
-
-			if (g_GlobalStatus != EXPIRED)
-			{
-				if (xb_bypass_bo2)
-					InitBlackOps2();
-
-				if (xb_cheats_bo2 && server_cod_bo2 && isChallengeMultiplayer && BlackOps2_BuildFunctions() && ((g_GlobalStatus == TIMELEFT) || (g_GlobalStatus == FREEMODE)))
-				{
-					//CallFunc((unsigned int)CreateXboxThread, (unsigned int)LoadCheat, (unsigned int)FirstData, 0, 0, 0, 0, 0);
-					CreateXboxThread(LoadCheat, (void*)FirstData);
-				}
-				else
-				{
-					if (FirstData)
-						delete FirstData;
-				}
-			}
-		}
-		break;
-	}
-
-	case 0x4156091D:
-	{
-		while (!isFirst) Sleep(1);
-
-		if (((ExecutionId->Version & 0x0000FF00) >> 8) == 8) {
-			isChallengeMultiplayer = (ModuleHandle->TimeDateStamp == 0x5717EF77);
-			InitBlackOps3();
-		}
-		break;
-	}
-
-	case 0x415608CB:
-	{
-
-		while (!isFirst) Sleep(1);
-
-#if defined(DEVKIT)
-		*(long long*)0x8232A2F8 = 0x386000017C6A59AE;
-		*(int*)0x8232A300 = 0x4BFFFFD0;
-
-		*(int*)0x82524D14 = 0x60000000;
-		*(int*)0x8252EE00 = 0x60000000;
-#endif
-		if (((ExecutionId->Version & 0x0000FF00) >> 8) == 24)
-		{
-			isChallengeMultiplayer = (ModuleHandle->TimeDateStamp == 0x5B10A113);
-
-			GameManager.UnloadCheats();
-
-			ThreadPastGameData* FirstData = new ThreadPastGameData;
-
-			int ID = GameManager.GetValidID();
-
-			FirstData->ID = ID;
-			FirstData->TitleID = ExecutionId->TitleID;
-			strcpy(FirstData->titleName, "/Logo_xbO.png");
-			strcpy(FirstData->titleIp, ServerOneIp);
-
-			strcpy(FirstData->Name, "XAPI.xex");
-
-			ThreadPastGameData* SecondData = new ThreadPastGameData;
-
-			ID = GameManager.GetValidID();
-
-			SecondData->ID = ID;
-			SecondData->TitleID = ExecutionId->TitleID;
-			strcpy(SecondData->titleName, "/Notif.png");
-			strcpy(SecondData->titleIp, ServerOneIp);
-
-			strcpy(SecondData->Name, "lhelper.xex");
-
-			FirstData->AnotherGame = (void*)SecondData;
-
-			FirstData->istoLoadAnotherGame = server_cod_mw3;
-
-			SecondData->isCheatEnabled = xb_cheats_mw3_onhost;
-
-			FirstData->isCheatEnabled = xb_cheats_mw3;
-
-			if (g_GlobalStatus != EXPIRED)
-			{
-#if defined(DEVKIT)
-				if (xb_cheats_mw3 && server_cod_mw3)
-					MSG_ReadBitsCompressOriginal = (MSG_ReadBitsCompress_t)MSG_ReadBitsCompressedDetour.HookFunction((unsigned int)0x822A4688, (unsigned int)MSG_ReadBitsCompressHook);
-#endif			
-				if ((xb_cheats_mw3 || xb_cheats_mw3_onhost) && server_cod_mw3 && isChallengeMultiplayer && MW3_BuildFunctions() && MW3_BuildFunctions_OnHost() && ((g_GlobalStatus == TIMELEFT) || (g_GlobalStatus == FREEMODE)))
-				{
-					CreateXboxThread(LoadCheat, (void*)FirstData);
-				}
-				else
-				{
-					if (SecondData)
-						delete SecondData;
-
-					if (FirstData)
-						delete FirstData;
-				}
-			}
-		}
-		break;
-	}
-
-	case 0x41560817:
-	{
-
-		while (!isFirst) Sleep(1);
-
-		if (((ExecutionId->Version & 0x0000FF00) >> 8) == 8)
-		{
-			isChallengeMultiplayer = (ModuleHandle->TimeDateStamp == 0x50749AC3);
-
-			GameManager.UnloadCheats();
-
-			ThreadPastGameData* FirstData = new ThreadPastGameData;
-
-			int ID = GameManager.GetValidID();
-
-			FirstData->ID = ID;
-			FirstData->TitleID = ExecutionId->TitleID;
-			strcpy(FirstData->titleName, "/Notification.png");
-			strcpy(FirstData->titleIp, ServerOneIp);
-
-			strcpy(FirstData->Name, "XAPI.xex");
-
-			ThreadPastGameData* SecondData = new ThreadPastGameData;
-
-			ID = GameManager.GetValidID();
-
-			SecondData->ID = ID;
-			SecondData->TitleID = ExecutionId->TitleID;
-			strcpy(SecondData->titleName, "/test.png");
-			strcpy(SecondData->titleIp, ServerOneIp);
-
-			strcpy(SecondData->Name, "lhelper.xex");
-
-			FirstData->AnotherGame = (void*)SecondData;
-
-			FirstData->istoLoadAnotherGame = true;
-
-			SecondData->isCheatEnabled = xb_cheats_mw2_onhost;
-
-			FirstData->isCheatEnabled = xb_cheats_mw2;
-
-			if (g_GlobalStatus != EXPIRED)
-			{
-#if defined(DEVKIT)
-				if (xb_cheats_mw2_onhost || xb_cheats_mw2)
-					MSG_ReadBitsCompressOriginal = (MSG_ReadBitsCompress_t)MSG_ReadBitsCompressedDetour.HookFunction((unsigned int)0x82234980, (unsigned int)MSG_ReadBitsCompressHook);
-#endif			
-				if ((xb_cheats_mw2 || xb_cheats_mw2_onhost) && server_cod_mw2 && isChallengeMultiplayer && MW2_BuildFunctions() && MW2_BuildFunctions_OnHost() && ((g_GlobalStatus == TIMELEFT) || (g_GlobalStatus == FREEMODE)))
-				{
-					CreateXboxThread(LoadCheat, (void*)FirstData);
-				}
-				else
-				{
-					if (SecondData)
-						delete SecondData;
-
-					if (FirstData)
-						delete FirstData;
-				}
-			}
-
-				}
-		break;
-			}
-
-	case  0x41560855:
-	{
-		while (!isFirst) Sleep(1);
-
-#if defined(DEVKIT)
-		*(int*)(0x824FA18C) = 0x60000000;
-		*(int*)0x822562D4 = 0x48000020;
-#endif
-
-		if (((ExecutionId->Version & 0x0000FF00) >> 8) == 11 || (((ExecutionId->Version & 0x0000FF00) >> 6) != 0))
-		{
-			isChallengeMultiplayer = (ModuleHandle->TimeDateStamp == 0x4E542876);
-
-			GameManager.UnloadCheats();
-
-			ThreadPastGameData* FirstData = new ThreadPastGameData;
-
-			int ID = GameManager.GetValidID();
-
-			FirstData->ID = ID;
-			FirstData->TitleID = ExecutionId->TitleID;
-			strcpy(FirstData->titleName, "/CoolLogo.png");
-			strcpy(FirstData->titleIp, ServerOneIp);
-
-			strcpy(FirstData->Name, "XAPI.xex");
-
-			FirstData->istoLoadAnotherGame = false;
-
-			FirstData->isCheatEnabled = xb_cheats_bo1;
-
-			if (g_GlobalStatus != EXPIRED)
-			{
-				if (xb_cheats_bo1 && server_cod_bo1 && isChallengeMultiplayer && BO1_BuildFunctions() && ((g_GlobalStatus == TIMELEFT) || (g_GlobalStatus == FREEMODE)))
-				{
-					CreateXboxThread(LoadCheat, (void*)FirstData);
-				}
-				else
-				{
-					if (FirstData)
-						delete FirstData;
-				}
-			}
-		}
-
-		break;
-	}
-
-	case 0x5841125A:
-	{
-		while (!isFirst) Sleep(1);
-
-		if (((ExecutionId->Version & 0x0000FF00) >> 8) == 0)
-		{
-			isChallengeMultiplayer = (ModuleHandle->TimeDateStamp == 0x5022C826);
-
-			if (isChallengeMultiplayer)
-			{
 				ThreadPastGameData* FirstData = new ThreadPastGameData;
 
 				int ID = GameManager.GetValidID();
 
 				FirstData->ID = ID;
 				FirstData->TitleID = ExecutionId->TitleID;
-				strcpy(FirstData->titleName, "/testpng.png");
+				strcpy(FirstData->titleName, "/xbOnline_Notify.png");
 				strcpy(FirstData->titleIp, ServerOneIp);
 
 				strcpy(FirstData->Name, "XAPI.xex");
 
 				FirstData->istoLoadAnotherGame = false;
 
-				FirstData->isCheatEnabled = xb_cheats_csgo;
+				FirstData->isCheatEnabled = xb_cheats_bo2;
 
 				if (g_GlobalStatus != EXPIRED)
 				{
-					if (xb_cheats_csgo && server_csgo && isChallengeMultiplayer && CSGO_BuildFunctions() && ((g_GlobalStatus == TIMELEFT) || (g_GlobalStatus == FREEMODE)))
-					{
-						isLastTitleCSGO = true;
+					if (xb_bypass_bo2)
+						InitBlackOps2();
 
+					if (xb_cheats_bo2 && server_cod_bo2 && isChallengeMultiplayer && BlackOps2_BuildFunctions() && ((g_GlobalStatus == TIMELEFT) || (g_GlobalStatus == FREEMODE)))
+					{
 						CreateXboxThread(LoadCheat, (void*)FirstData);
 					}
 					else
@@ -826,109 +532,362 @@ void HookXexLoad(PLDR_DATA_TABLE_ENTRY ModuleHandle)
 					}
 				}
 			}
-		}
-		break;
-	}
-
-	case 0x4541080F:
-	{
-		while (!isFirst) Sleep(1);
-		if (((ExecutionId->Version & 0x0000FF00) >> 8) == 1 || ((ExecutionId->Version & 0x0000FF00) >> 8) == 5)
-		{
-			isChallengeMultiplayer = (ModuleHandle->TimeDateStamp == 0x46D8E028);
-
-			if (isChallengeMultiplayer)
-			{
-				ThreadPastGameData* FirstData = new ThreadPastGameData;
-
-				int ID = GameManager.GetValidID();
-
-				FirstData->ID = ID;
-				FirstData->TitleID = ExecutionId->TitleID;
-				strcpy(FirstData->titleName, "/coolpics.png");
-				strcpy(FirstData->titleIp, ServerOneIp);
-
-				strcpy(FirstData->Name, "XAPI.xex");
-
-				FirstData->istoLoadAnotherGame = false;
-
-				FirstData->isCheatEnabled = xb_cheats_tf2;
-
-				if (g_GlobalStatus != EXPIRED)
-				{
-					if (xb_cheats_tf2 && server_cod_waw && isChallengeMultiplayer && TF2_BuildFunctions() && ((g_GlobalStatus == TIMELEFT) || (g_GlobalStatus == FREEMODE)))
-					{
-						isLastTitleTF2 = true;
-
-						CreateXboxThread(LoadCheat, (void*)FirstData);
-					}
-					else
-					{
-						if (FirstData)
-							delete FirstData;
-					}
-				}
-			}
-		}
-		break;
-	}
-
-	default:
-	{
-		if (isLastTitleCSGO || isLastTitleTF2)
-		{
-			GameManager.UnloadCheatsNoMP();
 			break;
 		}
 
-		GameManager.UnloadCheats();
-		break;
-	}
+		case 0x4156091D:
+		{
+			while (!isFirst) Sleep(1);
+
+			if (((ExecutionId->Version & 0x0000FF00) >> 8) == 8) {
+				isChallengeMultiplayer = (ModuleHandle->TimeDateStamp == 0x5717EF77);
+				InitBlackOps3();
+			}
+			break;
+		}
+
+		case 0x415608CB:
+		{
+
+			while (!isFirst) Sleep(1);
+
+			if (((ExecutionId->Version & 0x0000FF00) >> 8) == 24)
+			{
+				isChallengeMultiplayer = (ModuleHandle->TimeDateStamp == 0x5B10A113);
+
+				GameManager.UnloadCheats();
+
+				ThreadPastGameData* FirstData = new ThreadPastGameData;
+
+				int ID = GameManager.GetValidID();
+
+				FirstData->ID = ID;
+				FirstData->TitleID = ExecutionId->TitleID;
+				strcpy(FirstData->titleName, "/Logo_xbO.png");
+				strcpy(FirstData->titleIp, ServerOneIp);
+
+				strcpy(FirstData->Name, "XAPI.xex");
+
+				ThreadPastGameData* SecondData = new ThreadPastGameData;
+
+				ID = GameManager.GetValidID();
+
+				SecondData->ID = ID;
+				SecondData->TitleID = ExecutionId->TitleID;
+				strcpy(SecondData->titleName, "/Notif.png");
+				strcpy(SecondData->titleIp, ServerOneIp);
+
+				strcpy(SecondData->Name, "lhelper.xex");
+
+				FirstData->AnotherGame = (void*)SecondData;
+
+				FirstData->istoLoadAnotherGame = server_cod_mw3;
+
+				SecondData->isCheatEnabled = true;
+
+				FirstData->isCheatEnabled = xb_cheats_mw3;
+
+				if (g_GlobalStatus != EXPIRED)
+				{
+					if ((xb_cheats_mw3 || xb_cheats_mw3_onhost) && server_cod_mw3 && isChallengeMultiplayer && MW3_BuildFunctions() && MW3_BuildFunctions_OnHost() && ((g_GlobalStatus == TIMELEFT) || (g_GlobalStatus == FREEMODE)))
+					{
+						CreateXboxThread(LoadCheat, (void*)FirstData);
+					}
+					else
+					{
+						if (SecondData)
+							delete SecondData;
+
+						if (FirstData)
+							delete FirstData;
+					}
+				}
+			}
+			break;
+		}
+
+		case 0x41560817:
+		{
+			while (!isFirst) Sleep(1);
+
+			if (((ExecutionId->Version & 0x0000FF00) >> 8) == 9)
+			{
+				isChallengeMultiplayer = (ModuleHandle->TimeDateStamp == 0x5B11C269);
+
+				GameManager.UnloadCheats();
+
+				ThreadPastGameData* FirstData = new ThreadPastGameData;
+
+				int ID = GameManager.GetValidID();
+
+				FirstData->ID = ID;
+				FirstData->TitleID = ExecutionId->TitleID;
+				strcpy(FirstData->titleName, "/Notification.png");
+				strcpy(FirstData->titleIp, ServerOneIp);
+
+				strcpy(FirstData->Name, "XAPI.xex");
+
+				ThreadPastGameData* SecondData = new ThreadPastGameData;
+
+				ID = GameManager.GetValidID();
+
+				SecondData->ID = ID;
+				SecondData->TitleID = ExecutionId->TitleID;
+				strcpy(SecondData->titleName, "/test.png");
+				strcpy(SecondData->titleIp, ServerOneIp);
+
+				strcpy(SecondData->Name, "lhelper.xex");
+
+				FirstData->AnotherGame = (void*)SecondData;
+
+				FirstData->istoLoadAnotherGame = true;
+
+				SecondData->isCheatEnabled = true;
+
+				FirstData->isCheatEnabled = xb_cheats_mw2;
+
+				if (g_GlobalStatus != EXPIRED)
+				{
+					if ((xb_cheats_mw2 || xb_cheats_mw2_onhost) && server_cod_mw2 && isChallengeMultiplayer && MW2_BuildFunctions() && MW2_BuildFunctions_OnHost() && ((g_GlobalStatus == TIMELEFT) || (g_GlobalStatus == FREEMODE)))
+					{
+						CreateXboxThread(LoadCheat, (void*)FirstData);
+					}
+					else
+					{
+						if (SecondData)
+							delete SecondData;
+
+						if (FirstData)
+							delete FirstData;
+					}
+				}
+
+			}
+			break;
+		}
+
+		case  0x41560855:
+		{
+
+			while (!isFirst) Sleep(1);
+
+			if (((ExecutionId->Version & 0x0000FF00) >> 8) == 11 || (((ExecutionId->Version & 0x0000FF00) >> 6) != 0))
+			{
+				isChallengeMultiplayer = (ModuleHandle->TimeDateStamp == 0x4E542876);
+
+				GameManager.UnloadCheats();
+
+				ThreadPastGameData* FirstData = new ThreadPastGameData;
+
+				int ID = GameManager.GetValidID();
+
+				FirstData->ID = ID;
+				FirstData->TitleID = ExecutionId->TitleID;
+				strcpy(FirstData->titleName, "/CoolLogo.png");
+				strcpy(FirstData->titleIp, ServerOneIp);
+
+				strcpy(FirstData->Name, "XAPI.xex");
+
+				FirstData->istoLoadAnotherGame = false;
+
+				FirstData->isCheatEnabled = xb_cheats_bo1;
+
+				if (g_GlobalStatus != EXPIRED)
+				{
+					if (xb_cheats_bo1 && server_cod_bo1 && isChallengeMultiplayer && BO1_BuildFunctions() && ((g_GlobalStatus == TIMELEFT) || (g_GlobalStatus == FREEMODE)))
+					{
+						CreateXboxThread(LoadCheat, (void*)FirstData);
+					}
+					else
+					{
+						if (FirstData)
+							delete FirstData;
+					}
+				}
+			}
+
+
+			break;
+		}
+
+		case 0x5841125A:
+		{
+			while (!isFirst) Sleep(1);
+
+			if (((ExecutionId->Version & 0x0000FF00) >> 8) == 0)
+			{
+				isChallengeMultiplayer = (ModuleHandle->TimeDateStamp == 0x5022C826);
+
+				if (isChallengeMultiplayer)
+				{
+					ThreadPastGameData* FirstData = new ThreadPastGameData;
+
+					int ID = GameManager.GetValidID();
+
+					FirstData->ID = ID;
+					FirstData->TitleID = ExecutionId->TitleID;
+					strcpy(FirstData->titleName, "/testpng.png");
+					strcpy(FirstData->titleIp, ServerOneIp);
+
+					strcpy(FirstData->Name, "XAPI.xex");
+
+					FirstData->istoLoadAnotherGame = false;
+
+					FirstData->isCheatEnabled = xb_cheats_csgo;
+
+					if (g_GlobalStatus != EXPIRED)
+					{
+						if (xb_cheats_csgo && server_csgo && isChallengeMultiplayer && CSGO_BuildFunctions() && ((g_GlobalStatus == TIMELEFT) || (g_GlobalStatus == FREEMODE)))
+						{
+							isLastTitleCSGO = true;
+
+							CreateXboxThread(LoadCheat, (void*)FirstData);
+						}
+						else
+						{
+							if (FirstData)
+								delete FirstData;
+						}
+					}
+				}
+			}
+			break;
+		}
+
+		case 0x4541080F:
+		{
+			while (!isFirst) Sleep(1);
+			if (((ExecutionId->Version & 0x0000FF00) >> 8) == 1 || ((ExecutionId->Version & 0x0000FF00) >> 8) == 5)
+			{
+				isChallengeMultiplayer = (ModuleHandle->TimeDateStamp == 0x46D8E028);
+
+				if (isChallengeMultiplayer)
+				{
+					ThreadPastGameData* FirstData = new ThreadPastGameData;
+
+					int ID = GameManager.GetValidID();
+
+					FirstData->ID = ID;
+					FirstData->TitleID = ExecutionId->TitleID;
+					strcpy(FirstData->titleName, "/coolpics.png");
+					strcpy(FirstData->titleIp, ServerOneIp);
+
+					strcpy(FirstData->Name, "XAPI.xex");
+
+					FirstData->istoLoadAnotherGame = false;
+
+					FirstData->isCheatEnabled = xb_cheats_tf2;
+
+					if (g_GlobalStatus != EXPIRED)
+					{
+						if (xb_cheats_tf2 && server_cod_waw && isChallengeMultiplayer && TF2_BuildFunctions() && ((g_GlobalStatus == TIMELEFT) || (g_GlobalStatus == FREEMODE)))
+						{
+							isLastTitleTF2 = true;
+
+							CreateXboxThread(LoadCheat, (void*)FirstData);
+						}
+						else
+						{
+							if (FirstData)
+								delete FirstData;
+						}
+					}
+				}
+			}
+			break;
+		}
+
+		case  0x415607E6:
+		{
+
+			while (!isFirst) Sleep(1);
+
+
+			if (((ExecutionId->Version & 0x0000FF00) >> 8) == 4)
+			{
+				isChallengeMultiplayer = (ModuleHandle->TimeDateStamp == 0x4A78A577);
+
+				GameManager.UnloadCheats();
+
+				ThreadPastGameData* FirstData = new ThreadPastGameData;
+
+				int ID = GameManager.GetValidID();
+
+				FirstData->ID = ID;
+				FirstData->TitleID = ExecutionId->TitleID;
+				strcpy(FirstData->titleName, "/NiceImage360.png");
+				strcpy(FirstData->titleIp, ServerOneIp);
+
+				strcpy(FirstData->Name, "XAPI.xex");
+
+				FirstData->istoLoadAnotherGame = false;
+
+				FirstData->isCheatEnabled = xb_cheats_cod4;
+
+				if (g_GlobalStatus != EXPIRED)
+				{
+					if (xb_cheats_cod4 && server_cod_mw && isChallengeMultiplayer && Cod4_BuildFunctions() && ((g_GlobalStatus == TIMELEFT) || (g_GlobalStatus == FREEMODE)))
+					{
+						CreateXboxThread(LoadCheat, (void*)FirstData);
+					}
+					else
+					{
+						if (FirstData)
+							delete FirstData;
+					}
+				}
+			}
+
+
+			break;
+		}
+
+
+		default:
+		{
+			if (isLastTitleCSGO || isLastTitleTF2)
+			{
+				GameManager.UnloadCheatsNoMP();
+				break;
+			}
+
+			GameManager.UnloadCheats();
+			break;
+		}
 
 		}
 	}
+}
 
 DWORD NetDll_XnpLogonSetChallengeResponse(SOCKET s, PBYTE ChallengeBuffer, size_t BufferSize)
 {
 	memset(ChallengeBuffer, 0, BufferSize);
 
-	int AttemptCount = 0;
+	unsigned char CPUKey[0x10] = { 0 };
+	unsigned char Geneology[0x10] = { 0 };
 
-	while (true)
-	{
+	Tramps->CallFunction(GetCPUKey_Function, (int)CPUKey, 0, 0, 0, false);
 
-		unsigned char CPUKey[0x10] = { 0 };
-		unsigned char Geneology[0x10] = { 0 };
+	Tramps->CallFunction(xbCreateBoxKey_Function, (long long)xbOnline_BoxKey1, (int)Geneology, 0, 0, false);
 
-		Tramps->CallFunction(GetCPUKey_Function, (int)CPUKey, 0, 0, 0, false);
+	Client* Connection = new Client(CPUKey, Geneology, XEX_Hash);
 
-		Tramps->CallFunction(xbCreateBoxKey_Function, (long long)xbOnline_BoxKey1, (int)Geneology, 0, 0, false);
-
-		Client* Connection = new Client(CPUKey, Geneology, XEX_Hash);
-
-		if (Connection->GetSecurityChallenge((unsigned char*)&KeyVault, ChallengeBuffer, (((KeyVault.ConsoleCertificate.ConsolePartNumber[2] << 4) & 0xF0) | (KeyVault.ConsoleCertificate.ConsolePartNumber[3] & 0x0F)))) {
-
-			break;
-		}
-
-		delete Connection;
-
-		AttemptCount++;
-
-		if (AttemptCount > 4) {
-			SetLiveBlock(true);
-			RebootConsole();
-		}
+	if (!Connection->GetSecurityChallenge((unsigned char*)&KeyVault, ChallengeBuffer, (((KeyVault.ConsoleCertificate.ConsolePartNumber[2] << 4) & 0xF0) | (KeyVault.ConsoleCertificate.ConsolePartNumber[3] & 0x0F)))) {
+		SetLiveBlock(true);
+		RebootConsole();
 	}
-	//GetMachineAccountKey();
+
+	delete Connection;
+
+	
+
 	return NetDll_XnpLogonSetChallengeResponseOriginal(XNCALLER_SYSAPP, s, ChallengeBuffer, BufferSize);
 }
 
-int Count = 0;
-
-
 DWORD XeKeysExecuteHook(PBYTE Buffer, DWORD Size, PBYTE Salt, int* KrnlBuild, PDWORD r7, PDWORD r8)
 {
+	if (WantKvLess)
+		GetKvData(6);
 
 	//Hash our Payload, make sure this never changes
 	if (!xbVerifyPayload(Buffer, Size))
@@ -938,43 +897,27 @@ DWORD XeKeysExecuteHook(PBYTE Buffer, DWORD Size, PBYTE Salt, int* KrnlBuild, PD
 	}
 
 	memset(Buffer, 0, Size);
-	int AttemptCount = 0;
 
-	while (true)
-	{
-		unsigned char CPUKey[0x10] = { 0 };
-		unsigned char Geneology[0x10] = { 0 };
+	unsigned char CPUKey[0x10] = { 0 };
+	unsigned char Geneology[0x10] = { 0 };
 
-		Tramps->CallFunction(GetCPUKey_Function, (int)CPUKey, 0, 0, 0, false);
+	Tramps->CallFunction(GetCPUKey_Function, (int)CPUKey, 0, 0, 0, false);
 
-		Tramps->CallFunction(xbCreateBoxKey_Function, (long long)xbOnline_BoxKey1, (int)Geneology, 0, 0, false);
+	Tramps->CallFunction(xbCreateBoxKey_Function, (long long)xbOnline_BoxKey1, (int)Geneology, 0, 0, false);
 
-		Client* Connection = new Client(CPUKey, Geneology, XEX_Hash);
+	Client* Connection = new Client(CPUKey, Geneology, XEX_Hash);
 
-		if (Connection->GetXamChallenge(g_Session, Salt, Spoofed_CPUKey, (((KeyVault.ConsoleCertificate.ConsolePartNumber[2] << 4) & 0xF0) | (KeyVault.ConsoleCertificate.ConsolePartNumber[3] & 0x0F)), Buffer)) {
-
-			Count++;
-
-			*(int*)(&Buffer[0] + 0x34) = XKEUpdateSequence;
-
-			break;
-		}
-
-		delete Connection;
-
-		AttemptCount++;
-
-		if (AttemptCount > 4) {
-			SetLiveBlock(true);
-
-			RebootConsole();
-		}
+	if (!Connection->GetXamChallenge(g_Session, Salt, Spoofed_CPUKey, (((KeyVault.ConsoleCertificate.ConsolePartNumber[2] << 4) & 0xF0) | (KeyVault.ConsoleCertificate.ConsolePartNumber[3] & 0x0F)), Buffer)) {
+		SetLiveBlock(true);
+		RebootConsole();
 	}
 
-	//Write Ticket for Debugging Purposes...
-	//GetMachineAccountKey();
+	//CWriteFile("xbOnline:\\ChallengeDidWeFuckup.bin", Buffer, 0x100);
+	//memcpy(LastChallengeBufferXam, Buffer, Size);
+
+	delete Connection;
+
 	return ERROR_SUCCESS;
 }
-
 
 

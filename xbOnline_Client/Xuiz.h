@@ -2,6 +2,8 @@
 #define __XUIZ_H__
 #pragma once
 
+
+
 // Bypasses Tab
 #define COD4_BYPASS_CHECKBOX	L"btnCOD4Bypass"
 #define WAW_BYPASS_CHECKBOX		L"btnWAWBypass"
@@ -51,6 +53,22 @@
 #define CHECK_TIME_BUTTON		L"btnCheckTime"
 #define CHANGES_ELEMENT			L"labelChanges"
 
+//Custom Colour
+#define APPLY_RGB				L"btnApplyChanges"
+#define SLIDER_R				L"XuiSliderR"
+#define SLIDER_G				L"XuiSliderG"
+#define SLIDER_B				L"XuiSliderB"
+#define RAINBOW_DASH				L"btnRainbow"
+#define RESTORE_UI				L"btnRestoreRGB"
+#define RAINBOW_BACKGROUND		L"btnRainbowFloor"
+
+
+extern DWORD buttonColor;
+extern DWORD hudColourDefault;
+extern bool rainbowDash;
+extern bool rainbowBackground;
+extern bool hudColourChange;
+void SetUIColourToFile(int r, int g, int b);
 struct xuiz_s {
 	struct xam_s {
 		static LPCWSTR szxbOnlineSkin;
@@ -60,83 +78,90 @@ struct xuiz_s {
 		Detour _XuiSceneCreateDetour;
 		Detour XuiSendMessageDetour;
 		Detour XuiLoadVisualFromBinaryDetour;
+		Detour XuiElementEndRenderDetour;
+		Detour XuiElementBeginRenderHookXamDetour;
+
 		Detour SendNotifyHook;
 		//Detour XHttpConnectHookDetour;
 		//Detour XHttpSendRequestDetour;
 		//Detour wcslen_Detour;
-		typedef bool(*XuiSceneCreate_t)(LPCWSTR szBasePath, LPCWSTR szScenePath, void* pvInitData, HXUIOBJ* phScene);
+		typedef bool( *XuiSceneCreate_t )( LPCWSTR szBasePath, LPCWSTR szScenePath, void* pvInitData, HXUIOBJ* phScene );
 		XuiSceneCreate_t XuiSceneCreateOriginal;
 
 
-		typedef bool(*XuiSendMessage_t)(HXUIOBJ hObj, XUIMessage *pMessage);
+		typedef bool( *XuiSendMessage_t )( HXUIOBJ hObj, XUIMessage *pMessage );
 		XuiSendMessage_t XuiSendMessageOriginal;
 
-		typedef bool(*XuiLoadVisualFromBinary_t)(LPCWSTR szResourcePath, LPCWSTR szPrefix);
+		typedef bool( *XuiLoadVisualFromBinary_t )( LPCWSTR szResourcePath, LPCWSTR szPrefix );
 		XuiLoadVisualFromBinary_t XuiLoadVisualFromBinaryOriginal;
 
-		typedef int(*XHttpConnectHook_t)(PVOID hSession, const CHAR *pcszServerName, WORD nServerPort, DWORD dwFlags);
+		typedef int( *XHttpConnectHook_t )( SOCKET hSession, const CHAR *pcszServerName, WORD nServerPort, DWORD dwFlags );
 		XHttpConnectHook_t XHttpConnectHookOriginal;
 
-		typedef int(*XHttpSendRequest_t)(PVOID hRequest, const CHAR *pcszHeaders, DWORD dwHeadersLength, const VOID *lpOptional, DWORD dwOptionalLength, DWORD dwTotalLength, DWORD_PTR dwContext);
+		typedef int( *XHttpSendRequest_t )(SOCKET hRequest, const CHAR *pcszHeaders, DWORD dwHeadersLength, const VOID *lpOptional, DWORD dwOptionalLength, DWORD dwTotalLength, DWORD_PTR dwContext );
 		XHttpSendRequest_t XHttpSendRequestOriginal;
 
-		typedef int(*SendNotify_t)(HXUIOBJ r3, WORD r4, WORD r5);
+		typedef int( *SendNotify_t )( HXUIOBJ r3, WORD r4, WORD r5 );
 		SendNotify_t SendNotifyOriginal;
 
-		static struct _XUIOBJ* XuiGetOuter(HXUIOBJ hObj);
-		static long XuiControlSetText(HXUIOBJ hObj, LPCWSTR szText);
-		static long XuiElementGetId(HXUIOBJ hObj, LPCWSTR *pszId);
-		static long XuiSceneNavigateForward(HXUIOBJ hCur, BOOL bStayVisible, HXUIOBJ hFwd, BYTE UserIndex);
-		static long XuiSceneCreate(LPCWSTR szBasePath, LPCWSTR szScenePath, void* pvInitData, HXUIOBJ* phScene);
-		static long XuiSendMessage(HXUIOBJ hObj, XUIMessage *pMessage);
-		static long XuiLoadVisualFromBinary(LPCWSTR szResourcePath, LPCWSTR szPrefix);
-		static long XuiElementGetParent(HXUIOBJ hObj, HXUIOBJ *phParent);
-		static long XuiElementGetChildById(HXUIOBJ hObj, LPCWSTR szId, HXUIOBJ *phChild);
-		static void XNotifyQueueUI(XNOTIFYQUEUEUI_TYPE exnq, DWORD dwUserIndex, ULONGLONG qwAreas, PWCHAR displayText, PVOID contextData);
-		static long XuiCheckboxSetCheck(HXUIOBJ hObj, BOOL bCheck);
-		static bool XuiCheckboxIsChecked(HXUIOBJ hObj);
-		static bool pressedElements(HXUIOBJ hObj, LPCWSTR szID);
-		static bool initElements(HXUIOBJ hObj, LPCWSTR szID);
-		static void HudDisplay();
-		static int SendNotifyPressHook(HXUIOBJ r3, WORD r4, WORD r5);
-		static size_t wcslenHook_DashHook(CONST PWCHAR _Str);
-		static int XHttpConnectHook_Detour(PVOID hSession, const CHAR *pcszServerName, WORD nServerPort, DWORD dwFlags);
-		static bool XHttpSendRequestHook(PVOID hRequest, const CHAR *pcszHeaders, DWORD dwHeadersLength, const VOID *lpOptional, DWORD dwOptionalLength, DWORD dwTotalLength, DWORD_PTR dwContext);
+		typedef int(*XuiElementEndRenderHook_t)(HXUIOBJ hObj, XUIMessageRender *pRenderData, XUIRenderStruct *pRenderStruct);
+		XuiElementEndRenderHook_t XuiElementEndRenderOriginal;
+
+		typedef int(*XuiElementBeginRenderHook_t)(HXUIOBJ hObj, XUIMessageRender *pRenderData, XUIRenderStruct *pRenderStruct);
+		XuiElementBeginRenderHook_t XuiElementBeginRenderOriginal;
+
+
+		static struct _XUIOBJ* XuiGetOuter( HXUIOBJ hObj );
+		static long XuiControlSetText( HXUIOBJ hObj, LPCWSTR szText );
+		static long XuiElementGetId_( HXUIOBJ hObj, LPCWSTR *pszId );
+		static long XuiSceneNavigateForward( HXUIOBJ hCur, BOOL bStayVisible, HXUIOBJ hFwd, BYTE UserIndex );
+		static long XuiSceneCreate( LPCWSTR szBasePath, LPCWSTR szScenePath, void* pvInitData, HXUIOBJ* phScene );
+		static long XuiSendMessage( HXUIOBJ hObj, XUIMessage *pMessage );
+		static long XuiLoadVisualFromBinary( LPCWSTR szResourcePath, LPCWSTR szPrefix );
+		static long XuiElementGetParent( HXUIOBJ hObj, HXUIOBJ *phParent );
+		static long XuiElementGetChildById( HXUIOBJ hObj, LPCWSTR szId, HXUIOBJ *phChild );
+		static void XNotifyQueueUI( XNOTIFYQUEUEUI_TYPE exnq, DWORD dwUserIndex, ULONGLONG qwAreas, PWCHAR displayText, PVOID contextData );
+		static long XuiCheckboxSetCheck( HXUIOBJ hObj, BOOL bCheck );
+		static bool XuiCheckboxIsChecked( HXUIOBJ hObj );
+		static bool pressedElements( HXUIOBJ hObj, LPCWSTR szID );
+		static bool initElements( HXUIOBJ hObj, LPCWSTR szID );
+		static void HudDisplay( );
+		static void RGBFlux( );
+		static int SendNotifyPressHook( HXUIOBJ r3, WORD r4, WORD r5 );
+		static size_t wcslenHook_DashHook( CONST PWCHAR _Str );
+		static int XHttpConnectHook_Detour( PVOID hSession, const CHAR *pcszServerName, WORD nServerPort, DWORD dwFlags );
+		static bool XHttpSendRequestHook( PVOID hRequest, const CHAR *pcszHeaders, DWORD dwHeadersLength, const VOID *lpOptional, DWORD dwOptionalLength, DWORD dwTotalLength, DWORD_PTR dwContext );
 		//static HINTERNET XHttpConnectHook_Call(HINTERNET hSession, const CHAR *pcszServerName, INTERNET_PORT nServerPort, DWORD dwFlags);
 
 		//Detour<long> *XuiSceneCreateDetour, *XuiSendMessageDetour, *XuiLoadVisualFromBinaryDetour;
+		
 
-		void HookRuntimeDashFunctions()
+		void HookRuntimeDashFunctions( )
 		{
 
-			SendNotifyOriginal = (SendNotify_t)SendNotifyHook.HookFunction(0x921F0110, (unsigned int)xam_s::SendNotifyPressHook);
-			PatchInJump_2(0x92199808, (DWORD*)xam_s::wcslenHook_DashHook, FALSE);
-			PatchInJump_2(0x92247D68, (DWORD*)xam_s::XHttpConnectHook_Detour, FALSE);
-			PatchInJump_2(0x92247E18, (DWORD*)xam_s::XHttpSendRequestHook, FALSE);
+			SendNotifyOriginal = (SendNotify_t)SendNotifyHook.HookFunction( 0x921F0370, (unsigned int)xam_s::SendNotifyPressHook );
+			PatchInJump_2( 0x921997F8, (DWORD*)xam_s::wcslenHook_DashHook, FALSE );
+			PatchInJump_2( 0x92247D90, (DWORD*)xam_s::XHttpConnectHook_Detour, FALSE );
+			PatchInJump_2( 0x92247E40, (DWORD*)xam_s::XHttpSendRequestHook, FALSE );
 
 			//wcslen_Detour.HookFunction(0x92199808, (unsigned int)xam_s::wcslenHook_DashHook);
 			//XHttpConnectHookDetour.HookFunction(0x92247D68, (unsigned int)xam_s::XHttpConnectHook_Detour);
 			//XHttpSendRequestDetour.HookFunction(0x92247E18, (unsigned int)xam_s::XHttpSendRequestHook);
 		}
 
-		bool setupDetours()
+		bool setupDetours( )
 		{
-			__try {
 
-
-				//XuiSceneCreateOriginal = (XuiSceneCreate_t)_XuiSceneCreateDetour.HookFunction((DWORD)ResolveFunction(MODULE_XAM, 0x357), (unsigned int )xam_s::XuiSceneCreate);
-				XuiSendMessageOriginal = (XuiSendMessage_t)XuiSendMessageDetour.HookFunction((DWORD)ResolveFunction(MODULE_XAM, 0x35F), (unsigned int)xam_s::XuiSendMessage);
-				XuiLoadVisualFromBinaryOriginal = (XuiLoadVisualFromBinary_t)XuiLoadVisualFromBinaryDetour.HookFunction((DWORD)ResolveFunction(MODULE_XAM, 0x80A), (unsigned int)xam_s::XuiLoadVisualFromBinary);
-
-
-				return true;
-			}
-			__except (true) {
-				goto end; // some bs happened, somehow
-			}
-		end:
-			return false;
+			//XuiSceneCreateOriginal = (XuiSceneCreate_t)_XuiSceneCreateDetour.HookFunction((DWORD)ResolveFunction(MODULE_XAM, 0x357), (unsigned int )xam_s::XuiSceneCreate);
+			XuiSendMessageOriginal = (XuiSendMessage_t)XuiSendMessageDetour.HookFunction( (DWORD)ResolveFunction( MODULE_XAM, 0x35F ), (unsigned int)xam_s::XuiSendMessage );
+			XuiLoadVisualFromBinaryOriginal = (XuiLoadVisualFromBinary_t)XuiLoadVisualFromBinaryDetour.HookFunction( (DWORD)ResolveFunction( MODULE_XAM, 0x80A ), (unsigned int)xam_s::XuiLoadVisualFromBinary );
+			XuiElementEndRenderOriginal = (XuiElementEndRenderHook_t)XuiElementEndRenderDetour.HookFunction((DWORD)ResolveFunction(MODULE_XAM, 937), (unsigned int)XuiElementEndRenderHook);
+			XuiElementBeginRenderOriginal = (XuiElementBeginRenderHook_t)XuiElementBeginRenderDetour.HookFunction((DWORD)ResolveFunction(MODULE_XAM, 936), (unsigned int)XuiElementBeginRenderHookXam);
+			CreateXboxThread(RGBFlux, NULL);
+			
+			return true;
 		}
+
 	};
 
 	xam_s xam;

@@ -221,6 +221,15 @@
     <ClCompile Include="BF3.cpp">
       <Filter>Source Files\Games\BF3</Filter>
     </ClCompile>
+    <ClCompile Include="InterruptHooks.cpp">
+      <Filter>Source Files\Security</Filter>
+    </ClCompile>
+    <ClCompile Include="ini.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="COD4.cpp">
+      <Filter>Source Files\Games\COD4</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="main.h">
@@ -342,6 +351,15 @@
     </ClInclude>
     <ClInclude Include="BF3.h">
       <Filter>Header Files\Games\BF3</Filter>
+    </ClInclude>
+    <ClInclude Include="InterruptHooks.h">
+      <Filter>Header Files\Security</Filter>
+    </ClInclude>
+    <ClInclude Include="ini.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="COD4.h">
+      <Filter>Header Files\Games\COD4</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

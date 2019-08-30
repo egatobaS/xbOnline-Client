@@ -60,7 +60,7 @@ void setLogMessage_Ghosts(int CheatResp, const char* Message, int Message_Size)
 
 		resp->MachineID = spoofedMachineID;
 
-		resp->KernelVersion = 0x4476;
+		resp->KernelVersion = 0x4488;
 
 	}
 

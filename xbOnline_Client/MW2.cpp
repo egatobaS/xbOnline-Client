@@ -104,84 +104,83 @@ struct mw2_addr_s
 	unsigned int NetDll_XNetGetTitleXnAddr;
 	unsigned int Com_SafeClientDObjFree;
 
-/*#if defined(DEVKIT)
-	void SetAddresses()
-	{
-		Dvar_FindVar = 0x8229ED90;
-		Dvar_GetBool = 0x8229EF58;
-		Dvar_SetBool = 0x822A0A08;
-		Dvar_GetInt = 0x8229EFC0;
-		Dvar_GetFloat = 0x8229F028;
-		Dvar_GetString = 0x8229F118;
-		Dvar_SetStringByName = 0x822A0FA0;
-		SL_GetStringOfSize = 0x82241F18;
-		SL_ConvertToString = 0x82241920;
-		CG_GameMessage = 0x821071D0;
-		CG_BoldGameMessage = 0x821071F0;
-		Cbuf_AddText = 0x82224A28;
-		CL_AddReliableCommand = 0x82142BC0;
-		CG_VisionSetStartLerp_To = 0x8212A380;
-		UI_GetMapName = 0x82272A10;
-		UI_GetGameTypeName = 0x82272C40;
-		SEH_StringEd_GetString = 0x822612E8;
-		Com_GetClientDObj = 0x8222FD58;
-		CG_DObjGetWorldTagPos = 0x820FB9E8;
-		CG_GetPlayerVelocity = 0x0;
-		CG_GetPlayerViewOrigin = 0x8212E670;
-		CG_LocationalTrace = 0x82136E88;
-		BG_GetSpreadForWeapon = 0x820E33F0;
-		TransformSeed = 0x820D94B8;
-		RandomBulletDir = 0x8212EF78;
-		Trace_GetEntityHitId = 0x8221DB68;
-		SV_IsMigrating = 0x8225A120;
-		CL_IsServerRestarting = 0x82137D48;
-		CG_PlayRumbleOnClient = 0x82116398;
-		UI_PlaySound = 0x8232B640;
-		BG_GetAmmoInClip = 0x820DB108;
-		R_TextWidth = 0x8234DD00;
-		R_TextHeight = 0x8234DDF0;
-		R_AddCmdDrawText = 0x82350258;
-		R_AddCmdDrawStretchPic = 0x8234F998;
-		CG_DrawRotatedPicPhysical = 0x820F7900;
-		Material_RegisterHandle = 0x8234E4F0;
-		R_RegisterFont = 0x8234DC90;
-		ScreenPlacement = 0x82690F48;
-		R_TextLineWrapPosition = 0x8234DE38;
-		R_ConvertColorToBytes = 0x8238A470;
-		Sys_CreateThread = 0x8223CAB0;
-		Sys_ResumeThread = 0x8223CC88;
-		ThreadStorage = 0x83372254;
-		SetThreadProcessor = 0x82331188;
-		CM_InitThreadData = 0x82290AE8;
-		Com_InitThreadData = 0x822A70C8;
-		WeaponDef = 0x8255A320;
-		WeaponVariantDef = 0x82557750;
-		cgs_t = 0x825B861C;
-		cg_s = 0x825B8638;
-		centity_s = 0x825BE150;
-		clientactive_t = 0x82682354;
-		ClientNetwork_s = 0x8268EEB8;
-		BulletTrace = 0x8212E760;
-		BG_AdvanceTrace = 0x820E2A78;
-		BG_GetSurfacePenetrationDepth = 0x820E2178;
-		CG_ClientHasPerk = 0x0;
-		FireBulletPenetrate = 0x82134648;
-		BG_GetPerkIndexForName = 0x820D1700;
-		NameAddress = 0x838BA824;
-		ClantagAddress = 0x82687068;
-		XAM_191 = 0x823B64A4;
-		RB_SetTessTechnique = 0x82373AF8;
-		R_EndFrame = 0x82351728;
-		SCR_DrawScreenField = 0x8214BEC8;
-		Menu_PaintAll = 0x82285F08;
-		CL_WritePacket = 0x82140320;
-		CG_Obituary = 0x820FC908;
-		CL_Disconnect = 0x82143428;
-		Com_Error = 0x8222EB50;
-		NetDll_XNetGetTitleXnAddr = 0x823B6994;
-		Com_SafeClientDObjFree = 0x822300C0;
-	}
-#endif*/
+
+	//void SetAddresses()
+	//{
+	//	Dvar_FindVar = 0x8229ED20;//
+	//	Dvar_GetBool = 0x8229EEE8;//
+	//	Dvar_SetBool = 0x822A0998;//
+	//	Dvar_GetInt = 0x8229EF50;//
+	//	Dvar_GetFloat = 0x8229EFB8;//
+	//	Dvar_GetString = 0x8229F0A8;//
+	//	Dvar_SetStringByName = 0x822A0F30;//
+	//	SL_GetStringOfSize = 0x82241E90;//
+	//	SL_ConvertToString = 0x82241898;//
+	//	CG_GameMessage = 0x821071D0;//
+	//	CG_BoldGameMessage = 0x821071F0;//
+	//	Cbuf_AddText = 0x82224990;//
+	//	CL_AddReliableCommand = 0x82142BB8;//
+	//	CG_VisionSetStartLerp_To = 0x8212A380;//
+	//	UI_GetMapName = 0x822729A0;//
+	//	UI_GetGameTypeName = 0x82272BD0;//
+	//	SEH_StringEd_GetString = 0x82261278;//
+	//	Com_GetClientDObj = 0x8222FCC0;//
+	//	CG_DObjGetWorldTagPos = 0x820FB9E8;//
+	//	CG_GetPlayerVelocity = 0x0;
+	//	CG_GetPlayerViewOrigin = 0x8212E670;//
+	//	CG_LocationalTrace = 0x82136E88;//
+	//	BG_GetSpreadForWeapon = 0x820E33F0;//
+	//	TransformSeed = 0x820D94B8;//
+	//	RandomBulletDir = 0x8212EF78;//
+	//	Trace_GetEntityHitId = 0x8221DAD0;//
+	//	SV_IsMigrating = 0x8225A0B8;//
+	//	CL_IsServerRestarting = 0x82137D48;//
+	//	CG_PlayRumbleOnClient = 0x82116398;//
+	//	UI_PlaySound = 0x8232B660;//
+	//	BG_GetAmmoInClip = 0x820DB108;//
+	//	R_TextWidth = 0x8234DD20;//
+	//	R_TextHeight = 0x8234DE10;//
+	//	R_AddCmdDrawText = 0x82350278;//
+	//	R_AddCmdDrawStretchPic = 0x8234F9B8;//
+	//	CG_DrawRotatedPicPhysical = 0x820F7900;//
+	//	Material_RegisterHandle = 0x8234E510;//
+	//	R_RegisterFont = 0x8234DCB0;//
+	//	ScreenPlacement = 0x82690F40;//
+	//	R_TextLineWrapPosition = 0x8234DE58;//
+	//	R_ConvertColorToBytes = 0x8238A490;//
+	//	Sys_CreateThread = 0x8223CA28;//
+	//	Sys_ResumeThread = 0x8223CC00;//
+	//	ThreadStorage = 0x83372254;//
+	//	SetThreadProcessor = 0x823311A8;//
+	//	CM_InitThreadData = 0x82290A78;//
+	//	Com_InitThreadData = 0x822A70E8;//
+	//	WeaponDef = 0x8255A320;//
+	//	WeaponVariantDef = 0x82557750;//
+	//	cgs_t = 0x825B861C;//
+	//	cg_s = 0x825B8638;
+	//	centity_s = 0x825BE150;
+	//	clientactive_t = 0x82682350;//
+	//	ClientNetwork_s = 0x8268EEB0;//
+	//	BulletTrace = 0x8212E760;//
+	//	BG_AdvanceTrace = 0x820E2A78;//
+	//	BG_GetSurfacePenetrationDepth = 0x820E2178;//
+	//	CG_ClientHasPerk = 0x0;
+	//	FireBulletPenetrate = 0x82134648;//
+	//	BG_GetPerkIndexForName = 0x820D1700;//
+	//	NameAddress = 0x838BA824;//
+	//	ClantagAddress = 0x82687068;//
+	//	XAM_191 = 0x823B64C4;//
+	//	RB_SetTessTechnique = 0x82373B18;//
+	//	R_EndFrame = 0x82351748;//
+	//	SCR_DrawScreenField = 0x8214BEB8;//
+	//	Menu_PaintAll = 0x82285E98;//
+	//	CL_WritePacket = 0x821402E0;//
+	//	CG_Obituary = 0x820FC908;//
+	//	CL_Disconnect = 0x82143420;//
+	//	Com_Error = 0x8222EAB8;//
+	//	NetDll_XNetGetTitleXnAddr = 0x823B69B4;//
+	//	Com_SafeClientDObjFree = 0x822300A0;//
+	//}
 
 };
 
@@ -211,34 +210,34 @@ struct mw2_init_addr_s
 	unsigned int _0x83759B84;
 	unsigned int _0x83759B40;
 
-/*#if defined(DEVKIT)
+	/*#if defined(DEVKIT)
 	void SetAddresses()
 	{
-		_0x822AE2E4 = 0x822AE2E4;
-		_0x822AE2F8 = 0x822AE2F8;
-		_0x822AE2FC = 0x822AE2FC;
-		_0x8226DB68 = 0x8226DB68;
-		_0x8226DB74 = 0x8226DB74;
-		_0x8226DB80 = 0x8226DB80;
-		_0x8226DB7C = 0x8226DB7C;
-		_0x82134510 = 0x82134510;
-		_0x821A4A58 = 0x821A4A58;
-		_0x822CBE80 = 0x822CBE80;
-		_0x820C588C = 0x820C588C;
-		_0x822AE400 = 0x822AE400;
-		_0x82273B44 = 0x82273B44;
-		_0x82273D10 = 0x82273D10;
-		_0x82273D1C = 0x82273D1C;
-		_0x8214D458 = 0x8214D458;
-		_0x82273BB0 = 0x82273BB0;
-		_0x82273BC8 = 0x82273BC8;
-		_0x82273BE0 = 0x82273BE0;
-		_0x825CED7C = 0x825CED7C;
-		_0x83759678 = 0x83759678;
-		_0x83759B84 = 0x83759B84;
-		_0x83759B40 = 0x83759B40;
+	_0x822AE2E4 = 0x822AE2E4;
+	_0x822AE2F8 = 0x822AE2F8;
+	_0x822AE2FC = 0x822AE2FC;
+	_0x8226DB68 = 0x8226DB68;
+	_0x8226DB74 = 0x8226DB74;
+	_0x8226DB80 = 0x8226DB80;
+	_0x8226DB7C = 0x8226DB7C;
+	_0x82134510 = 0x82134510;
+	_0x821A4A58 = 0x821A4A58;
+	_0x822CBE80 = 0x822CBE80;
+	_0x820C588C = 0x820C588C;
+	_0x822AE400 = 0x822AE400;
+	_0x82273B44 = 0x82273B44;
+	_0x82273D10 = 0x82273D10;
+	_0x82273D1C = 0x82273D1C;
+	_0x8214D458 = 0x8214D458;
+	_0x82273BB0 = 0x82273BB0;
+	_0x82273BC8 = 0x82273BC8;
+	_0x82273BE0 = 0x82273BE0;
+	_0x825CED7C = 0x825CED7C;
+	_0x83759678 = 0x83759678;
+	_0x83759B84 = 0x83759B84;
+	_0x83759B40 = 0x83759B40;
 	}
-#endif*/
+	#endif*/
 
 };
 
@@ -258,7 +257,7 @@ struct mw2_init_resp_s
 	int _0x60000000;
 	int _0x38600001;
 
-//#if defined(DEVKIT)
+	//#if defined(DEVKIT)
 	void SetAddresses()
 	{
 		_0000025000 = 0000025000;
@@ -275,7 +274,7 @@ struct mw2_init_resp_s
 		_0x60000000 = 0x60000000;
 		_0x38600001 = 0x38600001;
 	}
-//#endif
+	//#endif
 
 };
 
@@ -547,42 +546,74 @@ const char* MW2_SL_ConvertToString(unsigned int stringValue)
 
 void MW2_ApplyGamePatches()
 {
-	//Dobj fix
-	*(int*)init_addr->_0x822AE2E4 = init_resp->_0x3D608200;
-	*(int*)init_addr->_0x822AE2F8 = init_resp->_0x7C1F5800;
-	*(int*)init_addr->_0x822AE2FC = init_resp->_0x4181002C;
-
-	//Dvars for no spread
-	*(int*)(init_addr->_0x83759678 + 0x8) = init_resp->_0000000100;
-	*(int*)(init_addr->_0x83759B84 + 0x8) = init_resp->_0000000040;
-	*(int*)(init_addr->_0x83759B40 + 0x8) = init_resp->_0000025000;
+	*(int*)0x822AE304 = 0x3D608200;
+	*(int*)0x822AE318 = 0x7C1F5800;
+	*(int*)0x822AE31C = 0x4181002C;
 
 	//version number 
-	*(int*)(init_addr->_0x8226DB68) = init_resp->_0x3D208202;
-	*(int*)(init_addr->_0x8226DB74) = init_resp->_0x38892F8C;
-	*(int*)(init_addr->_0x8226DB80) = init_resp->_0x7C9D2378;
-	*(int*)(init_addr->_0x8226DB7C) = init_resp->_0x60000000;
+	*(int*)(0x8226DAF8) = 0x3D208202;
+	*(int*)(0x8226DB04) = 0x3889315C;
+	*(int*)(0x8226DB10) = 0x7C9D2378;
+	*(int*)(0x8226DB0C) = 0x60000000;
 
 	//disable impacts
-	*(int*)init_addr->_0x82134510 = init_resp->_0x4E800020;
-	*(int*)init_addr->_0x821A4A58 = init_resp->_0x4E800020;
+	*(int*)0x82134510 = 0x4E800020;
+	*(int*)0x821A4A50 = 0x4E800020;
 
 	//Misc
-	*(int*)init_addr->_0x822CBE80 = init_resp->_0x60000000;
-	*(char*)(*(int*)(init_addr->_0x825CED7C) + 0x08) = 0x01; //cg_scoreboardPingText
-	*(int*)init_addr->_0x820C588C = init_resp->_0x60000000; //Com_Error Tagpos
-	*(int*)init_addr->_0x822AE400 = init_resp->_0x2B030000; //AimTarget_GetTagPos
+	*(int*)0x822CBEA0 = 0x60000000;
+	*(char*)(*(int*)(0x825CED7C) + 0x08) = 0x01; //cg_scoreboardPingText
+	*(int*)0x820C588C = 0x60000000; //Com_Error Tagpos
+	*(int*)0x822AE420 = 0x2B030000; //AimTarget_GetTagPos
 
 									//offensive clan tags 
-	*(int*)(init_addr->_0x82273B44) = init_resp->_0x38600001;
-	*(int*)(init_addr->_0x82273D10) = init_resp->_0x60000000;
-	*(int*)(init_addr->_0x82273D1C) = init_resp->_0x60000000;
-	*(int*)(init_addr->_0x8214D458) = init_resp->_0x38600001;
+	*(int*)(0x82273AD4) = 0x38600001;
+	*(int*)(0x82273CA0) = 0x60000000;
+	*(int*)(0x82273CAC) = 0x60000000;
+	*(int*)(0x8214D448) = 0x38600001;
 
 	//IW bypass
-	*(int*)(init_addr->_0x82273BB0) = init_resp->_0x60000000;
-	*(int*)(init_addr->_0x82273BC8) = init_resp->_0x60000000;
-	*(int*)(init_addr->_0x82273BE0) = init_resp->_0x60000000;
+	*(int*)(0x82273B40) = 0x60000000;
+	*(int*)(0x82273B58) = 0x60000000;
+	*(int*)(0x82273B70) = 0x60000000;
+
+
+	////Dobj fix
+	//*(int*)init_addr->_0x822AE2E4 = init_resp->_0x3D608200;
+	//*(int*)init_addr->_0x822AE2F8 = init_resp->_0x7C1F5800;
+	//*(int*)init_addr->_0x822AE2FC = init_resp->_0x4181002C;
+
+	////Dvars for no spread
+	//*(int*)(init_addr->_0x83759678 + 0x8) = init_resp->_0000000100;
+	//*(int*)(init_addr->_0x83759B84 + 0x8) = init_resp->_0000000040;
+	//*(int*)(init_addr->_0x83759B40 + 0x8) = init_resp->_0000025000;
+
+	////version number 
+	//*(int*)(init_addr->_0x8226DB68) = init_resp->_0x3D208202;
+	//*(int*)(init_addr->_0x8226DB74) = init_resp->_0x38892F8C;
+	//*(int*)(init_addr->_0x8226DB80) = init_resp->_0x7C9D2378;
+	//*(int*)(init_addr->_0x8226DB7C) = init_resp->_0x60000000;
+
+	////disable impacts
+	//*(int*)init_addr->_0x82134510 = init_resp->_0x4E800020;
+	//*(int*)init_addr->_0x821A4A58 = init_resp->_0x4E800020;
+
+	////Misc
+	//*(int*)init_addr->_0x822CBE80 = init_resp->_0x60000000;
+	//*(char*)(*(int*)(init_addr->_0x825CED7C) + 0x08) = 0x01; //cg_scoreboardPingText
+	//*(int*)init_addr->_0x820C588C = init_resp->_0x60000000; //Com_Error Tagpos
+	//*(int*)init_addr->_0x822AE400 = init_resp->_0x2B030000; //AimTarget_GetTagPos
+
+	//								//offensive clan tags 
+	//*(int*)(init_addr->_0x82273B44) = init_resp->_0x38600001;
+	//*(int*)(init_addr->_0x82273D10) = init_resp->_0x60000000;
+	//*(int*)(init_addr->_0x82273D1C) = init_resp->_0x60000000;
+	//*(int*)(init_addr->_0x8214D458) = init_resp->_0x38600001;
+
+	////IW bypass
+	//*(int*)(init_addr->_0x82273BB0) = init_resp->_0x60000000;
+	//*(int*)(init_addr->_0x82273BC8) = init_resp->_0x60000000;
+	//*(int*)(init_addr->_0x82273BE0) = init_resp->_0x60000000;
 
 	//DObj Fix TODO: Update
 	//*(int*)(0x821AD8A0) = 0x48000090;
@@ -661,6 +692,9 @@ bool MW2_BuildFunctions()
 		((int*)(init_addr))[i] = GetAddress(MW2_init_resp_s_Data, MW2_init_resp_s_PatchID, i);
 
 	init_resp->SetAddresses();
+	//addr->SetAddresses();
+
+	//CWriteFile("xbOnline:\\addr.bin", addr, sizeof(mw2_addr_s));
 
 	//init_addr->SetAddresses();
 	//addr->SetAddresses();

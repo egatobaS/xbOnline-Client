@@ -571,6 +571,7 @@ typedef enum _FILE_INFORMATION_CLASS {
 
 extern "C"
 {
+	DWORD XamLoaderLaunchTitleEx(LPCSTR szLaunchPath, LPCSTR szMountPath, LPCSTR szCmdLine, DWORD DwFlags);
 	long NtReadFile(HANDLE FileHandle, HANDLE Event, PIO_APC_ROUTINE ApcRoutine, PVOID ApcContext, PIO_STATUS_BLOCK IoStatusBlock, PVOID Buffer, ULONG Length, PLARGE_INTEGER ByteOffset);
 
 	long NtQueryInformationFile(HANDLE FileHandle, PIO_STATUS_BLOCK IoStatusBlock, PVOID FileInformation, ULONG Length, FILE_INFORMATION_CLASS FileInformationClass);
@@ -583,6 +584,7 @@ extern "C"
 
 	LONG NTAPI NtWriteFile(HANDLE FileHandle, HANDLE Event OPTIONAL, DWORD ApcRoutine OPTIONAL, PVOID ApcContext OPTIONAL, PIO_STATUS_BLOCK IoStatusBlock, PVOID Buffer, DWORD Length, PLARGE_INTEGER ByteOffset OPTIONAL);
 }
+
 
 
 extern "C"
@@ -887,6 +889,10 @@ extern unsigned char PublicKey[144];
 
 extern unsigned char PrivateKey[464];
 
+extern unsigned char XeKeysExecuteChallenge_EncryptedResponse[0xD8];
+extern unsigned char XeKeysExecuteChallenge_EncryptedResponseHash[0x16];
+
+
 extern int(*XexUnloadImage)(HANDLE);
 
 extern const unsigned char RetailKey[0x10];
@@ -941,7 +947,6 @@ PWCHAR charToWChar(PCHAR Text, ...);
 void XNotifyThread(wchar_t* NotifyText);
 HRESULT SetMemory(PVOID Destination, PVOID Source, DWORD Length);
 HRESULT CreateSymbolicLink(PCHAR szDrive, PCHAR szDeviceName, BOOL System);
-PWCHAR LinkWChar(PWCHAR Text, ...);
 std::string SplitLastOf(PWCHAR Text, PCHAR FindLastOf);
 PWCHAR CharToWChar(const char* Text);
 BOOL DoesContainText(PWCHAR str, PWCHAR suffix);
@@ -979,13 +984,17 @@ int ResolveFunction_0(HMODULE hHandle, unsigned int dwOrdinal);
 bool GetHandle(void* pvAddress, PHANDLE hModule);
 VOID GetMachineAccountKey();
 void resetxbOnline();
-
+int InitializeHVCaller();
+int InitializeHooks();
+void RegisterFunctions();
+HRESULT SetMacAddress_NoKeyvault(unsigned char _1, unsigned char _2, unsigned char _3);
 int NTGetFileLength(LPCSTR FileName);
 bool NTReadFile(LPCSTR FileName, PVOID Buffer, ULONG Length);
 bool NTWriteFile(LPCSTR FilePath, PVOID Data, DWORD Size);
 long FCreateFile(PHANDLE FileHandle, ACCESS_MASK DesiredAccess, LPCSTR FileName, PLARGE_INTEGER AllocationSize, ULONG FileAttributes, ULONG ShareAccess, ULONG CreateDisposition, ULONG CreateOptions);
-
-
+HANDLE GetModuleHandleByBaseAddress( DWORD BaseAddress );
+void RelaunchTitle();
+void SaltChallenge(unsigned char* challengeSalt, unsigned char* challenge);
 #define XAPO_ALLOC_ATTRIBUTES MAKE_XALLOC_ATTRIBUTES (      \
             0,                           /* ObjectType */           \
             FALSE,                       /* HeapTracksAttributes */ \
@@ -1016,3 +1025,4 @@ bool GetIniBoolValue(char* section, char* item);
 void getKeyvaultLife();
 static wchar_t* charToWChar_Com(const char* text);
 void CheckImportantHooks();
+HRESULT DoSysCleanup();

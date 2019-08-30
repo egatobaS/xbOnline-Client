@@ -22,17 +22,17 @@ extern HMODULE dashHandle;
 
 extern XamBuildResourceLocator_t XamBuildResourceLocator_Original;
 extern XuiElementBeginRender_t XuiElementBeginRender_Orig;
-
-
 extern HUDOffsets HUD_Addresses;
-
-DWORD HUD_BootToDashHelper_Hook(DWORD* _XUIOBJ, _XDASHLAUNCHDATA* LaunchData, DWORD* cstr, DWORD* r6, DWORD* r7);
-
-HRESULT XuiSceneCreateHook(LPCWSTR BasePath, LPCWSTR ScenePath, PVOID InitData, HXUIOBJ *hScene);
+extern bool popup7Day;
 long XuiElementBeginRender_hook(HXUIOBJ hObj, XUIMessageRender *pRenderData, XUIRenderStruct *pRenderStruct);
+long XuiElementBeginRenderHookXam(HXUIOBJ hObj, XUIMessageRender *pRenderData, XUIRenderStruct *pRenderStruct);
+long XuiElementEndRenderHook(HXUIOBJ hObj, XUIMessageRender *pRenderData, XUIRenderStruct *pRenderStruct);
 HRESULT XamBuildResourceLocatorHook(HANDLE hModule, PWCHAR wModuleName, PWCHAR CONST cdModule, PWCHAR pBuffer, ULONG ddSize);
 VOID PathHuds();
+
 void RedeemThread();
 void CheckThread();
+void _7DayTrial();
+
 VOID setElementText(LPCWSTR szId, LPCWSTR Text);
 VOID propSetString(HXUIOBJ obj, LPCWSTR ChildID, LPCWSTR Text);
